@@ -29,7 +29,7 @@ func remove_card(card: CardData) -> void:
 
 
 func _add_card_display(card: CardData) -> void:
-	var display: PanelContainer = _card_display_scene.instantiate()
+	var display: Control = _card_display_scene.instantiate()
 	add_child(display)
 	display.setup(card)
 	display.hex_map = hex_map
