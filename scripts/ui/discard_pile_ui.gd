@@ -59,9 +59,14 @@ func update_count(count: int) -> void:
 func _update_display() -> void:
 	if not is_inside_tree():
 		return
-	UIHelpers.set_bbcode(_count_label, UIHelpers.icon_text(
-		"Discard", str(_cards.size())
-	))
+	var icon_sz: int = int(UIHelpers.FONT_LABEL * 1.2)
+	var card_path: String = UIHelpers.ENTITY_ICONS.get(
+		"Discard", ""
+	) as String
+	var bbcode := "Discard  [img=%d]%s[/img] %d" % [
+		icon_sz, card_path, _cards.size(),
+	]
+	UIHelpers.set_bbcode(_count_label, bbcode)
 	for child in _stack.get_children():
 		child.queue_free()
 	var cards_to_show := mini(_cards.size(), 3)

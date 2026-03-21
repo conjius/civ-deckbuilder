@@ -27,15 +27,17 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 2
 
-[node name="LeftTop" type="VBoxContainer" parent="FullScreen/VBox/TopBar"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="UnitInfo" parent="FullScreen/VBox/TopBar/LeftTop" instance=ExtResource("3")]
+[node name="UnitInfo" parent="FullScreen/VBox/TopBar" instance=ExtResource("3")]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 0
 
-[node name="TurnLabel" type="RichTextLabel" parent="FullScreen/VBox/TopBar/LeftTop"]
+[node name="SpacerLeft" type="Control" parent="FullScreen/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="TurnLabel" type="RichTextLabel" parent="FullScreen/VBox/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
@@ -43,7 +45,7 @@ bbcode_enabled = true
 fit_content = true
 text = "Turn: 1"
 
-[node name="Spacer" type="Control" parent="FullScreen/VBox/TopBar"]
+[node name="SpacerRight" type="Control" parent="FullScreen/VBox/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
