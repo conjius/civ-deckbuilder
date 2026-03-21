@@ -9,7 +9,7 @@ var _parchment_tex: Texture2D = preload(
 )
 var _card_icon_textures: Dictionary = {
 	CardData.CardType.MOVE: preload(
-		"res://assets/icons/explore_64.svg"
+		"res://assets/icons/explorer_unit.svg"
 	),
 	CardData.CardType.SCOUT: preload(
 		"res://assets/icons/scout_64.svg"

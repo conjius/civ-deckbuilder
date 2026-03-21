@@ -7,7 +7,7 @@ var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
 )
 var _explorer_icon_path: String = (
-	"res://assets/icons/explorer_unit.svg"
+	"res://assets/icons/move_64.svg"
 )
 var _settle_icon_path: String = (
 	"res://assets/icons/settle_64.svg"
