@@ -97,10 +97,22 @@ static func fit_font_size(
 	return min_size
 
 
-static func create_panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.85, 0.78, 0.65, 1.0)
-	style.set_corner_radius_all(CARD_CORNER_RADIUS)
+static func create_panel_style() -> StyleBoxTexture:
+	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
+	var style := StyleBoxTexture.new()
+	if tex:
+		var do_rotate: bool = randi() % 2 == 0
+		var do_mirror: bool = randi() % 2 == 0
+		if do_rotate or do_mirror:
+			var img := tex.get_image().duplicate()
+			if do_rotate:
+				img.rotate_180()
+			if do_mirror:
+				img.flip_x()
+			style.texture = ImageTexture.create_from_image(img)
+		else:
+			style.texture = tex
+	style.modulate_color = Color(0.95, 0.88, 0.75, 1.0)
 	style.content_margin_left = PANEL_MARGIN_H
 	style.content_margin_right = PANEL_MARGIN_H
 	style.content_margin_top = PANEL_MARGIN_V
@@ -109,23 +121,9 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, is_container: bool = true,
+	_panel: Control, _is_container: bool = true,
 ) -> void:
-	var border := Panel.new()
-	border.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if is_container:
-		border.offset_left = -PANEL_MARGIN_H
-		border.offset_right = PANEL_MARGIN_H
-		border.offset_top = -PANEL_MARGIN_V
-		border.offset_bottom = PANEL_MARGIN_V
-	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0)
-	style.border_color = Color(0.55, 0.4, 0.15)
-	style.set_border_width_all(CARD_BORDER)
-	style.set_corner_radius_all(CARD_CORNER_RADIUS)
-	border.add_theme_stylebox_override("panel", style)
-	panel.add_child(border)
+	pass
 
 
 static func create_circle_panel_style(
