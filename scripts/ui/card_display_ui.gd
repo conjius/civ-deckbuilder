@@ -126,17 +126,11 @@ func _add_section(
 	sec.size = Vector2(w, h)
 	sec.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sec.clip_contents = true
-	var atlas := AtlasTexture.new()
-	atlas.atlas = _parchment_tex
-	var tex_size := _parchment_tex.get_size()
-	var ox := randf() * tex_size.x * 0.3
-	var oy := randf() * tex_size.y * 0.3
-	atlas.region = Rect2(
-		ox, oy,
-		tex_size.x - ox, tex_size.y - oy,
-	)
 	var style := StyleBoxTexture.new()
-	style.texture = atlas
+	style.texture = _parchment_tex
+	if randi() % 2 == 0:
+		sec.pivot_offset = Vector2(w * 0.5, h * 0.5)
+		sec.rotation = PI
 	style.modulate_color = color
 	style.content_margin_left = UIHelpers.SECTION_MARGIN_H
 	style.content_margin_right = UIHelpers.SECTION_MARGIN_H
