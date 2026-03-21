@@ -112,7 +112,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	y += hh + gap
 
 	var ah := UIHelpers.AVATAR_HEIGHT
-	_add_section(inner, light, b, y, iw, ah)
+	var avatar_sec := _add_section(inner, light, b, y, iw, ah)
 	var icon_tex: Texture2D = null
 	if card.icon_path != "":
 		icon_tex = load(card.icon_path) as Texture2D
@@ -123,12 +123,12 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	if icon_tex:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = icon_tex
-		tex_rect.position = Vector2(b, y)
-		tex_rect.size = Vector2(iw, ah)
+		tex_rect.layout_mode = 1
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		inner.add_child(tex_rect)
+		avatar_sec.add_child(tex_rect)
 	y += ah + gap
 
 	var dh := UIHelpers.DESC_HEIGHT
@@ -162,7 +162,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 func _add_section(
 	parent: Control, color: Color,
 	x: int, y: int, w: int, h: int,
-) -> void:
+) -> PanelContainer:
 	var sec := PanelContainer.new()
 	sec.position = Vector2(x, y)
 	sec.size = Vector2(w, h)
@@ -173,6 +173,7 @@ func _add_section(
 	style.modulate_color = color
 	sec.add_theme_stylebox_override("panel", style)
 	parent.add_child(sec)
+	return sec
 
 
 func _add_label(

@@ -80,8 +80,8 @@ func setup(card: CardData) -> void:
 	y += hh + gap
 
 	var ah := UIHelpers.AVATAR_HEIGHT
-	_add_section(inner, light, b, y, cw, ah)
-	_add_avatar(inner, card, b, y, cw, ah)
+	var avatar_sec := _add_section(inner, light, b, y, cw, ah)
+	_add_avatar(avatar_sec, card)
 	y += ah + gap
 
 	var dh := UIHelpers.DESC_HEIGHT
@@ -149,8 +149,7 @@ func _add_label(
 
 
 func _add_avatar(
-	parent: Control, card: CardData,
-	x: int, y: int, w: int, h: int,
+	section: PanelContainer, card: CardData,
 ) -> void:
 	var icon_tex: Texture2D = null
 	if card.icon_path != "":
@@ -162,12 +161,12 @@ func _add_avatar(
 	if icon_tex:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = icon_tex
-		tex_rect.position = Vector2(x, y)
-		tex_rect.size = Vector2(w, h)
+		tex_rect.layout_mode = 1
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		parent.add_child(tex_rect)
+		section.add_child(tex_rect)
 
 
 func _gui_input(event: InputEvent) -> void:
