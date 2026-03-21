@@ -1,10 +1,10 @@
 extends MeshInstance3D
 
-@export var arrow_width: float = 0.35
-@export var dash_length: float = 0.6
-@export var gap_length: float = 0.3
-@export var arrowhead_length: float = 1.6
-@export var arrowhead_width: float = 1.4
+@export var arrow_width: float = 1.05
+@export var dash_length: float = 1.8
+@export var gap_length: float = 0.9
+@export var arrowhead_length: float = 4.8
+@export var arrowhead_width: float = 4.2
 @export var arrow_color: Color = Color(0.7, 0.15, 0.1, 0.85)
 @export var y_offset: float = 0.7
 

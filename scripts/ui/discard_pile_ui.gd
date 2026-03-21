@@ -147,7 +147,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	)
 	dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	dl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT

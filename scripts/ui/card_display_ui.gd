@@ -99,7 +99,7 @@ func setup(card: CardData) -> void:
 	)
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
