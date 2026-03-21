@@ -48,6 +48,7 @@ func setup_refs(
 	card_hand.card_effects = p_card_effects
 	card_hand.active_unit = p_unit
 	card_hand.arrow_indicator = p_arrow
+	card_hand.discard_pile = discard_pile
 	unit_info.update_unit(p_unit)
 
 

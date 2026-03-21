@@ -9,6 +9,7 @@ var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
+var discard_pile: Control
 
 var _card_icon_textures: Dictionary = {
 	CardData.CardType.MOVE: preload("res://assets/icons/move_64.svg"),
@@ -207,9 +208,6 @@ func _start_drag(mouse_pos: Vector2) -> void:
 
 func _end_drag(mouse_pos: Vector2) -> void:
 	_dragging = false
-	z_index = 0
-	modulate = Color.WHITE
-	scale = Vector2.ONE
 	hex_map.clear_highlights()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
@@ -220,10 +218,34 @@ func _end_drag(mouse_pos: Vector2) -> void:
 	)
 	_valid_targets.clear()
 	if is_valid:
-		drag_ended.emit(card_data, target, true)
+		_animate_to_discard(target)
 	else:
+		z_index = 0
+		modulate = Color.WHITE
+		scale = Vector2.ONE
 		global_position = _original_position
 		drag_ended.emit(card_data, Vector2i.ZERO, false)
+
+
+func _animate_to_discard(target: Vector2i) -> void:
+	var dest := _original_position
+	if discard_pile:
+		dest = discard_pile.global_position
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		self, "global_position", dest, 0.25
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(
+		self, "modulate", Color.WHITE, 0.2
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		self, "scale", Vector2.ONE, 0.2
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.chain().tween_callback(func() -> void:
+		z_index = 0
+		drag_ended.emit(card_data, target, true)
+	)
 
 
 func _update_hover(mouse_pos: Vector2) -> void:

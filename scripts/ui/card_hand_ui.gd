@@ -7,6 +7,7 @@ var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
+var discard_pile: Control
 
 var _card_display_scene: PackedScene = preload(
 	"res://scenes/ui/card_display.tscn"
@@ -37,6 +38,7 @@ func _add_card_display(card: CardData) -> void:
 	display.card_effects = card_effects
 	display.active_unit = active_unit
 	display.arrow_indicator = arrow_indicator
+	display.discard_pile = discard_pile
 	display.drag_started.connect(_on_drag_started)
 	display.drag_ended.connect(_on_drag_ended)
 
