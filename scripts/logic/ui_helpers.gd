@@ -138,9 +138,9 @@ static func apply_parchment_bg(
 	bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	if is_container:
-		# Escape content margins to fill full panel
-		var mh: int = PANEL_MARGIN_H
-		var mv: int = PANEL_MARGIN_V
+		# Escape content margins + border to fill full panel
+		var mh: int = PANEL_MARGIN_H + CARD_BORDER
+		var mv: int = PANEL_MARGIN_V + CARD_BORDER
 		bg.offset_left = -mh
 		bg.offset_right = mh
 		bg.offset_top = -mv
