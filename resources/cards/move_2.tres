@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Explore"
-description = "Move up to 4 tiles away."
+description = "Move up to 4 tiles. -1 DEF this turn."
 range_value = 4
 card_color = Color(0.1, 0.35, 0.1, 1)
 icon_path = "res://assets/icons/explore_64.svg"
