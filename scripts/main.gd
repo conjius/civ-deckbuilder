@@ -15,7 +15,7 @@ var _selected_index: int = 0
 @onready var card_effects: Node = $CardEffects
 @onready var turn_manager: Node = $TurnManager
 @onready var game_ui: CanvasLayer = $GameUI
-@onready var arrow_indicator: MeshInstance3D = $ArrowIndicator
+@onready var arrow_indicator: Control = $ArrowLayer/ArrowIndicator
 
 
 func _ready() -> void:
@@ -29,6 +29,7 @@ func _ready() -> void:
 	card_effects.card_resolver = CardResolver.new(hex_map.map_data)
 
 	var cam: Camera3D = $CameraRig/CameraPivot/Camera3D
+	arrow_indicator.setup_camera(cam)
 	game_ui.setup_refs(hex_map, cam, card_effects, player_unit, arrow_indicator)
 
 	# Connect signals

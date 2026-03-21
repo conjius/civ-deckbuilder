@@ -7,7 +7,7 @@ var hex_map: Node3D
 var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
-var arrow_indicator: MeshInstance3D
+var arrow_indicator: Control
 
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
@@ -48,7 +48,7 @@ func _ready() -> void:
 func setup_refs(
 	p_hex_map: Node3D, p_camera: Camera3D,
 	p_card_effects: Node, p_unit: Node3D,
-	p_arrow: MeshInstance3D,
+	p_arrow: Control,
 ) -> void:
 	hex_map = p_hex_map
 	camera = p_camera

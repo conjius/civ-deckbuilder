@@ -1,4 +1,4 @@
-extends MeshInstance3D
+extends Control
 
 @export var arrow_width: float = 0.7
 @export var dash_length: float = 1.2
@@ -6,111 +6,94 @@ extends MeshInstance3D
 @export var arrowhead_length: float = 3.2
 @export var arrowhead_width: float = 2.8
 @export var arrow_color: Color = Color(0.7, 0.15, 0.1, 0.85)
-@export var y_offset: float = 0.7
+@export var screen_scale: float = 40.0
 
-var _immediate_mesh: ImmediateMesh
-var _material: StandardMaterial3D
+var _from: Vector2 = Vector2.ZERO
+var _to: Vector2 = Vector2.ZERO
+var _visible: bool = false
+var _camera: Camera3D
 
 
-func _ready() -> void:
-	_immediate_mesh = ImmediateMesh.new()
-	mesh = _immediate_mesh
-
-	_material = StandardMaterial3D.new()
-	_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_material.vertex_color_use_as_albedo = true
-	_material.no_depth_test = true
-	_material.render_priority = 100
-	material_override = _material
-
-	visible = false
+func setup_camera(cam: Camera3D) -> void:
+	_camera = cam
 
 
 func show_arrow(from_pos: Vector3, to_pos: Vector3) -> void:
-	visible = true
-	_draw_arrow(from_pos, to_pos)
+	if not _camera:
+		return
+	_from = _camera.unproject_position(
+		Vector3(from_pos.x, 0.3, from_pos.z)
+	)
+	_to = _camera.unproject_position(
+		Vector3(to_pos.x, 0.3, to_pos.z)
+	)
+	_visible = true
+	queue_redraw()
 
 
 func hide_arrow() -> void:
-	visible = false
-	_immediate_mesh.clear_surfaces()
+	_visible = false
+	queue_redraw()
 
 
-func _draw_arrow(from_pos: Vector3, to_pos: Vector3) -> void:
-	_immediate_mesh.clear_surfaces()
+func _draw() -> void:
+	if not _visible:
+		return
 
-	var start := Vector3(from_pos.x, y_offset, from_pos.z)
-	var end := Vector3(to_pos.x, y_offset, to_pos.z)
-	var dir := (end - start)
+	var dir := (_to - _from)
 	var total_length := dir.length()
-
-	if total_length < 0.1:
+	if total_length < 5.0:
 		return
 
 	dir = dir.normalized()
-	var perp := Vector3(-dir.z, 0.0, dir.x)
-	var half_w := arrow_width * 0.5
+	var perp := Vector2(-dir.y, dir.x)
+	var sc := screen_scale
+	var half_w := arrow_width * sc * 0.5
+	var head_len := arrowhead_length * sc
+	var head_w := arrowhead_width * sc * 0.5
+	var d_len := dash_length * sc
+	var g_len := gap_length * sc
 
-	var shaft_length := maxf(0.0, total_length - arrowhead_length)
-
-	_immediate_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+	var shaft_length := maxf(0.0, total_length - head_len)
 
 	var pos := 0.0
 	while pos < shaft_length:
-		var seg_end := minf(pos + dash_length, shaft_length)
-		var p0 := start + dir * pos
-		var p1 := start + dir * seg_end
+		var seg_end := minf(pos + d_len, shaft_length)
 
-		var v0 := p0 + perp * half_w
-		var v1 := p0 - perp * half_w
-		var v2 := p1 + perp * half_w
-		var v3 := p1 - perp * half_w
-
+		var p0 := _from + dir * pos
+		var p1 := _from + dir * seg_end
 		var t0 := pos / total_length
 		var t1 := seg_end / total_length
 		var c0 := _color_at(t0)
 		var c1 := _color_at(t1)
 
-		_immediate_mesh.surface_set_color(c0)
-		_immediate_mesh.surface_add_vertex(v0)
-		_immediate_mesh.surface_set_color(c0)
-		_immediate_mesh.surface_add_vertex(v1)
-		_immediate_mesh.surface_set_color(c1)
-		_immediate_mesh.surface_add_vertex(v2)
+		var pts := PackedVector2Array([
+			p0 + perp * half_w,
+			p0 - perp * half_w,
+			p1 - perp * half_w,
+			p1 + perp * half_w,
+		])
+		var cols := PackedColorArray([c0, c0, c1, c1])
+		draw_polygon(pts, cols)
 
-		_immediate_mesh.surface_set_color(c0)
-		_immediate_mesh.surface_add_vertex(v1)
-		_immediate_mesh.surface_set_color(c1)
-		_immediate_mesh.surface_add_vertex(v3)
-		_immediate_mesh.surface_set_color(c1)
-		_immediate_mesh.surface_add_vertex(v2)
+		pos = seg_end + g_len
 
-		pos = seg_end + gap_length
-
-	var head_base := start + dir * shaft_length
-	var head_tip := end
-	var head_half_w := arrowhead_width * 0.5
-
-	var h0 := head_base + perp * head_half_w
-	var h1 := head_base - perp * head_half_w
-	var h2 := head_tip
-
+	var hb := _from + dir * shaft_length
 	var t_base := shaft_length / total_length
 	var c_base := _color_at(t_base)
 	var c_tip := _color_at(1.0)
 
-	_immediate_mesh.surface_set_color(c_base)
-	_immediate_mesh.surface_add_vertex(h0)
-	_immediate_mesh.surface_set_color(c_base)
-	_immediate_mesh.surface_add_vertex(h1)
-	_immediate_mesh.surface_set_color(c_tip)
-	_immediate_mesh.surface_add_vertex(h2)
-
-	_immediate_mesh.surface_end()
+	var head_pts := PackedVector2Array([
+		hb + perp * head_w,
+		hb - perp * head_w,
+		_to,
+	])
+	var head_cols := PackedColorArray([c_base, c_base, c_tip])
+	draw_polygon(head_pts, head_cols)
 
 
 func _color_at(t: float) -> Color:
 	var alpha := lerpf(0.05, arrow_color.a, t)
-	return Color(arrow_color.r, arrow_color.g, arrow_color.b, alpha)
+	return Color(
+		arrow_color.r, arrow_color.g, arrow_color.b, alpha
+	)

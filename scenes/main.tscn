@@ -64,7 +64,14 @@ script = ExtResource("6")
 [node name="TurnManager" type="Node" parent="." unique_id=767809735]
 script = ExtResource("7")
 
-[node name="ArrowIndicator" type="MeshInstance3D" parent="." unique_id=1296860725]
+[node name="ArrowLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="ArrowIndicator" type="Control" parent="ArrowLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource("9")
 
 [node name="GameUI" parent="." unique_id=463122490 instance=ExtResource("8")]

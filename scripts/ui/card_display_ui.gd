@@ -8,7 +8,7 @@ var hex_map: Node3D
 var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
-var arrow_indicator: MeshInstance3D
+var arrow_indicator: Control
 var discard_pile: Control
 
 var _card_icon_textures: Dictionary = {
