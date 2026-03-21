@@ -9,7 +9,9 @@ var _font: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 func _ready() -> void:
 	for lbl: Label in [materials_label, food_label]:
 		lbl.add_theme_font_override("font", _font)
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override(
+			"font_size", UIHelpers.FONT_LABEL
+		)
 
 
 func update_resources(materials: int, food: int) -> void:

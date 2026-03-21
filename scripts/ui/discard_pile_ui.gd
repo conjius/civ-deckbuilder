@@ -29,7 +29,9 @@ var _cards: Array[CardData] = []
 
 func _ready() -> void:
 	_count_label.add_theme_font_override("font", _font_bold)
-	_count_label.add_theme_font_size_override("font_size", 11)
+	_count_label.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_LABEL
+	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.9, 0.85, 0.7)
 	)
@@ -63,7 +65,8 @@ func _update_display() -> void:
 	for i in range(cards_to_show):
 		var card: CardData = _cards[start_idx + i]
 		var panel := _build_card_face(card)
-		panel.position = Vector2(i * 2, -i * 2)
+		var off := UIHelpers.STACK_OFFSET
+		panel.position = Vector2(i * off, -i * off)
 		_stack.add_child(panel)
 
 
@@ -89,10 +92,12 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	bg_style.bg_color = Color(0.12, 0.08, 0.05)
 	bg_style.border_color = Color(0.55, 0.4, 0.15)
 	bg_style.set_border_width_all(b)
-	bg_style.set_corner_radius_all(6)
+	bg_style.set_corner_radius_all(UIHelpers.CARD_CORNER_RADIUS)
 	bg.add_theme_stylebox_override("panel", bg_style)
 	outer.add_child(bg)
 
+	var mh := UIHelpers.SECTION_MARGIN_H
+	var mv := UIHelpers.SECTION_MARGIN_V
 	var y := UIHelpers.SECTION_TOP
 
 	var hh := UIHelpers.HEADER_HEIGHT
@@ -100,7 +105,8 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var nl := _add_label_in(
 		header, card.card_name, _font_bold, Color.WHITE,
 		UIHelpers.fit_font_size(
-			card.card_name, iw - 12, hh - 8, 13, 9
+			card.card_name, iw - mh * 2, hh - mv * 2,
+			UIHelpers.FONT_TITLE, UIHelpers.s(9),
 		),
 	)
 	nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -135,7 +141,8 @@ func _build_card_face(card: CardData) -> PanelContainer:
 		desc_sec, card.description, _font_regular,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
-			card.description, iw - 12, dh - 8, 11, 7
+			card.description, iw - mh * 2, dh - mv * 2,
+			UIHelpers.FONT_BODY, UIHelpers.s(7),
 		),
 	)
 	dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -149,7 +156,10 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var fl := _add_label_in(
 		footer, ftxt, _font_regular,
 		Color(1, 1, 1, 0.8),
-		UIHelpers.fit_font_size(ftxt, iw - 12, fh - 8, 11, 8),
+		UIHelpers.fit_font_size(
+			ftxt, iw - mh * 2, fh - mv * 2,
+			UIHelpers.FONT_BODY, UIHelpers.s(8),
+		),
 	)
 	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	fl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

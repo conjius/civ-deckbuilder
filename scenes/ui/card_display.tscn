@@ -3,6 +3,5 @@
 [ext_resource type="Script" path="res://scripts/ui/card_display_ui.gd" id="1"]
 
 [node name="CardDisplay" type="Control"]
-custom_minimum_size = Vector2(115, 165)
 mouse_filter = 0
 script = ExtResource("1")

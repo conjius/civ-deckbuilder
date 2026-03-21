@@ -12,7 +12,9 @@ var _count: int = 0
 
 func _ready() -> void:
 	_count_label.add_theme_font_override("font", _font_bold)
-	_count_label.add_theme_font_size_override("font_size", 11)
+	_count_label.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_LABEL
+	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.9, 0.85, 0.7)
 	)
@@ -38,6 +40,7 @@ func _update_display() -> void:
 			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
 		)
 		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
-		tex_rect.position = Vector2(i * 2, -i * 2)
+		var off := UIHelpers.STACK_OFFSET
+		tex_rect.position = Vector2(i * off, -i * off)
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_stack.add_child(tex_rect)

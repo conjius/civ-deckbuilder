@@ -17,10 +17,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 0
 
 [node name="VBox" type="VBoxContainer" parent="FullScreen"]
 layout_mode = 2
@@ -49,10 +45,7 @@ mouse_filter = 2
 [node name="LeftPanel" type="VBoxContainer" parent="FullScreen/VBox/MiddleArea"]
 layout_mode = 1
 anchors_preset = 0
-offset_right = 180.0
-offset_bottom = 200.0
 mouse_filter = 2
-theme_override_constants/separation = 8
 
 [node name="UnitInfo" parent="FullScreen/VBox/MiddleArea/LeftPanel" instance=ExtResource("3")]
 unique_name_in_owner = true
@@ -71,31 +64,25 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
-offset_bottom = 60.0
 grow_horizontal = 0
 
 [node name="BottomBar" type="PanelContainer" parent="FullScreen/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 190)
 mouse_filter = 1
 
 [node name="HBox" type="HBoxContainer" parent="FullScreen/VBox/BottomBar"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 12
 
 [node name="DrawPile" type="VBoxContainer" parent="FullScreen/VBox/BottomBar/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(120, 0)
 size_flags_vertical = 8
 mouse_filter = 2
 script = ExtResource("5")
 
 [node name="Stack" type="Control" parent="FullScreen/VBox/BottomBar/HBox/DrawPile"]
 layout_mode = 2
-custom_minimum_size = Vector2(115, 165)
 mouse_filter = 2
 
 [node name="CountLabel" type="Label" parent="FullScreen/VBox/BottomBar/HBox/DrawPile"]
@@ -111,20 +98,16 @@ size_flags_horizontal = 3
 size_flags_vertical = 8
 mouse_filter = 2
 alignment = 1
-theme_override_constants/separation = 8
 script = ExtResource("2")
 
 [node name="DiscardColumn" type="VBoxContainer" parent="FullScreen/VBox/BottomBar/HBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(120, 0)
 size_flags_vertical = 8
 mouse_filter = 2
-theme_override_constants/separation = 6
 
 [node name="EndTurnButton" type="TextureButton" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(40, 40)
 size_flags_horizontal = 8
 mouse_filter = 0
 stretch_mode = 0
@@ -139,7 +122,6 @@ script = ExtResource("6")
 
 [node name="Stack" type="Control" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn/DiscardPile"]
 layout_mode = 2
-custom_minimum_size = Vector2(115, 165)
 mouse_filter = 2
 
 [node name="CountLabel" type="Label" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn/DiscardPile"]

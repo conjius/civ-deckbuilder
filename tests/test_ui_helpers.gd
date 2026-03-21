@@ -1,7 +1,7 @@
 extends RefCounted
 
 var _w: int = UIHelpers.CONTENT_WIDTH
-var _h: int = UIHelpers.DESC_HEIGHT - 8
+var _h: int = UIHelpers.DESC_HEIGHT - UIHelpers.SECTION_MARGIN_V * 2
 
 
 func test_fit_font_size_short_text_gets_max() -> void:

@@ -19,6 +19,7 @@ var _hourglass_tex: Texture2D = preload(
 	"res://assets/icons/hourglass_64.svg"
 )
 
+@onready var full_screen: MarginContainer = $FullScreen
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
 @onready var draw_pile: VBoxContainer = %DrawPile
@@ -28,6 +29,12 @@ var _hourglass_tex: Texture2D = preload(
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
+@onready var left_panel: VBoxContainer = (
+	$FullScreen/VBox/MiddleArea/LeftPanel
+)
+@onready var discard_column: VBoxContainer = (
+	$FullScreen/VBox/BottomBar/HBox/DiscardColumn
+)
 
 
 func _ready() -> void:
@@ -40,6 +47,7 @@ func _ready() -> void:
 			card_dropped.emit(card, target)
 	)
 	_apply_styles()
+	_apply_sizes()
 
 
 func setup_refs(
@@ -98,8 +106,66 @@ func _apply_styles() -> void:
 	var empty_style := StyleBoxEmpty.new()
 	bottom_bar.add_theme_stylebox_override("panel", empty_style)
 
+
+func _apply_sizes() -> void:
+	var m := UIHelpers.MARGIN
+	full_screen.add_theme_constant_override("margin_left", m)
+	full_screen.add_theme_constant_override("margin_top", m)
+	full_screen.add_theme_constant_override("margin_right", m)
+	full_screen.add_theme_constant_override("margin_bottom", 0)
+
 	turn_label.add_theme_font_override("font", _font_bold)
-	turn_label.add_theme_font_size_override("font_size", 14)
+	turn_label.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_TURN
+	)
 
 	info_label.add_theme_font_override("font", _font_regular)
-	info_label.add_theme_font_size_override("font_size", 11)
+	info_label.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_INFO
+	)
+
+	left_panel.add_theme_constant_override(
+		"separation", UIHelpers.SPACING
+	)
+	left_panel.offset_right = UIHelpers.LEFT_PANEL_WIDTH
+	left_panel.offset_bottom = UIHelpers.LEFT_PANEL_HEIGHT
+
+	resource_tracker.offset_left = -UIHelpers.RESOURCE_WIDTH
+	resource_tracker.offset_bottom = UIHelpers.RESOURCE_HEIGHT
+
+	bottom_bar.custom_minimum_size = Vector2(
+		0, UIHelpers.BOTTOM_BAR_HEIGHT
+	)
+
+	var hbox: HBoxContainer = bottom_bar.get_node("HBox")
+	hbox.add_theme_constant_override(
+		"separation", UIHelpers.SPACING_LARGE
+	)
+
+	draw_pile.custom_minimum_size = Vector2(
+		UIHelpers.PILE_WIDTH, 0
+	)
+	var draw_stack: Control = draw_pile.get_node("Stack")
+	draw_stack.custom_minimum_size = Vector2(
+		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+	)
+
+	card_hand.add_theme_constant_override(
+		"separation", UIHelpers.SPACING
+	)
+
+	discard_column.custom_minimum_size = Vector2(
+		UIHelpers.PILE_WIDTH, 0
+	)
+	discard_column.add_theme_constant_override(
+		"separation", UIHelpers.SPACING_SMALL
+	)
+
+	end_turn_button.custom_minimum_size = Vector2(
+		UIHelpers.BUTTON_SIZE, UIHelpers.BUTTON_SIZE
+	)
+
+	var disc_stack: Control = discard_pile.get_node("Stack")
+	disc_stack.custom_minimum_size = Vector2(
+		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+	)

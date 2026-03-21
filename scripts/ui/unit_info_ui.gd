@@ -12,10 +12,14 @@ var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 
 func _ready() -> void:
 	unit_name_label.add_theme_font_override("font", _font_bold)
-	unit_name_label.add_theme_font_size_override("font_size", 12)
+	unit_name_label.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_UNIT_NAME
+	)
 	for lbl: Label in [health_label, attack_label, defense_label]:
 		lbl.add_theme_font_override("font", _font_regular)
-		lbl.add_theme_font_size_override("font_size", 10)
+		lbl.add_theme_font_size_override(
+			"font_size", UIHelpers.FONT_UNIT_STAT
+		)
 
 
 func update_unit(unit: Node3D) -> void:

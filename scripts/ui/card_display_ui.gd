@@ -56,13 +56,15 @@ func setup(card: CardData) -> void:
 	bg_style.bg_color = Color(0.12, 0.08, 0.05)
 	bg_style.border_color = Color(0.55, 0.4, 0.15)
 	bg_style.set_border_width_all(UIHelpers.CARD_BORDER)
-	bg_style.set_corner_radius_all(6)
+	bg_style.set_corner_radius_all(UIHelpers.CARD_CORNER_RADIUS)
 	bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(bg)
 
 	var b := UIHelpers.CARD_BORDER
 	var cw := UIHelpers.CARD_WIDTH - b * 2
 	var gap := UIHelpers.SECTION_GAP
+	var mh := UIHelpers.SECTION_MARGIN_H
+	var mv := UIHelpers.SECTION_MARGIN_V
 	var y := UIHelpers.SECTION_TOP
 
 	var hh := UIHelpers.HEADER_HEIGHT
@@ -70,7 +72,9 @@ func setup(card: CardData) -> void:
 	var name_lbl := _add_label_in(
 		header, card.card_name, _font_bold, Color.WHITE,
 		UIHelpers.fit_font_size(
-			card.card_name, cw - 12, hh - 8, 13, 9
+			card.card_name, cw - mh * 2,
+			hh - mv * 2, UIHelpers.FONT_TITLE,
+			UIHelpers.s(9),
 		),
 	)
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -88,7 +92,9 @@ func setup(card: CardData) -> void:
 		desc_sec, card.description, _font_regular,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
-			card.description, cw - 12, dh - 8, 11, 7
+			card.description, cw - mh * 2,
+			dh - mv * 2, UIHelpers.FONT_BODY,
+			UIHelpers.s(7),
 		),
 	)
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -102,7 +108,10 @@ func setup(card: CardData) -> void:
 	var f_lbl := _add_label_in(
 		footer, ftxt, _font_regular,
 		Color(1, 1, 1, 0.8),
-		UIHelpers.fit_font_size(ftxt, cw - 12, fh - 8, 11, 8),
+		UIHelpers.fit_font_size(
+			ftxt, cw - mh * 2, fh - mv * 2,
+			UIHelpers.FONT_BODY, UIHelpers.s(8),
+		),
 	)
 	f_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	f_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -120,10 +129,10 @@ func _add_section(
 	var style := StyleBoxTexture.new()
 	style.texture = _parchment_tex
 	style.modulate_color = color
-	style.content_margin_left = 6.0
-	style.content_margin_right = 6.0
-	style.content_margin_top = 4.0
-	style.content_margin_bottom = 4.0
+	style.content_margin_left = UIHelpers.SECTION_MARGIN_H
+	style.content_margin_right = UIHelpers.SECTION_MARGIN_H
+	style.content_margin_top = UIHelpers.SECTION_MARGIN_V
+	style.content_margin_bottom = UIHelpers.SECTION_MARGIN_V
 	sec.add_theme_stylebox_override("panel", style)
 	parent.add_child(sec)
 	return sec

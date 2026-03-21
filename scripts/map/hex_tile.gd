@@ -72,11 +72,11 @@ func place_settlement(
 	var label := Label3D.new()
 	label.text = settlement_name
 	label.font = _font_bold
-	label.font_size = 48
+	label.font_size = UIHelpers.SETTLEMENT_FONT_SIZE
 	label.pixel_size = 0.01
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.position = Vector3(0, 1.0, 0)
 	label.modulate = Color(1.0, 0.95, 0.8)
 	label.outline_modulate = Color(0.15, 0.1, 0.05)
-	label.outline_size = 8
+	label.outline_size = UIHelpers.SETTLEMENT_OUTLINE
 	add_child(label)
