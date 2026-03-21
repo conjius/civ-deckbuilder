@@ -44,8 +44,16 @@ func setup(card: CardData) -> void:
 	# Header — dark, textured
 	_apply_section_style($VBox/Header, dark)
 	$VBox/Header/CardName.text = card.card_name
-	$VBox/Header/CardName.add_theme_font_size_override("font_size", 12)
-	$VBox/Header/CardName.add_theme_color_override("font_color", Color.WHITE)
+	var title_size := UIHelpers.fit_font_size(
+		card.card_name, UIHelpers.CONTENT_WIDTH,
+		UIHelpers.HEADER_HEIGHT - 8, 13, 9,
+	)
+	$VBox/Header/CardName.add_theme_font_size_override(
+		"font_size", title_size
+	)
+	$VBox/Header/CardName.add_theme_color_override(
+		"font_color", Color.WHITE
+	)
 	$VBox/Header/CardName.add_theme_font_override("font", _font_bold)
 
 	# Avatar — parchment texture with lighter shade
@@ -55,17 +63,37 @@ func setup(card: CardData) -> void:
 	# Description — base color, textured
 	_apply_section_style($VBox/DescSection, base)
 	$VBox/DescSection/Description.text = card.description
-	var desc_size := UIHelpers.calc_desc_font_size(card.description)
-	$VBox/DescSection/Description.add_theme_font_size_override("font_size", desc_size)
-	$VBox/DescSection/Description.add_theme_color_override("font_color", Color.WHITE)
-	$VBox/DescSection/Description.add_theme_font_override("font", _font_regular)
+	var desc_size := UIHelpers.fit_font_size(
+		card.description, UIHelpers.CONTENT_WIDTH,
+		UIHelpers.DESC_HEIGHT - 8, 11, 7,
+	)
+	$VBox/DescSection/Description.add_theme_font_size_override(
+		"font_size", desc_size
+	)
+	$VBox/DescSection/Description.add_theme_color_override(
+		"font_color", Color.WHITE
+	)
+	$VBox/DescSection/Description.add_theme_font_override(
+		"font", _font_regular
+	)
 
 	# Footer — dark, textured
 	_apply_section_style($VBox/Footer, dark)
 	$VBox/Footer/FooterLabel.text = "Range %d" % card.range_value
-	$VBox/Footer/FooterLabel.add_theme_font_size_override("font_size", 10)
-	$VBox/Footer/FooterLabel.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
-	$VBox/Footer/FooterLabel.add_theme_font_override("font", _font_regular)
+	var footer_size := UIHelpers.fit_font_size(
+		"Range %d" % card.range_value,
+		UIHelpers.CONTENT_WIDTH,
+		UIHelpers.FOOTER_HEIGHT - 8, 11, 8,
+	)
+	$VBox/Footer/FooterLabel.add_theme_font_size_override(
+		"font_size", footer_size
+	)
+	$VBox/Footer/FooterLabel.add_theme_color_override(
+		"font_color", Color(1, 1, 1, 0.8)
+	)
+	$VBox/Footer/FooterLabel.add_theme_font_override(
+		"font", _font_regular
+	)
 
 
 func _apply_section_style(

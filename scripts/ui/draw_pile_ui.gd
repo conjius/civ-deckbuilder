@@ -34,7 +34,9 @@ func _update_display() -> void:
 	for i in range(cards_to_show):
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = _card_back_tex
-		tex_rect.custom_minimum_size = Vector2(115, 165)
+		tex_rect.custom_minimum_size = Vector2(
+			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+		)
 		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
 		tex_rect.position = Vector2(i * 2, -i * 2)
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
