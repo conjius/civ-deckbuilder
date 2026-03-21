@@ -20,6 +20,7 @@ const FONT_SMALL: int = int(10 * UI_SCALE)
 const FONT_LABEL: int = int(11 * UI_SCALE)
 const FONT_TURN: int = int(14 * UI_SCALE)
 const FONT_INFO: int = int(11 * UI_SCALE)
+const FONT_STAT_NUM: int = int(FONT_LABEL * 1.2)
 const FONT_UNIT_NAME: int = int(10 * UI_SCALE)
 const FONT_UNIT_STAT: int = int(8 * UI_SCALE)
 
@@ -142,7 +143,7 @@ static func icon_text(
 		text = "%s: %s" % [entity, value]
 	else:
 		var icon_sz: int = int(FONT_LABEL * 1.2)
-		var num_sz: int = int(FONT_LABEL * 1.2)
+		var num_sz: int = FONT_STAT_NUM
 		text = "[img=%d]%s[/img] [font_size=%d]%s[/font_size] %s" % [
 			icon_sz, path, num_sz, value, entity,
 		]
