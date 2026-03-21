@@ -99,9 +99,7 @@ static func fit_font_size(
 
 static func create_panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	style.border_color = Color(0.55, 0.4, 0.15)
-	style.set_border_width_all(CARD_BORDER)
+	style.bg_color = Color(0.85, 0.78, 0.65, 1.0)
 	style.set_corner_radius_all(CARD_CORNER_RADIUS)
 	style.content_margin_left = PANEL_MARGIN_H
 	style.content_margin_right = PANEL_MARGIN_H
@@ -111,34 +109,23 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, _is_container: bool = true,
+	panel: Control, is_container: bool = true,
 ) -> void:
-	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
-	if tex == null:
-		return
-	var bg := TextureRect.new()
-	var do_rotate: bool = randi() % 2 == 0
-	var do_mirror: bool = randi() % 2 == 0
-	if do_rotate or do_mirror:
-		var img := tex.get_image().duplicate()
-		if do_rotate:
-			img.rotate_180()
-		if do_mirror:
-			img.flip_x()
-		bg.texture = ImageTexture.create_from_image(img)
-	else:
-		bg.texture = tex
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(0.95, 0.9, 0.8, 1.0)
-	bg.show_behind_parent = true
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(bg)
-	# Position to fill the entire panel including borders
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.offset_left = -100
-	bg.offset_right = 100
-	bg.offset_top = -100
-	bg.offset_bottom = 100
+	var border := Panel.new()
+	border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if is_container:
+		border.offset_left = -PANEL_MARGIN_H
+		border.offset_right = PANEL_MARGIN_H
+		border.offset_top = -PANEL_MARGIN_V
+		border.offset_bottom = PANEL_MARGIN_V
+	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0)
+	style.border_color = Color(0.55, 0.4, 0.15)
+	style.set_border_width_all(CARD_BORDER)
+	style.set_corner_radius_all(CARD_CORNER_RADIUS)
+	border.add_theme_stylebox_override("panel", style)
+	panel.add_child(border)
 
 
 static func create_circle_panel_style(
