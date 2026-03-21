@@ -27,5 +27,5 @@ func update_unit(unit: Node3D) -> void:
 	unit_name_label.text = unit.state.unit_name
 	health_label.text = "HP: %d/%d" % [unit.state.health, unit.state.max_health]
 	attack_label.text = "ATK: %d" % unit.state.attack
-	var eff_def := unit.state.defense + unit.state.defense_modifier
+	var eff_def: int = unit.state.defense + unit.state.defense_modifier
 	defense_label.text = "DEF: %d" % eff_def
