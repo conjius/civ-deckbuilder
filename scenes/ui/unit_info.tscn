@@ -19,41 +19,52 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 script = ExtResource("1")
 
-[node name="HBox" type="HBoxContainer" parent="."]
+[node name="OuterVBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="HBox" type="HBoxContainer" parent="OuterVBox"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="AvatarRect" type="ColorRect" parent="HBox"]
+[node name="AvatarRect" type="ColorRect" parent="OuterVBox/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(48, 48)
 color = Color(0.9, 0.2, 0.2, 1)
 
-[node name="Stats" type="VBoxContainer" parent="HBox"]
+[node name="Stats" type="VBoxContainer" parent="OuterVBox/HBox"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="UnitNameLabel" type="Label" parent="HBox/Stats"]
+[node name="UnitNameLabel" type="Label" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 text = "Scout"
 
-[node name="HealthLabel" type="Label" parent="HBox/Stats"]
+[node name="HealthLabel" type="Label" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 text = "HP: 10/10"
 
-[node name="AttackLabel" type="Label" parent="HBox/Stats"]
+[node name="AttackLabel" type="Label" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 text = "ATK: 2"
 
-[node name="DefenseLabel" type="Label" parent="HBox/Stats"]
+[node name="DefenseLabel" type="Label" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 text = "DEF: 1"
+
+[node name="ActionContainer" type="VBoxContainer" parent="OuterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4

@@ -35,6 +35,7 @@ func _ready() -> void:
 	# Connect signals
 	game_ui.card_dropped.connect(_on_card_dropped)
 	game_ui.end_turn_pressed.connect(_on_end_turn)
+	game_ui.action_pressed.connect(_on_action_pressed)
 	card_manager.hand_changed.connect(game_ui.card_hand.update_hand)
 	card_manager.card_played.connect(game_ui.card_hand.remove_card)
 	card_manager.card_played.connect(game_ui.on_card_played)
@@ -205,6 +206,11 @@ func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
 		game_ui.show_settlement_info(
 			sname, player_unit.avatar_color, coord, terrain
 		)
+
+
+func _on_action_pressed(action_name: String) -> void:
+	if action_name == "build":
+		pass # TODO: open build menu for selected settlement
 
 
 func _highlight_active_unit() -> void:

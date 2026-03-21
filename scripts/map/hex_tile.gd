@@ -5,6 +5,7 @@ var terrain: TerrainType
 var is_revealed: bool = false
 
 var _highlight_mat: StandardMaterial3D
+var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _tent_path: String = "res://assets/models/buildings/tent.gltf"
 
@@ -47,6 +48,26 @@ func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> v
 	if value:
 		_highlight_mat.albedo_color = color
 		_highlight_mat.emission = Color(color.r, color.g, color.b)
+
+
+func pulse_highlight(color: Color) -> void:
+	set_highlighted(true, color)
+	if _pulse_tween:
+		_pulse_tween.kill()
+	_pulse_tween = create_tween().set_loops()
+	_pulse_tween.tween_property(
+		_highlight_mat, "emission_energy_multiplier", 5.0, 0.5
+	).set_trans(Tween.TRANS_SINE)
+	_pulse_tween.tween_property(
+		_highlight_mat, "emission_energy_multiplier", 1.5, 0.5
+	).set_trans(Tween.TRANS_SINE)
+
+
+func stop_pulse() -> void:
+	if _pulse_tween:
+		_pulse_tween.kill()
+		_pulse_tween = null
+	_highlight_mat.emission_energy_multiplier = 2.5
 
 
 func set_fog(value: bool) -> void:

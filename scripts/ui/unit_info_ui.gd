@@ -1,5 +1,7 @@
 extends PanelContainer
 
+signal action_pressed(action_name: String)
+
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
@@ -10,6 +12,7 @@ var _font_regular: Font = preload(
 @onready var health_label: Label = %HealthLabel
 @onready var attack_label: Label = %AttackLabel
 @onready var defense_label: Label = %DefenseLabel
+@onready var action_container: VBoxContainer = %ActionContainer
 
 
 func _ready() -> void:
@@ -34,11 +37,15 @@ func update_unit(unit: Node3D) -> void:
 	health_label.text = "HP: %d/%d" % [
 		unit.state.health, unit.state.max_health,
 	]
+	health_label.visible = true
 	attack_label.text = "ATK: %d" % unit.state.attack
+	attack_label.visible = true
 	var eff_def: int = (
 		unit.state.defense + unit.state.defense_modifier
 	)
 	defense_label.text = "DEF: %d" % eff_def
+	defense_label.visible = true
+	_clear_actions()
 
 
 func update_settlement(
@@ -49,8 +56,34 @@ func update_settlement(
 	avatar_rect.color = player_color
 	unit_name_label.text = settlement_name
 	health_label.text = "(%d, %d)" % [coord.x, coord.y]
+	health_label.visible = true
 	if terrain:
 		attack_label.text = terrain.terrain_name
+		attack_label.visible = true
 	else:
-		attack_label.text = ""
-	defense_label.text = ""
+		attack_label.visible = false
+	defense_label.visible = false
+	_clear_actions()
+	_add_action("Build")
+
+
+func _clear_actions() -> void:
+	if not action_container:
+		return
+	for child in action_container.get_children():
+		child.queue_free()
+
+
+func _add_action(label: String) -> void:
+	if not action_container:
+		return
+	var btn := Button.new()
+	btn.text = label
+	btn.add_theme_font_override("font", _font_regular)
+	btn.add_theme_font_size_override(
+		"font_size", UIHelpers.FONT_UNIT_STAT
+	)
+	btn.pressed.connect(
+		func() -> void: action_pressed.emit(label.to_lower())
+	)
+	action_container.add_child(btn)

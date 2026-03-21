@@ -2,6 +2,7 @@ extends CanvasLayer
 
 signal end_turn_pressed
 signal card_dropped(card: CardData, target: Vector2i)
+signal action_pressed(action_name: String)
 
 var hex_map: Node3D
 var camera: Camera3D
@@ -40,6 +41,10 @@ func _ready() -> void:
 	card_hand.card_dropped.connect(
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
+	)
+	unit_info.action_pressed.connect(
+		func(name: String) -> void:
+			action_pressed.emit(name)
 	)
 	_apply_styles()
 	_apply_sizes()
@@ -134,6 +139,9 @@ func _apply_sizes() -> void:
 
 	resource_tracker.offset_left = -UIHelpers.RESOURCE_WIDTH
 	resource_tracker.offset_bottom = UIHelpers.RESOURCE_HEIGHT
+
+	info_label.offset_top = -UIHelpers.s(30)
+	info_label.offset_right = UIHelpers.LEFT_PANEL_WIDTH
 
 	bottom_bar.custom_minimum_size = Vector2(
 		0, UIHelpers.BOTTOM_BAR_HEIGHT

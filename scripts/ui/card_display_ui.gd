@@ -225,9 +225,16 @@ func _start_drag(mouse_pos: Vector2) -> void:
 		_valid_targets = card_effects.get_valid_targets(
 			card_data, active_unit.current_coord
 		)
-		hex_map.highlight_tiles(
-			_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
-		)
+		if card_data.card_type == CardData.CardType.SETTLE:
+			var settle_color := Color(0.2, 1.0, 0.4, 1.0)
+			for coord in _valid_targets:
+				var tile: Node3D = hex_map.get_tile(coord)
+				if tile:
+					tile.pulse_highlight(settle_color)
+		else:
+			hex_map.highlight_tiles(
+				_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
+			)
 	drag_started.emit(card_data)
 
 
@@ -236,6 +243,7 @@ func _cancel_drag() -> void:
 	z_index = 0
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	_stop_all_pulses()
 	hex_map.clear_highlights()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
@@ -245,6 +253,7 @@ func _cancel_drag() -> void:
 
 func _end_drag(mouse_pos: Vector2) -> void:
 	_dragging = false
+	_stop_all_pulses()
 	hex_map.clear_highlights()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
@@ -318,6 +327,13 @@ func _raycast_hex(screen_pos: Vector2) -> Vector2i:
 
 func _is_valid_target(coord: Vector2i) -> bool:
 	return coord in _valid_targets
+
+
+func _stop_all_pulses() -> void:
+	for coord in _valid_targets:
+		var tile: Node3D = hex_map.get_tile(coord)
+		if tile and tile.has_method("stop_pulse"):
+			tile.stop_pulse()
 
 
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
