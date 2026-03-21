@@ -119,6 +119,7 @@ func setup(card: CardData) -> void:
 	range_rtl.layout_mode = 1
 	range_rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	range_rtl.add_theme_font_override("normal_font", _font_regular)
+	range_rtl.add_theme_color_override("default_color", Color.BLACK)
 	range_rtl.add_theme_font_size_override(
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
