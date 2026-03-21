@@ -1,7 +1,7 @@
 extends Node3D
 
-@export var map_width: int = 10
-@export var map_height: int = 10
+@export var map_width: int = 40
+@export var map_height: int = 40
 @export var noise_seed: int = 0
 
 var tiles: Dictionary = {}       # Vector2i -> HexTile node

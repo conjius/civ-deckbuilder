@@ -132,7 +132,9 @@ func _on_gathered(materials: int, food: int) -> void:
 func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 	var tile: Node3D = hex_map.get_tile(coord)
 	if tile:
-		tile.place_settlement(settlement_name)
+		tile.place_settlement(
+			settlement_name, player_unit.avatar_color
+		)
 
 
 func _highlight_active_unit() -> void:
@@ -144,7 +146,7 @@ func _highlight_active_unit() -> void:
 
 
 func _find_start_coord() -> Vector2i:
-	var center := Vector2i(5, 3)
+	var center := Vector2i(20, 10)
 	var center_terrain: TerrainType = hex_map.get_terrain(center)
 	if center_terrain and center_terrain.is_passable:
 		return center

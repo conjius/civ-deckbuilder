@@ -9,14 +9,22 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
 
-var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
+var _font_bold: Font = preload(
+	"res://assets/fonts/Cinzel-Bold.ttf"
+)
+var _font_regular: Font = preload(
+	"res://assets/fonts/Cinzel-Regular.ttf"
+)
+var _hourglass_tex: Texture2D = preload(
+	"res://assets/icons/hourglass_64.svg"
+)
 
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
 @onready var draw_pile: VBoxContainer = %DrawPile
 @onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: Label = %TurnLabel
-@onready var end_turn_button: Button = %EndTurnButton
+@onready var end_turn_button: TextureButton = %EndTurnButton
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
@@ -26,6 +34,8 @@ func _ready() -> void:
 	end_turn_button.pressed.connect(
 		func() -> void: end_turn_pressed.emit()
 	)
+	end_turn_button.texture_normal = _hourglass_tex
+	end_turn_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 	card_hand.card_dropped.connect(
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
@@ -74,7 +84,7 @@ func update_info(text: String) -> void:
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
-	end_turn_button.disabled = not enabled
+	end_turn_button.disabled = enabled == false
 
 
 func refresh_unit_info() -> void:
@@ -92,5 +102,5 @@ func _apply_styles() -> void:
 	turn_label.add_theme_font_override("font", _font_bold)
 	turn_label.add_theme_font_size_override("font_size", 14)
 
-	end_turn_button.add_theme_font_override("font", _font_bold)
-	end_turn_button.add_theme_font_size_override("font_size", 12)
+	info_label.add_theme_font_override("font", _font_regular)
+	info_label.add_theme_font_size_override("font_size", 11)

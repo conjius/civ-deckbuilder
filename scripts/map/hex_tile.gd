@@ -52,7 +52,10 @@ func set_fog(value: bool) -> void:
 	$FogOverlay.visible = value
 
 
-func place_settlement(settlement_name: String) -> void:
+func place_settlement(
+	settlement_name: String,
+	player_color: Color = Color(0.9, 0.2, 0.2),
+) -> void:
 	var marker := MeshInstance3D.new()
 	var cylinder := CylinderMesh.new()
 	cylinder.top_radius = 0.15
@@ -60,7 +63,7 @@ func place_settlement(settlement_name: String) -> void:
 	cylinder.height = 0.6
 	marker.mesh = cylinder
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.85, 0.55, 0.15)
+	mat.albedo_color = player_color
 	marker.material_override = mat
 	marker.position = Vector3(0, 0.4, 0)
 	add_child(marker)
