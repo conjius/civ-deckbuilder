@@ -20,7 +20,7 @@ func _ready() -> void:
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.9, 0.85, 0.7)
 	)
-	_update_display()
+	update_count(0)
 
 
 func update_count(count: int) -> void:

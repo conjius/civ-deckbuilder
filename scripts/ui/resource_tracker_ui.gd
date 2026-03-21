@@ -18,6 +18,7 @@ func _ready() -> void:
 		lbl.add_theme_font_size_override(
 			"normal_font_size", UIHelpers.FONT_LABEL
 		)
+	update_resources(0, 0)
 
 
 func update_resources(materials: int, food: int) -> void:
