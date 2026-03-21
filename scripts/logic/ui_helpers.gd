@@ -127,7 +127,7 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, is_container: bool = true,
+	panel: Control, _is_container: bool = true,
 ) -> void:
 	var ptex: Texture2D = _make_parchment_tex()
 	if ptex == null:
@@ -135,14 +135,14 @@ static func apply_parchment_bg(
 	var bg := TextureRect.new()
 	bg.texture = ptex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(1.0, 1.0, 1.0, 0.3)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if is_container:
-		var zoom: int = 40
-		bg.offset_left = -zoom
-		bg.offset_right = zoom
-		bg.offset_top = -zoom
-		bg.offset_bottom = zoom
+	bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
+	bg.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	bg.anchor_left = -0.3
+	bg.anchor_top = -0.3
+	bg.anchor_right = 1.3
+	bg.anchor_bottom = 1.3
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(bg)
 	panel.move_child(bg, 0)
