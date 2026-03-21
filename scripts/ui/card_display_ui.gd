@@ -31,8 +31,11 @@ var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
 var _dragging: bool = false
+var _returning: bool = false
 var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
+var _bg_panel: Panel
+var _sections: Array[PanelContainer] = []
 var _valid_targets: Array[Vector2i] = []
 
 
@@ -46,7 +49,8 @@ func setup(card: CardData) -> void:
 	var dark: Color = base.darkened(0.35)
 	var light: Color = base.lightened(0.2)
 
-	var bg := Panel.new()
+	_bg_panel = Panel.new()
+	var bg := _bg_panel
 	bg.position = Vector2.ZERO
 	bg.size = Vector2(
 		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
@@ -142,6 +146,7 @@ func _add_section(
 		style.texture = rotated
 	sec.add_theme_stylebox_override("panel", style)
 	parent.add_child(sec)
+	_sections.append(sec)
 	return sec
 
 
@@ -190,6 +195,8 @@ func _add_avatar(
 
 
 func _gui_input(event: InputEvent) -> void:
+	if _returning:
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed and not _dragging:
@@ -214,12 +221,17 @@ func _input(event: InputEvent) -> void:
 
 
 func _start_drag(mouse_pos: Vector2) -> void:
+	if _returning:
+		return
 	_dragging = true
 	_original_position = global_position
 	_drag_offset = mouse_pos - global_position
 	z_index = 100
-	modulate = Color(1.0, 1.0, 1.0, 0.5)
-	scale = Vector2(1.05, 1.05)
+	modulate = Color(1.0, 1.0, 1.0, 0.6)
+	if _bg_panel:
+		_bg_panel.visible = false
+	for sec in _sections:
+		sec.self_modulate = Color(1, 1, 1, 0)
 	_valid_targets.clear()
 	if hex_map and card_effects and active_unit:
 		_valid_targets = card_effects.get_valid_targets(
@@ -240,15 +252,21 @@ func _start_drag(mouse_pos: Vector2) -> void:
 
 func _cancel_drag() -> void:
 	_dragging = false
-	z_index = 0
-	modulate = Color.WHITE
-	scale = Vector2.ONE
+	_returning = true
 	_stop_all_pulses()
 	hex_map.clear_highlights()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
 	_valid_targets.clear()
-	global_position = _original_position
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		self, "global_position", _original_position, 0.25
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		self, "modulate", Color.WHITE, 0.2
+	)
+	tween.chain().tween_callback(_restore_card_visuals)
 
 
 func _end_drag(mouse_pos: Vector2) -> void:
@@ -266,11 +284,19 @@ func _end_drag(mouse_pos: Vector2) -> void:
 	if is_valid:
 		_animate_to_discard(target)
 	else:
-		z_index = 0
-		modulate = Color.WHITE
-		scale = Vector2.ONE
-		global_position = _original_position
-		drag_ended.emit(card_data, Vector2i.ZERO, false)
+		_returning = true
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(
+			self, "global_position", _original_position, 0.2
+		).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tween.tween_property(
+			self, "modulate", Color.WHITE, 0.15
+		)
+		tween.chain().tween_callback(func() -> void:
+			_restore_card_visuals()
+			drag_ended.emit(card_data, Vector2i.ZERO, false)
+		)
 
 
 func _animate_to_discard(target: Vector2i) -> void:
@@ -327,6 +353,16 @@ func _raycast_hex(screen_pos: Vector2) -> Vector2i:
 
 func _is_valid_target(coord: Vector2i) -> bool:
 	return coord in _valid_targets
+
+
+func _restore_card_visuals() -> void:
+	_returning = false
+	z_index = 0
+	modulate = Color.WHITE
+	if _bg_panel:
+		_bg_panel.visible = true
+	for sec in _sections:
+		sec.self_modulate = Color.WHITE
 
 
 func _stop_all_pulses() -> void:
