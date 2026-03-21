@@ -10,10 +10,12 @@ func test_fit_font_size_short_text_gets_max() -> void:
 
 
 func test_fit_font_size_long_text_shrinks() -> void:
-	var long_text := "Gather resources from an adjacent tile and add them to your stockpile"
-	var size := UIHelpers.fit_font_size(long_text, _w, _h, 11, 7)
-	TestAssert.assert_true(size < 11, "should shrink below max")
-	TestAssert.assert_true(size >= 7, "should not go below min")
+	var long_text := "Gather resources from an adjacent tile and add them to your stockpile for later use in construction"
+	var max_s := UIHelpers.FONT_BODY
+	var min_s := UIHelpers.s(7)
+	var size := UIHelpers.fit_font_size(long_text, _w, _h, max_s, min_s)
+	TestAssert.assert_true(size < max_s, "should shrink below max")
+	TestAssert.assert_true(size >= min_s, "should not go below min")
 
 
 func test_fit_font_size_empty_gets_max() -> void:
