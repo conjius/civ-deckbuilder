@@ -32,13 +32,18 @@ func setup(card: CardData) -> void:
 	var dark: Color = base.darkened(0.35)
 	var light: Color = base.lightened(0.2)
 
-	# Outer container — transparent, rounded corners
+	# Outer container — dark background with border
 	var outer := StyleBoxFlat.new()
-	outer.bg_color = Color(0, 0, 0, 0)
-	outer.corner_radius_top_left = 8
-	outer.corner_radius_top_right = 8
-	outer.corner_radius_bottom_left = 8
-	outer.corner_radius_bottom_right = 8
+	outer.bg_color = Color(0.12, 0.08, 0.05)
+	outer.border_color = Color(0.55, 0.4, 0.15)
+	outer.border_width_left = 2
+	outer.border_width_right = 2
+	outer.border_width_top = 2
+	outer.border_width_bottom = 2
+	outer.corner_radius_top_left = 6
+	outer.corner_radius_top_right = 6
+	outer.corner_radius_bottom_left = 6
+	outer.corner_radius_bottom_right = 6
 	add_theme_stylebox_override("panel", outer)
 
 	# Header — dark, textured

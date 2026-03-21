@@ -78,7 +78,16 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	outer.clip_contents = true
 	var outer_style := StyleBoxFlat.new()
-	outer_style.bg_color = Color(0, 0, 0, 0)
+	outer_style.bg_color = Color(0.12, 0.08, 0.05)
+	outer_style.border_color = Color(0.55, 0.4, 0.15)
+	outer_style.border_width_left = 2
+	outer_style.border_width_right = 2
+	outer_style.border_width_top = 2
+	outer_style.border_width_bottom = 2
+	outer_style.corner_radius_top_left = 6
+	outer_style.corner_radius_top_right = 6
+	outer_style.corner_radius_bottom_left = 6
+	outer_style.corner_radius_bottom_right = 6
 	outer.add_theme_stylebox_override("panel", outer_style)
 
 	var vbox := VBoxContainer.new()
@@ -126,7 +135,6 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var desc := _make_section(base, Vector2(0, dh))
 	var desc_lbl := Label.new()
 	desc_lbl.text = card.description
-	desc_lbl.clip_text = true
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD

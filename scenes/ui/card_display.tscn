@@ -26,7 +26,6 @@ mouse_filter = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Card Name"
-clip_text = true
 
 [node name="Avatar" type="PanelContainer" parent="VBox"]
 layout_mode = 2
@@ -68,7 +67,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 text = "Description"
-clip_text = true
 
 [node name="Footer" type="PanelContainer" parent="VBox"]
 layout_mode = 2
@@ -83,4 +81,3 @@ mouse_filter = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Range: 1"
-clip_text = true
