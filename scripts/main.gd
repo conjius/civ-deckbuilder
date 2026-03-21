@@ -33,6 +33,8 @@ func _ready() -> void:
 	game_ui.card_dropped.connect(_on_card_dropped)
 	game_ui.end_turn_pressed.connect(_on_end_turn)
 	card_manager.hand_changed.connect(game_ui.card_hand.update_hand)
+	card_manager.card_played.connect(game_ui.card_hand.remove_card)
+	card_manager.card_played.connect(game_ui.on_card_played)
 	card_manager.draw_pile_changed.connect(game_ui.update_draw_count)
 	card_manager.discard_pile_changed.connect(game_ui.update_discard_count)
 	turn_manager.turn_started.connect(_on_turn_started)
@@ -93,7 +95,7 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 		var success: bool = card_effects.execute_card(card, target)
 		if success:
 			card_manager.play_card(card)
-			turn_manager.on_card_played()
+			turn_manager.check_hand_empty()
 			_highlight_active_unit()
 			game_ui.refresh_unit_info()
 

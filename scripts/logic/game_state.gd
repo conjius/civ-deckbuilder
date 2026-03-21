@@ -40,10 +40,11 @@ func play_card(card: CardData, target: Vector2i) -> CardResolver.CardResult:
 			player.add_resources(result.materials_gained, result.food_gained)
 
 	deck.play_card(card)
-	var turn_result := turn.on_card_played()
-	if turn_result.turn_ended:
-		deck.discard_hand()
-		deck.draw_hand()
+
+	if deck.hand.is_empty():
+		var turn_result := turn.on_hand_empty()
+		if turn_result.turn_ended:
+			deck.draw_hand()
 
 	return result
 

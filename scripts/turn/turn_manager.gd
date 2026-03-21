@@ -3,23 +3,20 @@ extends Node
 signal turn_started(turn_number: int)
 signal phase_changed(phase: TurnStateMachine.Phase)
 
-@export var max_cards_per_turn: int = 3
-
 var state: TurnStateMachine = TurnStateMachine.new()
 var card_manager: Node
 
 
 func start_game() -> void:
-	state.max_cards_per_turn = max_cards_per_turn
 	state.start_game()
 	_on_new_turn()
 
 
-func on_card_played() -> void:
-	var result := state.on_card_played()
-	if result.turn_ended:
-		card_manager.discard_hand()
-		_on_new_turn()
+func check_hand_empty() -> void:
+	if card_manager.is_hand_empty():
+		var result := state.on_hand_empty()
+		if result.turn_ended:
+			_on_new_turn()
 
 
 func end_turn() -> void:

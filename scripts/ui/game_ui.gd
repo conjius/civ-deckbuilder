@@ -17,9 +17,9 @@ var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
+@onready var draw_pile: VBoxContainer = %DrawPile
+@onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: Label = %TurnLabel
-@onready var draw_count: Label = %DrawCount
-@onready var discard_count: Label = %DiscardCount
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
@@ -27,7 +27,9 @@ var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 
 
 func _ready() -> void:
-	end_turn_button.pressed.connect(func() -> void: end_turn_pressed.emit())
+	end_turn_button.pressed.connect(
+		func() -> void: end_turn_pressed.emit()
+	)
 	card_hand.card_dropped.connect(
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
@@ -58,11 +60,15 @@ func update_turn(turn_number: int) -> void:
 
 
 func update_draw_count(count: int) -> void:
-	draw_count.text = "Draw: %d" % count
+	draw_pile.update_count(count)
 
 
 func update_discard_count(count: int) -> void:
-	discard_count.text = "Discard: %d" % count
+	discard_pile.update_count(count)
+
+
+func on_card_played(card: CardData) -> void:
+	discard_pile.add_card(card)
 
 
 func update_info(text: String) -> void:
@@ -83,7 +89,6 @@ func update_resources(materials: int, food: int) -> void:
 
 
 func _apply_styles() -> void:
-	# Wood texture on bottom bar
 	var wood_style := StyleBoxTexture.new()
 	wood_style.texture = _wood_tex
 	wood_style.modulate_color = Color(0.45, 0.3, 0.18)
@@ -93,14 +98,8 @@ func _apply_styles() -> void:
 	wood_style.content_margin_bottom = 8.0
 	bottom_bar.add_theme_stylebox_override("panel", wood_style)
 
-	# Cinzel font on top bar labels
 	turn_label.add_theme_font_override("font", _font_bold)
 	turn_label.add_theme_font_size_override("font_size", 14)
-	draw_count.add_theme_font_override("font", _font_regular)
-	draw_count.add_theme_font_size_override("font_size", 12)
-	discard_count.add_theme_font_override("font", _font_regular)
-	discard_count.add_theme_font_size_override("font_size", 12)
 
-	# Cinzel font on end turn button
 	end_turn_button.add_theme_font_override("font", _font_bold)
 	end_turn_button.add_theme_font_size_override("font_size", 12)

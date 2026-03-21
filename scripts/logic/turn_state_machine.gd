@@ -3,10 +3,8 @@ extends RefCounted
 
 enum Phase { DRAW, PLAY, CLEANUP }
 
-var max_cards_per_turn: int = 3
 var current_turn: int = 0
 var current_phase: Phase = Phase.DRAW
-var cards_played_this_turn: int = 0
 
 
 class TurnResult extends RefCounted:
@@ -19,13 +17,13 @@ func start_game() -> void:
 	_start_new_turn()
 
 
-func on_card_played() -> TurnResult:
-	cards_played_this_turn += 1
+func on_hand_empty() -> TurnResult:
 	var result := TurnResult.new()
-	if cards_played_this_turn >= max_cards_per_turn:
-		_end_current_turn()
-		result.turn_ended = true
-		result.new_turn = current_turn
+	if current_phase != Phase.PLAY:
+		return result
+	_end_current_turn()
+	result.turn_ended = true
+	result.new_turn = current_turn
 	return result
 
 
@@ -40,12 +38,11 @@ func end_turn() -> TurnResult:
 
 
 func can_play_cards() -> bool:
-	return current_phase == Phase.PLAY and cards_played_this_turn < max_cards_per_turn
+	return current_phase == Phase.PLAY
 
 
 func _start_new_turn() -> void:
 	current_turn += 1
-	cards_played_this_turn = 0
 	current_phase = Phase.PLAY
 
 

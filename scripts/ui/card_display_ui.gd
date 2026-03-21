@@ -12,7 +12,7 @@ var arrow_indicator: MeshInstance3D
 
 var _card_icon_textures: Dictionary = {
 	CardData.CardType.MOVE: preload("res://assets/icons/boot_64.png"),
-	CardData.CardType.SCOUT: preload("res://assets/icons/telescope_64.png"),
+	CardData.CardType.SCOUT: preload("res://assets/icons/binoculars_64.svg"),
 	CardData.CardType.GATHER: preload("res://assets/icons/mining_64.png"),
 }
 var _parchment_tex: Texture2D = preload(
@@ -48,8 +48,8 @@ func setup(card: CardData) -> void:
 	$VBox/Header/CardName.add_theme_color_override("font_color", Color.WHITE)
 	$VBox/Header/CardName.add_theme_font_override("font", _font_bold)
 
-	# Avatar — no texture wash, just a flat lighter shade
-	_apply_section_style($VBox/Avatar, light, 0, 0, 0, 0, false)
+	# Avatar — parchment texture with lighter shade
+	_apply_section_style($VBox/Avatar, light, 0, 0, 0, 0)
 	_setup_avatar(card)
 
 	# Description — base color, textured
@@ -75,7 +75,14 @@ func _apply_section_style(
 ) -> void:
 	if use_texture and _parchment_tex:
 		var style := StyleBoxTexture.new()
-		style.texture = _parchment_tex
+		var atlas := AtlasTexture.new()
+		atlas.atlas = _parchment_tex
+		var tex_size := _parchment_tex.get_size()
+		var half := tex_size * 0.5
+		var ox := randf() * half.x
+		var oy := randf() * half.y
+		atlas.region = Rect2(ox, oy, half.x, half.y)
+		style.texture = atlas
 		style.modulate_color = color
 		style.content_margin_left = 6.0
 		style.content_margin_right = 6.0

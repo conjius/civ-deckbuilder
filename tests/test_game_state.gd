@@ -90,11 +90,9 @@ func test_play_card_invalid_target() -> void:
 	TestAssert.assert_eq(gs.player.current_coord, Vector2i(0, 0))
 
 
-func test_play_card_no_plays_remaining() -> void:
+func test_play_card_not_in_play_phase() -> void:
 	var gs := _make_game()
-	gs.turn.max_cards_per_turn = 0
-	gs.turn.start_game()
-	gs.deck.draw_hand()
+	gs.turn.current_phase = TurnStateMachine.Phase.DRAW
 	var card: CardData = gs.deck.hand[0]
 	var result := gs.play_card(card, Vector2i(1, 0))
 	TestAssert.assert_false(result.success)

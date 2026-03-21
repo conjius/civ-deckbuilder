@@ -22,13 +22,13 @@ func draw_hand() -> void:
 	deck_manager.draw_hand()
 	hand_changed.emit(deck_manager.hand)
 	draw_pile_changed.emit(deck_manager.draw_pile.size())
+	discard_pile_changed.emit(deck_manager.discard_pile.size())
 
 
 func play_card(card: CardData) -> void:
 	if not deck_manager.play_card(card):
 		return
 	card_played.emit(card)
-	hand_changed.emit(deck_manager.hand)
 	draw_pile_changed.emit(deck_manager.draw_pile.size())
 	discard_pile_changed.emit(deck_manager.discard_pile.size())
 
@@ -37,3 +37,7 @@ func discard_hand() -> void:
 	deck_manager.discard_hand()
 	hand_changed.emit(deck_manager.hand)
 	discard_pile_changed.emit(deck_manager.discard_pile.size())
+
+
+func is_hand_empty() -> bool:
+	return deck_manager.hand.is_empty()
