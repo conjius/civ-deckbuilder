@@ -8,6 +8,7 @@ var _highlight_mat: StandardMaterial3D
 var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _tent_path: String = "res://assets/models/buildings/tent.gltf"
+var _yield_sprites: Array[Sprite3D] = []
 
 
 func setup(
@@ -41,6 +42,52 @@ func setup(
 
 	$HighlightMesh.visible = false
 	$FogOverlay.visible = not is_revealed
+	_create_yield_markers()
+
+
+func _create_yield_markers() -> void:
+	var icons: Array[Dictionary] = []
+	for i in range(terrain.materials_yield):
+		icons.append({
+			"path": "res://assets/icons/entities/materials.svg",
+			"color": Color(0.8, 0.6, 0.3),
+		})
+	for i in range(terrain.food_yield):
+		icons.append({
+			"path": "res://assets/icons/entities/food.svg",
+			"color": Color(0.9, 0.8, 0.2),
+		})
+	if icons.is_empty():
+		return
+	var count: int = icons.size()
+	var spacing := 0.35
+	@warning_ignore("integer_division")
+	var start_x := -spacing * (count - 1) / 2.0
+	for idx in range(count):
+		var icon_data: Dictionary = icons[idx]
+		var tex: Texture2D = load(
+			icon_data["path"] as String
+		) as Texture2D
+		if tex == null:
+			continue
+		var sprite := Sprite3D.new()
+		sprite.texture = tex
+		sprite.pixel_size = 0.003
+		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+		sprite.axis = Vector3.AXIS_Y
+		sprite.position = Vector3(
+			start_x + idx * spacing, 0.15, 0.0
+		)
+		sprite.rotation_degrees = Vector3(-90, 0, 0)
+		sprite.modulate = Color(
+			icon_data["color"].r, icon_data["color"].g,
+			icon_data["color"].b, 0.5,
+		)
+		sprite.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		)
+		add_child(sprite)
+		_yield_sprites.append(sprite)
 
 
 func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> void:

@@ -12,6 +12,7 @@ var _terrain_plains: TerrainType = preload("res://resources/terrain/plains.tres"
 var _terrain_forest: TerrainType = preload("res://resources/terrain/forest.tres")
 var _terrain_mountain: TerrainType = preload("res://resources/terrain/mountain.tres")
 var _terrain_water: TerrainType = preload("res://resources/terrain/water.tres")
+var _terrain_desert: TerrainType = preload("res://resources/terrain/desert.tres")
 
 var _mesh_cache: Dictionary = {}
 var _shape_cache: Dictionary = {}
@@ -95,7 +96,9 @@ func raycast_to_hex(camera: Camera3D, mouse_pos: Vector2) -> Vector2i:
 func _pick_terrain(noise_val: float) -> TerrainType:
 	if noise_val < -0.3:
 		return _terrain_water
-	if noise_val < 0.1:
+	if noise_val < -0.05:
+		return _terrain_desert
+	if noise_val < 0.15:
 		return _terrain_plains
 	if noise_val < 0.4:
 		return _terrain_forest

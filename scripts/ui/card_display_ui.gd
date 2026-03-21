@@ -92,7 +92,7 @@ func setup(card: CardData) -> void:
 	var dh := UIHelpers.DESC_HEIGHT
 	var desc_sec := _add_section(self, base, b, y, cw, dh)
 	var desc_lbl := _add_label_in(
-		desc_sec, card.description, _font_regular,
+		desc_sec, card.description, _font_bold,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, cw - mh * 2,
@@ -109,7 +109,7 @@ func setup(card: CardData) -> void:
 	_footer_section = _add_section(self, dark, b, y, cw, fh)
 	var ftxt := "Range %d" % card.range_value
 	_footer_label = _add_label_in(
-		_footer_section, ftxt, _font_regular,
+		_footer_section, ftxt, _font_bold,
 		Color(1, 1, 1, 0.8),
 		UIHelpers.fit_font_size(
 			ftxt, cw - mh * 2, fh - mv * 2,

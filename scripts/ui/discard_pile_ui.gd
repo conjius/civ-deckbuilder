@@ -139,7 +139,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var dh := UIHelpers.DESC_HEIGHT
 	var desc_sec := _add_section(outer, base, b, y, iw, dh)
 	var dl := _add_label_in(
-		desc_sec, card.description, _font_regular,
+		desc_sec, card.description, _font_bold,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, iw - mh * 2, dh - mv * 2,
@@ -155,7 +155,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var footer := _add_section(outer, dark, b, y, iw, fh)
 	var ftxt := "Range %d" % card.range_value
 	var fl := _add_label_in(
-		footer, ftxt, _font_regular,
+		footer, ftxt, _font_bold,
 		Color(1, 1, 1, 0.8),
 		UIHelpers.fit_font_size(
 			ftxt, iw - mh * 2, fh - mv * 2,
