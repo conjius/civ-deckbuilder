@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Simple medieval pointer arrow -->
+  <defs>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="1" stdDeviation="0.5" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <g filter="url(#s)">
+    <path d="M4 1 L4 24 L9 19 L14 28 L17 26.5 L12 17.5 L19 17.5 Z"
+      fill="#d4b878" stroke="#3a2510" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>
+</svg>

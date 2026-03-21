@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Gather"
-description = "Collect resources from an adjacent tile"
+description = "Collect food and materials from an adjacent tile"
 card_type = 2
 range_value = 1
 cost = 1

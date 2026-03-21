@@ -44,14 +44,16 @@ func _ready() -> void:
 	if old_mesh:
 		old_mesh.queue_free()
 	var scene: PackedScene = load(_model_scene_path) as PackedScene
-	if scene == null:
-		return
-	_model = scene.instantiate()
-	_model.scale = Vector3(0.25, 0.25, 0.25)
-	add_child(_model)
-	_anim_player = _model.get_node_or_null(
-		"AnimationPlayer"
-	) as AnimationPlayer
+	if scene:
+		_model = scene.instantiate()
+		_model.scale = Vector3(0.2, 0.2, 0.2)
+		add_child(_model)
+		_anim_player = _model.get_node_or_null(
+			"AnimationPlayer"
+		) as AnimationPlayer
+	else:
+		_model = _build_boot_model()
+		add_child(_model)
 	_apply_color_wash()
 	if _anim_player and _anim_player.has_animation("Idle"):
 		_anim_player.play("Idle")
@@ -194,6 +196,79 @@ func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 		return Vector3.ZERO
 	var t := -origin.y / ray_dir.y
 	return origin + ray_dir * t
+
+
+func _build_boot_model() -> Node3D:
+	var root := Node3D.new()
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var brown := Color(0.45, 0.28, 0.15)
+	var sole := Color(0.2, 0.12, 0.08)
+	# Boot sole (flat box)
+	var sw := 0.15
+	var sl := 0.35
+	var sh := 0.05
+	_add_box(st, Vector3(-sw, 0, -sl * 0.4),
+		Vector3(sw, sh, sl * 0.6), sole)
+	# Boot shaft (back upright part)
+	var bw := 0.13
+	var bh := 0.4
+	var bd := 0.15
+	_add_box(st, Vector3(-bw, sh, -bd * 0.3),
+		Vector3(bw, bh, bd * 0.7), brown)
+	# Toe cap (front low part)
+	var tw := 0.14
+	var th := 0.15
+	_add_box(st, Vector3(-tw, sh, -sl * 0.4),
+		Vector3(tw, th, -bd * 0.3), brown.darkened(0.1))
+	var mi := MeshInstance3D.new()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.roughness = 0.85
+	mi.material_override = mat
+	mi.mesh = st.commit()
+	mi.scale = Vector3(0.6, 0.6, 0.6)
+	mi.position.y = -0.15
+	root.add_child(mi)
+	return root
+
+
+static func _add_box(
+	st: SurfaceTool, min_pt: Vector3,
+	max_pt: Vector3, color: Color,
+) -> void:
+	var corners: Array[Vector3] = [
+		Vector3(min_pt.x, min_pt.y, min_pt.z),
+		Vector3(max_pt.x, min_pt.y, min_pt.z),
+		Vector3(max_pt.x, max_pt.y, min_pt.z),
+		Vector3(min_pt.x, max_pt.y, min_pt.z),
+		Vector3(min_pt.x, min_pt.y, max_pt.z),
+		Vector3(max_pt.x, min_pt.y, max_pt.z),
+		Vector3(max_pt.x, max_pt.y, max_pt.z),
+		Vector3(min_pt.x, max_pt.y, max_pt.z),
+	]
+	var faces: Array[Array] = [
+		[0, 1, 2, 3, Vector3(0, 0, -1)],
+		[5, 4, 7, 6, Vector3(0, 0, 1)],
+		[4, 0, 3, 7, Vector3(-1, 0, 0)],
+		[1, 5, 6, 2, Vector3(1, 0, 0)],
+		[3, 2, 6, 7, Vector3(0, 1, 0)],
+		[4, 5, 1, 0, Vector3(0, -1, 0)],
+	]
+	for face: Array in faces:
+		var i0: int = face[0]
+		var i1: int = face[1]
+		var i2: int = face[2]
+		var i3: int = face[3]
+		var n: Vector3 = face[4]
+		st.set_normal(n)
+		st.set_color(color)
+		st.add_vertex(corners[i0])
+		st.add_vertex(corners[i1])
+		st.add_vertex(corners[i2])
+		st.add_vertex(corners[i0])
+		st.add_vertex(corners[i2])
+		st.add_vertex(corners[i3])
 
 
 func _apply_color_wash() -> void:

@@ -13,12 +13,10 @@ var arrow_indicator: Control
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
-var _font_regular: Font = preload(
-	"res://assets/fonts/Cinzel-Regular.ttf"
-)
+var _font_regular: Font = _font_bold
 @onready var full_screen: MarginContainer = $FullScreen
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
-@onready var card_hand: HBoxContainer = %CardHand
+@onready var card_hand: Control = %CardHand
 @onready var draw_pile: VBoxContainer = %DrawPile
 @onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: RichTextLabel = %TurnLabel
@@ -152,10 +150,6 @@ func _apply_sizes() -> void:
 	var draw_stack: Control = draw_pile.get_node("Stack")
 	draw_stack.custom_minimum_size = Vector2(
 		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-	)
-
-	card_hand.add_theme_constant_override(
-		"separation", UIHelpers.SPACING
 	)
 
 	discard_column.custom_minimum_size = Vector2(

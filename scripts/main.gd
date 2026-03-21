@@ -1,5 +1,8 @@
 extends Node3D
 
+var ai_controller: AIController
+var ai_unit: Node3D
+
 var _move_1: CardData = preload("res://resources/cards/move_1.tres")
 var _move_2: CardData = preload("res://resources/cards/move_2.tres")
 var _scout: CardData = preload("res://resources/cards/scout.tres")
@@ -19,6 +22,7 @@ var _selected_index: int = 0
 
 
 func _ready() -> void:
+	UIHelpers.set_default_cursor()
 	# Wire references
 	card_effects.hex_map = hex_map
 	card_effects.player_unit = player_unit
@@ -38,8 +42,8 @@ func _ready() -> void:
 	game_ui.card_dropped.connect(_on_card_dropped)
 	game_ui.end_turn_pressed.connect(_on_end_turn)
 	game_ui.action_pressed.connect(_on_action_pressed)
-	card_manager.hand_changed.connect(game_ui.card_hand.update_hand)
 	card_manager.card_played.connect(game_ui.card_hand.remove_card)
+	game_ui.card_hand.draw_pile = game_ui.draw_pile
 	card_manager.card_played.connect(game_ui.on_card_played)
 	card_manager.draw_pile_changed.connect(game_ui.update_draw_count)
 	card_manager.discard_pile_changed.connect(game_ui.update_discard_count)
@@ -48,7 +52,7 @@ func _ready() -> void:
 	player_unit.movement_finished.connect(_on_unit_moved)
 	card_effects.gathered.connect(_on_gathered)
 	card_effects.settled.connect(_on_settled)
-	card_effects.turn_should_end.connect(_on_end_turn)
+	# Cards no longer auto-end turns
 
 	# Build the starter deck
 	var deck: Array[CardData] = [
@@ -80,8 +84,14 @@ func _ready() -> void:
 	# Highlight active unit hex
 	_highlight_active_unit()
 
+	# Set up AI player
+	_setup_ai(start_coord, deck)
+
 	# Start the game
 	turn_manager.start_game()
+	game_ui.card_hand.animate_draw_hand(
+		card_manager.deck_manager.hand
+	)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -122,20 +132,30 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 	if turn_manager.can_play_cards():
-		var success: bool = card_effects.execute_card(card, target)
-		if success:
+		var result: CardResolver.CardResult = card_effects.execute_card(card, target)
+		if result.success:
 			if card.defense_cost > 0:
-				player_unit.state.defense_modifier -= card.defense_cost
+				player_unit.state.defense_modifier -= (
+					card.defense_cost
+				)
 			card_manager.play_card(card)
-			turn_manager.check_hand_empty()
 			_highlight_active_unit()
 			game_ui.refresh_unit_info()
 
 
 func _on_end_turn() -> void:
 	hex_map.clear_highlights()
+	game_ui.set_end_turn_enabled(false)
+	# Animate discard
+	await game_ui.card_hand.animate_discard_hand()
+	# AI takes its turn
+	await ai_controller.take_turn()
+	# End turn and draw new hand
 	turn_manager.end_turn()
 	_highlight_active_unit()
+	game_ui.card_hand.animate_draw_hand(
+		card_manager.deck_manager.hand
+	)
 
 
 func _on_turn_started(turn_number: int) -> void:
@@ -203,6 +223,8 @@ func _get_inhabitants(coord: Vector2i) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	if player_unit.current_coord == coord:
 		result.append({"type": "unit", "unit": player_unit})
+	if ai_unit and ai_unit.current_coord == coord:
+		result.append({"type": "unit", "unit": ai_unit})
 	if hex_map.map_data.has_settlement(coord):
 		result.append({
 			"type": "settlement",
@@ -256,6 +278,74 @@ func _find_start_coord() -> Vector2i:
 			if terrain and terrain.is_passable:
 				return coord
 	return center
+
+
+func _setup_ai(
+	player_start: Vector2i, deck: Array[CardData],
+) -> void:
+	# Create AI unit
+	ai_unit = Node3D.new()
+	ai_unit.set_script(
+		load("res://scripts/unit/player_unit.gd")
+	)
+	ai_unit.avatar_color = Color(0.6, 0.2, 0.8, 1)
+	add_child(ai_unit)
+	var ai_start := _find_ai_start_coord(player_start, 7)
+	var ai_terrain: TerrainType = hex_map.get_terrain(
+		ai_start
+	)
+	ai_unit.place_at(ai_start, ai_terrain.height - 0.1)
+	ai_unit.movement_finished.connect(_on_ai_unit_moved)
+	# Create AI controller
+	ai_controller = AIController.new()
+	ai_controller.ai_unit = ai_unit
+	ai_controller.card_effects = card_effects
+	ai_controller.card_resolver = card_effects.card_resolver
+	ai_controller.hex_map = hex_map
+	add_child(ai_controller)
+	ai_controller.initialize(deck.duplicate())
+	# Debug: reveal fog around AI start
+	_reveal_around(ai_start, 2)
+
+
+func _find_ai_start_coord(
+	player_start: Vector2i, target_dist: int,
+) -> Vector2i:
+	for offset in range(0, 4):
+		for dist in [target_dist + offset, target_dist - offset]:
+			if dist < 1:
+				continue
+			var hexes := HexUtil.get_hexes_in_range(
+				player_start, dist
+			)
+			var candidates: Array[Vector2i] = []
+			for coord in hexes:
+				if HexUtil.axial_distance(
+					player_start, coord
+				) != dist:
+					continue
+				var terrain: TerrainType = (
+					hex_map.get_terrain(coord)
+				)
+				if terrain and terrain.is_passable:
+					candidates.append(coord)
+			if not candidates.is_empty():
+				return candidates[
+					randi() % candidates.size()
+				]
+	return player_start + Vector2i(7, 0)
+
+
+func _on_ai_unit_moved() -> void:
+	_reveal_around(
+		ai_unit.current_coord,
+		ai_unit.state.sight_range,
+	)
+	var coord: Vector2i = ai_unit.current_coord
+	var has_building: bool = (
+		hex_map.map_data.has_settlement(coord)
+	)
+	ai_unit.offset_for_packing(has_building)
 
 
 func _reveal_around(coord: Vector2i, radius: int) -> void:

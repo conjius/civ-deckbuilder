@@ -8,7 +8,8 @@ albedo_color = Color(0.3, 0.8, 0.3, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fog"]
 transparency = 1
-albedo_color = Color(0.05, 0.05, 0.05, 0.85)
+shading_mode = 0
+albedo_color = Color(0.3, 0.3, 0.35, 0.55)
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_1"]
 

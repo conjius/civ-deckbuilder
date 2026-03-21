@@ -3,9 +3,7 @@ extends PanelContainer
 signal action_pressed(action_name: String)
 
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
-var _font_regular: Font = preload(
-	"res://assets/fonts/Cinzel-Regular.ttf"
-)
+var _font_regular: Font = _font_bold
 var _explorer_icon_path: String = (
 	"res://assets/icons/move_64.svg"
 )
@@ -14,6 +12,7 @@ var _settle_icon_path: String = (
 )
 var _explorer_icon: Texture2D
 var _settle_icon: Texture2D
+var _color_shader: ShaderMaterial
 
 @onready var avatar_rect: TextureRect = %AvatarRect
 @onready var unit_name_label: Label = %UnitNameLabel
@@ -26,6 +25,18 @@ var _settle_icon: Texture2D
 func _ready() -> void:
 	_explorer_icon = load(_explorer_icon_path) as Texture2D
 	_settle_icon = load(_settle_icon_path) as Texture2D
+	var shader := Shader.new()
+	shader.code = (
+		"shader_type canvas_item;\n"
+		+ "uniform vec4 tint_color : source_color = vec4(1.0);\n"
+		+ "void fragment() {\n"
+		+ "    vec4 tex = texture(TEXTURE, UV);\n"
+		+ "    COLOR = vec4(tint_color.rgb, tex.a);\n"
+		+ "}\n"
+	)
+	_color_shader = ShaderMaterial.new()
+	_color_shader.shader = shader
+	avatar_rect.material = _color_shader
 	add_theme_stylebox_override(
 		"panel", UIHelpers.create_panel_style()
 	)
@@ -65,7 +76,9 @@ func update_unit(unit: Node3D) -> void:
 		return
 	visible = true
 	avatar_rect.texture = _explorer_icon
-	avatar_rect.modulate = unit.avatar_color
+	_color_shader.set_shader_parameter(
+		"tint_color", unit.avatar_color
+	)
 	unit_name_label.text = unit.state.unit_name
 	UIHelpers.set_bbcode(health_label, UIHelpers.icon_text(
 		"HP", "%d/%d" % [unit.state.health, unit.state.max_health]
@@ -89,7 +102,9 @@ func update_settlement(
 ) -> void:
 	visible = true
 	avatar_rect.texture = _settle_icon
-	avatar_rect.modulate = player_color
+	_color_shader.set_shader_parameter(
+		"tint_color", player_color
+	)
 	unit_name_label.text = settlement_name
 	UIHelpers.set_bbcode(
 		health_label, UIHelpers.icon_text("HP", "50/50")

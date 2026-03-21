@@ -1,9 +1,6 @@
 extends VBoxContainer
 
-var _card_back_tex: Texture2D = preload(
-	"res://assets/icons/card_back.svg"
-)
-var _font: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
+var _font: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _count: int = 0
 
 @onready var _stack: Control = $Stack
@@ -44,13 +41,7 @@ func _update_display() -> void:
 		child.queue_free()
 	var cards_to_show := mini(_count, 5)
 	for i in range(cards_to_show):
-		var tex_rect := TextureRect.new()
-		tex_rect.texture = _card_back_tex
-		tex_rect.custom_minimum_size = Vector2(
-			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-		)
-		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
+		var card_back := UIHelpers.create_card_back()
 		var off := UIHelpers.STACK_OFFSET
-		tex_rect.position = Vector2(i * off, -i * off)
-		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_stack.add_child(tex_rect)
+		card_back.position = Vector2(i * off, -i * off)
+		_stack.add_child(card_back)

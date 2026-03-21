@@ -1,6 +1,6 @@
 extends PanelContainer
 
-var _font: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
+var _font: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 
 @onready var materials_label: RichTextLabel = %MaterialsLabel
 @onready var food_label: RichTextLabel = %FoodLabel

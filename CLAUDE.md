@@ -13,7 +13,7 @@
 
 ## Development Notes
 
-- Always kill the Godot process after debug testing. Use `kill $GODOT_PID` after every test run.
+- Always kill the Godot process after debug testing. Use `kill $GODOT_PID` after every test run. Only kill Godot instances you started — never blindly `pkill`/`pgrep` Godot, as the user may have the editor open.
 - Godot 4.6 has strict type inference — never use `:=` when the return type is Variant. Use explicit type annotations.
 - Hand-written .tscn files can have serialization issues with typed arrays. Prefer setting data in code.
 - Set `mouse_filter = 2` (IGNORE) on UI containers that should pass clicks through to the 3D world.
