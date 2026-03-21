@@ -127,11 +127,19 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	_panel: Control, _is_container: bool = true,
+	panel: Control, _is_container: bool = true,
 ) -> void:
-	# Parchment is now the panel StyleBox itself via create_panel_style.
-	# No additional overlay needed.
-	pass
+	var ptex: Texture2D = _make_parchment_tex()
+	if ptex == null:
+		return
+	var bg := TextureRect.new()
+	bg.texture = ptex
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.modulate = Color(1.0, 1.0, 1.0, 0.3)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(bg)
+	panel.move_child(bg, 0)
 
 
 static func create_circle_panel_style(
