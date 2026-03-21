@@ -25,8 +25,7 @@ func _ready() -> void:
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	@warning_ignore("integer_division")
 	var half: int = sz / 2
-	var bg_style := UIHelpers.create_panel_style()
-	bg_style.set_corner_radius_all(half)
+	var bg_style := UIHelpers.create_circle_panel_style(half)
 	_bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(_bg)
 

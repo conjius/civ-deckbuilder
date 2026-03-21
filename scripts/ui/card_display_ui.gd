@@ -62,7 +62,6 @@ func setup(card: CardData) -> void:
 	)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bg_style := UIHelpers.create_panel_style()
-	bg_style.set_corner_radius_all(UIHelpers.CARD_CORNER_RADIUS)
 	bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(bg)
 

@@ -84,8 +84,13 @@ func _add_yield_sprite(
 	disc.height = 0.01
 	disc.radial_segments = 16
 	bg.mesh = disc
+	var parchment_tex: Texture2D = load(
+		"res://assets/textures/ui/parchment_256_grayscale.png"
+	) as Texture2D
 	var bg_mat := StandardMaterial3D.new()
-	bg_mat.albedo_color = Color(0.12, 0.08, 0.05, 0.6)
+	if parchment_tex:
+		bg_mat.albedo_texture = parchment_tex
+	bg_mat.albedo_color = Color(0.3, 0.22, 0.15, 0.8)
 	bg_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED

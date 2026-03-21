@@ -58,6 +58,11 @@ const DESC_HEIGHT: int = (
 )
 
 
+const PARCHMENT_OPACITY: float = 0.7
+const PARCHMENT_PATH: String = (
+	"res://assets/textures/ui/parchment_256_grayscale.png"
+)
+
 const ENTITY_ICONS: Dictionary = {
 	"Materials": "res://assets/icons/entities/materials.svg",
 	"Food": "res://assets/icons/entities/food.svg",
@@ -91,12 +96,27 @@ static func fit_font_size(
 	return min_size
 
 
-static func create_panel_style() -> StyleBoxFlat:
+static func create_panel_style() -> StyleBoxTexture:
+	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
+	var style := StyleBoxTexture.new()
+	if tex:
+		style.texture = tex
+	style.modulate_color = Color(0.25, 0.18, 0.12, PARCHMENT_OPACITY)
+	style.content_margin_left = PANEL_MARGIN_H
+	style.content_margin_right = PANEL_MARGIN_H
+	style.content_margin_top = PANEL_MARGIN_V
+	style.content_margin_bottom = PANEL_MARGIN_V
+	return style
+
+
+static func create_circle_panel_style(
+	radius: int,
+) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.08, 0.05)
+	style.bg_color = Color(0.25, 0.18, 0.12, PARCHMENT_OPACITY)
 	style.border_color = Color(0.55, 0.4, 0.15)
 	style.set_border_width_all(CARD_BORDER)
-	style.set_corner_radius_all(CARD_CORNER_RADIUS)
+	style.set_corner_radius_all(radius)
 	style.content_margin_left = PANEL_MARGIN_H
 	style.content_margin_right = PANEL_MARGIN_H
 	style.content_margin_top = PANEL_MARGIN_V
