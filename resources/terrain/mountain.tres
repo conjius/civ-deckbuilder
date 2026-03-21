@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="TerrainType" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="TerrainType" format=3 uid="uid://6nud33vlgyl"]
 
-[ext_resource type="Script" path="res://resources/terrain/terrain_type.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/textures/terrain/mountain_256_grayscale.png" id="2"]
+[ext_resource type="Script" uid="uid://c5r53j8qvp5eh" path="res://resources/terrain/terrain_type.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://c45amnj5d1ei6" path="res://assets/textures/terrain/mountain_256_grayscale.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -11,5 +11,3 @@ is_passable = false
 height = 0.5
 color = Color(0.58, 0.545, 0.506, 1)
 texture = ExtResource("2")
-materials_yield = 0
-food_yield = 0

@@ -8,7 +8,7 @@
 [ext_resource type="Script" uid="uid://cv6kwx7lw7a3m" path="res://scripts/cards/card_effects.gd" id="6"]
 [ext_resource type="Script" uid="uid://bkkgdm4iv4twa" path="res://scripts/turn/turn_manager.gd" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_ui.tscn" id="8"]
-[ext_resource type="Script" path="res://scripts/ui/arrow_indicator.gd" id="9"]
+[ext_resource type="Script" uid="uid://gnn6i8bmoy7e" path="res://scripts/ui/arrow_indicator.gd" id="9"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_unit"]
 albedo_color = Color(0.9, 0.2, 0.2, 1)
@@ -22,7 +22,6 @@ background_mode = 1
 background_color = Color(0.3, 0.35, 0.45, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.7, 0.7, 0.75, 1)
-ambient_light_energy = 1.0
 tonemap_mode = 2
 
 [node name="Main" type="Node3D" unique_id=401297367]
@@ -65,7 +64,7 @@ script = ExtResource("6")
 [node name="TurnManager" type="Node" parent="." unique_id=767809735]
 script = ExtResource("7")
 
-[node name="ArrowIndicator" type="MeshInstance3D" parent="."]
+[node name="ArrowIndicator" type="MeshInstance3D" parent="." unique_id=1296860725]
 script = ExtResource("9")
 
 [node name="GameUI" parent="." unique_id=463122490 instance=ExtResource("8")]

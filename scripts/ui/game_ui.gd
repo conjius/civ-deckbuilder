@@ -15,17 +15,13 @@ var _font_bold: Font = preload(
 var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
 )
-var _hourglass_tex: Texture2D = preload(
-	"res://assets/icons/hourglass_64.svg"
-)
-
 @onready var full_screen: MarginContainer = $FullScreen
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
 @onready var draw_pile: VBoxContainer = %DrawPile
 @onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: Label = %TurnLabel
-@onready var end_turn_button: TextureButton = %EndTurnButton
+@onready var end_turn_button: Control = %EndTurnButton
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
@@ -41,7 +37,6 @@ func _ready() -> void:
 	end_turn_button.pressed.connect(
 		func() -> void: end_turn_pressed.emit()
 	)
-	end_turn_button.texture_normal = _hourglass_tex
 	card_hand.card_dropped.connect(
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
@@ -91,7 +86,7 @@ func update_info(text: String) -> void:
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
-	end_turn_button.disabled = enabled == false
+	end_turn_button.set_disabled(not enabled)
 
 
 func refresh_unit_info() -> void:
@@ -166,10 +161,6 @@ func _apply_sizes() -> void:
 	)
 	discard_column.add_theme_constant_override(
 		"separation", UIHelpers.SPACING_SMALL
-	)
-
-	end_turn_button.custom_minimum_size = Vector2(
-		UIHelpers.BUTTON_SIZE, UIHelpers.BUTTON_SIZE
 	)
 
 	var disc_stack: Control = discard_pile.get_node("Stack")
