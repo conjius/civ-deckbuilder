@@ -99,7 +99,7 @@ static func fit_font_size(
 
 static func create_panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.14, 0.08, PARCHMENT_OPACITY)
+	style.bg_color = Color(0.12, 0.08, 0.05, 0.4)
 	style.border_color = Color(0.55, 0.4, 0.15)
 	style.set_border_width_all(CARD_BORDER)
 	style.set_corner_radius_all(CARD_CORNER_RADIUS)
@@ -117,10 +117,10 @@ static func apply_parchment_bg(panel: Control) -> void:
 	var bg := TextureRect.new()
 	bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(0.35, 0.25, 0.18, 0.5)
+	bg.modulate = Color(0.5, 0.38, 0.25, 0.85)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.show_behind_parent = true
+	bg.z_index = -1
 	panel.add_child(bg)
 	panel.move_child(bg, 0)
 
