@@ -28,6 +28,7 @@ func _ready() -> void:
 	var bg_style := UIHelpers.create_circle_panel_style(half)
 	_bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(_bg)
+	UIHelpers.apply_parchment_bg(_bg, 0)
 
 	var inset: float = sz * 0.25
 	var icon_sz: float = sz - inset * 2.0
