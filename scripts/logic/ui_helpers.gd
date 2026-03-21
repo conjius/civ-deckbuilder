@@ -118,10 +118,10 @@ static func apply_parchment_bg(
 		return
 	var clip := Control.new()
 	clip.set_anchors_preset(Control.PRESET_FULL_RECT)
-	clip.offset_left = -PANEL_MARGIN_H + inset
-	clip.offset_right = PANEL_MARGIN_H - inset
-	clip.offset_top = -PANEL_MARGIN_V + inset
-	clip.offset_bottom = PANEL_MARGIN_V - inset
+	clip.offset_left = inset
+	clip.offset_right = -inset
+	clip.offset_top = inset
+	clip.offset_bottom = -inset
 	clip.clip_contents = true
 	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(clip)
@@ -129,7 +129,7 @@ static func apply_parchment_bg(
 	var bg := TextureRect.new()
 	bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(0.5, 0.38, 0.25, 0.9)
+	bg.modulate = Color(0.5, 0.38, 0.25, 1.0)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	clip.add_child(bg)
