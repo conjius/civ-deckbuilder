@@ -10,3 +10,4 @@ card_type = 2
 range_value = 1
 cost = 1
 card_color = Color(0.839, 0.706, 0.271, 1)
+icon_scale = 0.9

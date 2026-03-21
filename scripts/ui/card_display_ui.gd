@@ -174,11 +174,18 @@ func _add_avatar(
 	if icon_tex:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = icon_tex
-		tex_rect.layout_mode = 1
-		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var sc := card.icon_scale
+		if sc < 1.0:
+			var sz := section.size
+			var inset := sz * (1.0 - sc) * 0.5
+			tex_rect.position = inset
+			tex_rect.size = sz * sc
+		else:
+			tex_rect.layout_mode = 1
+			tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		section.add_child(tex_rect)
 
 
