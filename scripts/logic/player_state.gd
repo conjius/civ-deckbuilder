@@ -6,6 +6,7 @@ var max_health: int = 10
 var health: int = 10
 var attack: int = 2
 var defense: int = 1
+var defense_modifier: int = 0
 var sight_range: int = 2
 var current_coord: Vector2i = Vector2i.ZERO
 var materials: int = 0

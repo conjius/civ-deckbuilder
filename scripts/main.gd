@@ -102,6 +102,8 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 	if turn_manager.can_play_cards():
 		var success: bool = card_effects.execute_card(card, target)
 		if success:
+			if card.defense_cost > 0:
+				player_unit.state.defense_modifier -= card.defense_cost
 			card_manager.play_card(card)
 			turn_manager.check_hand_empty()
 			_highlight_active_unit()
@@ -115,7 +117,9 @@ func _on_end_turn() -> void:
 
 
 func _on_turn_started(turn_number: int) -> void:
+	player_unit.state.defense_modifier = 0
 	game_ui.update_turn(turn_number)
+	game_ui.refresh_unit_info()
 
 
 func _on_phase_changed(phase: int) -> void:
