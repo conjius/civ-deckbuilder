@@ -20,6 +20,9 @@ func _ready() -> void:
 		lbl.add_theme_font_size_override(
 			"normal_font_size", UIHelpers.FONT_UNIT_STAT
 		)
+		lbl.add_theme_color_override(
+			"default_color", Color.BLACK
+		)
 	update_resources(0, 0)
 
 

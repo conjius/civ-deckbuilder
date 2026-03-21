@@ -79,7 +79,7 @@ func setup(card: CardData) -> void:
 	var hh := UIHelpers.HEADER_HEIGHT
 	var header := _add_section(self, dark, b, y, cw, hh)
 	var name_lbl := _add_label_in(
-		header, card.card_name, _font_bold, Color.WHITE,
+		header, card.card_name, _font_bold, Color.BLACK,
 		UIHelpers.fit_font_size(
 			card.card_name, cw - mh * 2,
 			hh - mv * 2, UIHelpers.FONT_TITLE,
@@ -99,7 +99,7 @@ func setup(card: CardData) -> void:
 	_desc_section = _add_section(self, base, b, y, cw, dh)
 	_desc_label = _add_label_in(
 		_desc_section, card.description, _font_regular,
-		Color.WHITE,
+		Color.BLACK,
 		UIHelpers.fit_font_size(
 			card.description, cw - mh * 2,
 			dh - mv * 2, UIHelpers.FONT_BODY,
@@ -131,7 +131,7 @@ func setup(card: CardData) -> void:
 	var r_num_sz: int = UIHelpers.FONT_STAT_NUM
 	UIHelpers.set_bbcode(
 		range_rtl,
-		"[center]Range [img=%d]%s[/img] [font_size=%d]%d[/font_size][/center]" % [
+		"[center]Range  [img=%d]%s[/img]  [font_size=%d]%d[/font_size][/center]" % [
 			r_icon_sz, r_path, r_num_sz, card.range_value,
 		],
 	)

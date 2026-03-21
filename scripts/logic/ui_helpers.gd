@@ -116,27 +116,7 @@ static func apply_parchment_bg(
 	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
 	if tex == null:
 		return
-	var clip := Control.new()
-	clip.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if is_container:
-		# PanelContainer: expand clip from content area to border inner edge
-		var b: int = CARD_BORDER
-		clip.offset_left = -(PANEL_MARGIN_H - b)
-		clip.offset_right = PANEL_MARGIN_H - b
-		clip.offset_top = -(PANEL_MARGIN_V - b)
-		clip.offset_bottom = PANEL_MARGIN_V - b
-	else:
-		# Plain Panel: clip at border inner edge
-		var b: int = CARD_BORDER
-		clip.offset_left = b
-		clip.offset_right = -b
-		clip.offset_top = b
-		clip.offset_bottom = -b
-	clip.clip_contents = true
-	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(clip)
-	panel.move_child(clip, 0)
-	# Parchment zoomed in 20% and centered
+	panel.clip_contents = true
 	var bg := TextureRect.new()
 	var do_rotate: bool = randi() % 2 == 0
 	var do_mirror: bool = randi() % 2 == 0
@@ -150,14 +130,21 @@ static func apply_parchment_bg(
 	else:
 		bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	bg.modulate = Color(0.95, 0.9, 0.8, 1.0)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.offset_left = -20
-	bg.offset_right = 20
-	bg.offset_top = -20
-	bg.offset_bottom = 20
+	if is_container:
+		bg.offset_left = -(PANEL_MARGIN_H + 10)
+		bg.offset_right = PANEL_MARGIN_H + 10
+		bg.offset_top = -(PANEL_MARGIN_V + 10)
+		bg.offset_bottom = PANEL_MARGIN_V + 10
+	else:
+		bg.offset_left = -10
+		bg.offset_right = 10
+		bg.offset_top = -10
+		bg.offset_bottom = 10
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	clip.add_child(bg)
+	panel.add_child(bg)
+	panel.move_child(bg, 0)
 
 
 static func create_circle_panel_style(

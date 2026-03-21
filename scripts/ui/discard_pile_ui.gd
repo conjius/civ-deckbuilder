@@ -111,7 +111,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var hh := UIHelpers.HEADER_HEIGHT
 	var header := _add_section(outer, dark, b, y, iw, hh)
 	var nl := _add_label_in(
-		header, card.card_name, _font_bold, Color.WHITE,
+		header, card.card_name, _font_bold, Color.BLACK,
 		UIHelpers.fit_font_size(
 			card.card_name, iw - mh * 2, hh - mv * 2,
 			UIHelpers.FONT_TITLE, UIHelpers.s(9),
@@ -147,7 +147,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var desc_sec := _add_section(outer, base, b, y, iw, dh)
 	var dl := _add_label_in(
 		desc_sec, card.description, _font_regular,
-		Color.WHITE,
+		Color.BLACK,
 		UIHelpers.fit_font_size(
 			card.description, iw - mh * 2, dh - mv * 2,
 			UIHelpers.FONT_BODY, UIHelpers.s(7),
@@ -180,7 +180,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var ri_num: int = UIHelpers.FONT_STAT_NUM
 	UIHelpers.set_bbcode(
 		range_rtl,
-		"[center]Range [img=%d]%s[/img] [font_size=%d]%d[/font_size][/center]" % [
+		"[center]Range  [img=%d]%s[/img]  [font_size=%d]%d[/font_size][/center]" % [
 			ri_sz, ri_path, ri_num, card.range_value,
 		],
 	)
