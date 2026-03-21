@@ -71,56 +71,48 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var base: Color = card.card_color
 	var dark: Color = base.darkened(0.35)
 	var light: Color = base.lightened(0.2)
-
 	var cw := UIHelpers.CARD_WIDTH
 	var ch := UIHelpers.CARD_HEIGHT
-	var cw_inner := UIHelpers.CONTENT_WIDTH
+	var b := UIHelpers.CARD_BORDER
+	var iw := cw - b * 2
+	var gap := UIHelpers.SECTION_GAP
 
 	var outer := PanelContainer.new()
 	outer.custom_minimum_size = Vector2(cw, ch)
 	outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	outer.clip_contents = true
 	var outer_style := StyleBoxFlat.new()
 	outer_style.bg_color = Color(0.12, 0.08, 0.05)
 	outer_style.border_color = Color(0.55, 0.4, 0.15)
-	outer_style.border_width_left = 2
-	outer_style.border_width_right = 2
-	outer_style.border_width_top = 2
-	outer_style.border_width_bottom = 2
-	outer_style.corner_radius_top_left = 6
-	outer_style.corner_radius_top_right = 6
-	outer_style.corner_radius_bottom_left = 6
-	outer_style.corner_radius_bottom_right = 6
+	outer_style.set_border_width_all(b)
+	outer_style.set_corner_radius_all(6)
+	outer_style.content_margin_left = 0
+	outer_style.content_margin_right = 0
+	outer_style.content_margin_top = 0
+	outer_style.content_margin_bottom = 0
 	outer.add_theme_stylebox_override("panel", outer_style)
 
-	var vbox := VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_theme_constant_override(
-		"separation", UIHelpers.SECTION_GAP
-	)
-	outer.add_child(vbox)
+	var inner := Control.new()
+	inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	outer.add_child(inner)
 
-	# Header
+	var y := 0
+
 	var hh := UIHelpers.HEADER_HEIGHT
-	var header := _make_section(dark, Vector2(0, hh))
-	var name_lbl := Label.new()
-	name_lbl.text = card.card_name
-	name_lbl.clip_text = true
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_override("font", _font_bold)
-	var ts := UIHelpers.fit_font_size(
-		card.card_name, cw_inner, hh - 8, 13, 9,
+	_add_section(inner, dark, b, y, iw, hh)
+	var nl := _add_label(
+		inner, card.card_name, _font_bold,
+		b, y, iw, hh, Color.WHITE,
+		UIHelpers.fit_font_size(
+			card.card_name, iw - 12, hh - 8, 13, 9
+		),
 	)
-	name_lbl.add_theme_font_size_override("font_size", ts)
-	name_lbl.add_theme_color_override("font_color", Color.WHITE)
-	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_child(name_lbl)
-	vbox.add_child(header)
+	nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	nl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	y += hh + gap
 
-	# Avatar
 	var ah := UIHelpers.AVATAR_HEIGHT
-	var avatar := _make_section(light, Vector2(0, ah))
+	_add_section(inner, light, b, y, iw, ah)
 	var icon_tex: Texture2D = null
 	if card.icon_path != "":
 		icon_tex = load(card.icon_path) as Texture2D
@@ -131,66 +123,70 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	if icon_tex:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = icon_tex
+		tex_rect.position = Vector2(b, y)
+		tex_rect.size = Vector2(iw, ah)
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		avatar.add_child(tex_rect)
-	vbox.add_child(avatar)
+		inner.add_child(tex_rect)
+	y += ah + gap
 
-	# Description
 	var dh := UIHelpers.DESC_HEIGHT
-	var desc := _make_section(base, Vector2(0, dh))
-	var desc_lbl := Label.new()
-	desc_lbl.text = card.description
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc_lbl.add_theme_font_override("font", _font_regular)
-	var ds := UIHelpers.fit_font_size(
-		card.description, cw_inner, dh - 8, 11, 7,
+	_add_section(inner, base, b, y, iw, dh)
+	var dl := _add_label(
+		inner, card.description, _font_regular,
+		b, y, iw, dh, Color.WHITE,
+		UIHelpers.fit_font_size(
+			card.description, iw - 12, dh - 8, 11, 7
+		),
 	)
-	desc_lbl.add_theme_font_size_override("font_size", ds)
-	desc_lbl.add_theme_color_override("font_color", Color.WHITE)
-	desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	desc.add_child(desc_lbl)
-	vbox.add_child(desc)
+	dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	y += dh + gap
 
-	# Footer
 	var fh := UIHelpers.FOOTER_HEIGHT
-	var footer := _make_section(dark, Vector2(0, fh))
-	var footer_lbl := Label.new()
-	var footer_text := "Range %d" % card.range_value
-	footer_lbl.text = footer_text
-	footer_lbl.clip_text = true
-	footer_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	footer_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	footer_lbl.add_theme_font_override("font", _font_regular)
-	var fs := UIHelpers.fit_font_size(
-		footer_text, cw_inner, fh - 8, 11, 8,
+	_add_section(inner, dark, b, y, iw, fh)
+	var ftxt := "Range %d" % card.range_value
+	var fl := _add_label(
+		inner, ftxt, _font_regular,
+		b, y, iw, fh, Color(1, 1, 1, 0.8),
+		UIHelpers.fit_font_size(ftxt, iw - 12, fh - 8, 11, 8),
 	)
-	footer_lbl.add_theme_font_size_override("font_size", fs)
-	footer_lbl.add_theme_color_override(
-		"font_color", Color(1, 1, 1, 0.8)
-	)
-	footer_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	footer.add_child(footer_lbl)
-	vbox.add_child(footer)
+	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	fl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	return outer
 
 
-func _make_section(
-	color: Color, min_size: Vector2,
-) -> PanelContainer:
-	var section := PanelContainer.new()
-	section.custom_minimum_size = min_size
-	section.mouse_filter = Control.MOUSE_FILTER_IGNORE
+func _add_section(
+	parent: Control, color: Color,
+	x: int, y: int, w: int, h: int,
+) -> void:
+	var sec := PanelContainer.new()
+	sec.position = Vector2(x, y)
+	sec.size = Vector2(w, h)
+	sec.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sec.clip_contents = true
 	var style := StyleBoxTexture.new()
 	style.texture = _parchment_tex
 	style.modulate_color = color
-	style.content_margin_left = 6.0
-	style.content_margin_right = 6.0
-	style.content_margin_top = 4.0
-	style.content_margin_bottom = 4.0
-	section.add_theme_stylebox_override("panel", style)
-	return section
+	sec.add_theme_stylebox_override("panel", style)
+	parent.add_child(sec)
+
+
+func _add_label(
+	parent: Control, text: String, font: Font,
+	x: int, y: int, w: int, h: int,
+	color: Color, font_size: int,
+) -> Label:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.position = Vector2(x + 6, y + 4)
+	lbl.size = Vector2(w - 12, h - 8)
+	lbl.add_theme_font_override("font", font)
+	lbl.add_theme_font_size_override("font_size", font_size)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(lbl)
+	return lbl
