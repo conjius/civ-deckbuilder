@@ -30,7 +30,7 @@ func _ready() -> void:
 	_bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(_bg)
 
-	var inset: float = sz * 0.2
+	var inset: float = sz * 0.25
 	var icon_sz: float = sz - inset * 2.0
 	_icon = TextureRect.new()
 	_icon.texture = _tex
