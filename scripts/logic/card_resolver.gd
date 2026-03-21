@@ -88,13 +88,11 @@ func _resolve_move(card: CardData, target: Vector2i, origin: Vector2i) -> CardRe
 	return result
 
 
-func _resolve_scout(card: CardData, target: Vector2i) -> CardResult:
+func _resolve_scout(_card: CardData, target: Vector2i) -> CardResult:
 	var result := CardResult.new()
 	result.success = true
-	var hexes := HexUtil.get_hexes_in_range(target, card.range_value)
-	for coord in hexes:
-		if _map.has_tile(coord):
-			result.revealed_tiles.append(coord)
+	if _map.has_tile(target):
+		result.revealed_tiles.append(target)
 	return result
 
 
