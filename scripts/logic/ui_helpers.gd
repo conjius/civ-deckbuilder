@@ -132,24 +132,33 @@ static func apply_parchment_bg(
 	var ptex: Texture2D = _make_parchment_tex()
 	if ptex == null:
 		return
-	var bg := TextureRect.new()
-	bg.texture = ptex
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	if is_container:
-		# Escape content margins + border to fill full panel
-		var mh: int = PANEL_MARGIN_H + CARD_BORDER
-		var mv: int = PANEL_MARGIN_V + CARD_BORDER
-		bg.offset_left = -mh
-		bg.offset_right = mh
-		bg.offset_top = -mv
-		bg.offset_bottom = mv
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(bg)
-	panel.move_child(bg, 0)
-	if not is_container:
+		# For PanelContainer: add parchment OUTSIDE as sibling
+		# using show_behind_parent, sized to match parent
+		var bg := TextureRect.new()
+		bg.texture = ptex
+		bg.stretch_mode = TextureRect.STRETCH_SCALE
+		bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		bg.show_behind_parent = true
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(bg)
+		# Use a script callback to size it after layout
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.offset_left = -200
+		bg.offset_right = 200
+		bg.offset_top = -200
+		bg.offset_bottom = 200
+	else:
+		# For plain Panel: child inside, panel clips it
 		panel.clip_contents = true
+		var bg := TextureRect.new()
+		bg.texture = ptex
+		bg.stretch_mode = TextureRect.STRETCH_SCALE
+		bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		panel.add_child(bg)
+		panel.move_child(bg, 0)
 
 
 static func create_circle_panel_style(
