@@ -58,7 +58,7 @@ const DESC_HEIGHT: int = (
 )
 
 
-const PARCHMENT_OPACITY: float = 0.7
+const PARCHMENT_OPACITY: float = 0.9
 const PARCHMENT_PATH: String = (
 	"res://assets/textures/ui/parchment_256_grayscale.png"
 )
