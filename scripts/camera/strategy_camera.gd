@@ -82,7 +82,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _dragging:
 			var current := _screen_to_ground(event.position)
 			var diff := _drag_origin - current
-			_target_position += diff
+			global_position += diff
+			_target_position = global_position
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 			rotate_y(-event.relative.x * rotate_speed)
 
