@@ -60,8 +60,7 @@ func update_unit(unit: Node3D) -> void:
 	avatar_rect.modulate = unit.avatar_color
 	unit_name_label.text = unit.state.unit_name
 	UIHelpers.set_bbcode(health_label, UIHelpers.icon_text(
-		"HP", "%d/%d" % [unit.state.health, unit.state.max_health],
-		true,
+		"HP", "%d/%d" % [unit.state.health, unit.state.max_health]
 	))
 	health_label.visible = true
 	UIHelpers.set_bbcode(attack_label, UIHelpers.icon_text(
