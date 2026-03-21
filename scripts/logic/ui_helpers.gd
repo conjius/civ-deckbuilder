@@ -97,26 +97,10 @@ static func fit_font_size(
 	return min_size
 
 
-static func create_panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0)
-	style.border_color = Color(0.55, 0.4, 0.15)
-	style.set_border_width_all(CARD_BORDER)
-	style.set_corner_radius_all(CARD_CORNER_RADIUS)
-	style.content_margin_left = PANEL_MARGIN_H
-	style.content_margin_right = PANEL_MARGIN_H
-	style.content_margin_top = PANEL_MARGIN_V
-	style.content_margin_bottom = PANEL_MARGIN_V
-	return style
-
-
-static func apply_parchment_bg(
-	panel: Control, _is_container: bool = true,
-) -> void:
+static func _make_parchment_tex() -> Texture2D:
 	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
 	if tex == null:
-		return
-	var bg := TextureRect.new()
+		return null
 	var do_rotate: bool = randi() % 2 == 0
 	var do_mirror: bool = randi() % 2 == 0
 	if do_rotate or do_mirror:
@@ -125,19 +109,29 @@ static func apply_parchment_bg(
 			img.rotate_180()
 		if do_mirror:
 			img.flip_x()
-		bg.texture = ImageTexture.create_from_image(img)
-	else:
-		bg.texture = tex
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(0.95, 0.88, 0.75, 1.0)
-	bg.show_behind_parent = true
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(bg)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.offset_left = -(PANEL_MARGIN_H)
-	bg.offset_right = PANEL_MARGIN_H
-	bg.offset_top = -(PANEL_MARGIN_V)
-	bg.offset_bottom = PANEL_MARGIN_V
+		return ImageTexture.create_from_image(img)
+	return tex
+
+
+static func create_panel_style() -> StyleBoxTexture:
+	var ptex: Texture2D = _make_parchment_tex()
+	var style := StyleBoxTexture.new()
+	if ptex:
+		style.texture = ptex
+	style.modulate_color = Color(0.95, 0.88, 0.75, 1.0)
+	style.content_margin_left = PANEL_MARGIN_H
+	style.content_margin_right = PANEL_MARGIN_H
+	style.content_margin_top = PANEL_MARGIN_V
+	style.content_margin_bottom = PANEL_MARGIN_V
+	return style
+
+
+static func apply_parchment_bg(
+	_panel: Control, _is_container: bool = true,
+) -> void:
+	# Parchment is now the panel StyleBox itself via create_panel_style.
+	# No additional overlay needed.
+	pass
 
 
 static func create_circle_panel_style(
