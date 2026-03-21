@@ -40,7 +40,7 @@ const RESOURCE_WIDTH: int = int(150 * UI_SCALE)
 const RESOURCE_HEIGHT: int = int(60 * UI_SCALE)
 const STACK_OFFSET: int = int(2 * UI_SCALE)
 
-const SETTLEMENT_FONT_SIZE: int = int(48 * UI_SCALE)
+const SETTLEMENT_FONT_SIZE: int = int(29 * UI_SCALE)
 const SETTLEMENT_OUTLINE: int = int(8 * UI_SCALE)
 
 const _INNER_H: int = (

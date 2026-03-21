@@ -193,7 +193,7 @@ func place_settlement(
 	label.pixel_size = 0.01
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.position = Vector3(0, label_y, 0)
-	label.modulate = player_color.lightened(0.4)
+	label.modulate = player_color
 	label.outline_modulate = Color(0.15, 0.1, 0.05)
 	label.outline_size = UIHelpers.SETTLEMENT_OUTLINE
 	add_child(label)
