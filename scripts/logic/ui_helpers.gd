@@ -111,26 +111,44 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, inset: int = 2,
+	panel: Control, gap: int = 0,
 ) -> void:
 	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
 	if tex == null:
 		return
+	# Clip area fills the panel edge-to-edge (escaping content margins)
 	var clip := Control.new()
 	clip.set_anchors_preset(Control.PRESET_FULL_RECT)
-	clip.offset_left = inset
-	clip.offset_right = -inset
-	clip.offset_top = inset
-	clip.offset_bottom = -inset
+	var mh: int = PANEL_MARGIN_H
+	var mv: int = PANEL_MARGIN_V
+	clip.offset_left = -(mh - gap)
+	clip.offset_right = mh - gap
+	clip.offset_top = -(mv - gap)
+	clip.offset_bottom = mv - gap
 	clip.clip_contents = true
 	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(clip)
 	panel.move_child(clip, 0)
+	# Parchment zoomed in 20% and centered
 	var bg := TextureRect.new()
-	bg.texture = tex
+	var do_rotate: bool = randi() % 2 == 0
+	var do_mirror: bool = randi() % 2 == 0
+	if do_rotate or do_mirror:
+		var img := tex.get_image().duplicate()
+		if do_rotate:
+			img.rotate_180()
+		if do_mirror:
+			img.flip_x()
+		bg.texture = ImageTexture.create_from_image(img)
+	else:
+		bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.offset_left = -20
+	bg.offset_right = 20
+	bg.offset_top = -20
+	bg.offset_bottom = 20
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	clip.add_child(bg)
 
