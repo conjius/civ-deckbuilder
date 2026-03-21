@@ -115,7 +115,7 @@ static func icon_text(
 	else:
 		var icon_sz: int = int(FONT_LABEL * 1.2)
 		text = "[img=%d]%s[/img] %s %s" % [
-			icon_sz, path, entity, value,
+			icon_sz, path, value, entity,
 		]
 	if align_right:
 		return "[right]%s[/right]" % text

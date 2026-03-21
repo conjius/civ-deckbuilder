@@ -186,11 +186,15 @@ func _add_section(
 	var style := StyleBoxTexture.new()
 	style.texture = _parchment_tex
 	style.modulate_color = color
-	if randi() % 2 == 0:
+	var do_rotate: bool = randi() % 2 == 0
+	var do_mirror: bool = randi() % 2 == 0
+	if do_rotate or do_mirror:
 		var img := _parchment_tex.get_image().duplicate()
-		img.rotate_180()
-		var rotated := ImageTexture.create_from_image(img)
-		style.texture = rotated
+		if do_rotate:
+			img.rotate_180()
+		if do_mirror:
+			img.flip_x()
+		style.texture = ImageTexture.create_from_image(img)
 	sec.add_theme_stylebox_override("panel", style)
 	parent.add_child(sec)
 	return sec
