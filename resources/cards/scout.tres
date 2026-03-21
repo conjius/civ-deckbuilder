@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Scout"
-description = "Reveal terrain in a 4-hex radius"
+description = "Reveal terrain in a 4-tile radius"
 card_type = 1
 range_value = 4
 card_color = Color(0.271, 0.506, 0.839, 1)

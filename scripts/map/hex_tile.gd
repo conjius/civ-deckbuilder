@@ -9,6 +9,12 @@ var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _tent_path: String = "res://assets/models/buildings/tent.gltf"
 var _yield_sprites: Array[Sprite3D] = []
+var _materials_icon: Texture2D = preload(
+	"res://assets/icons/entities/materials.svg"
+)
+var _food_icon: Texture2D = preload(
+	"res://assets/icons/entities/food.svg"
+)
 
 
 func setup(
@@ -46,45 +52,58 @@ func setup(
 
 
 func _create_yield_markers() -> void:
-	var icons: Array[Dictionary] = []
+	var icons: Array[Array] = []
 	for i in range(terrain.materials_yield):
-		icons.append({
-			"path": "res://assets/icons/entities/materials.svg",
-			"color": Color(0.8, 0.6, 0.3),
-		})
+		icons.append([_materials_icon, Color(0.8, 0.6, 0.3)])
 	for i in range(terrain.food_yield):
-		icons.append({
-			"path": "res://assets/icons/entities/food.svg",
-			"color": Color(0.9, 0.8, 0.2),
-		})
+		icons.append([_food_icon, Color(0.9, 0.8, 0.2)])
 	if icons.is_empty():
 		return
 	var count: int = icons.size()
 	var positions: Array[Vector3] = _get_yield_positions(count)
 	for idx in range(count):
-		var icon_data: Dictionary = icons[idx]
-		var tex: Texture2D = load(
-			icon_data["path"] as String
-		) as Texture2D
+		var tex: Texture2D = icons[idx][0] as Texture2D
+		var tint: Color = icons[idx][1] as Color
 		if tex == null:
 			continue
-		var sprite := Sprite3D.new()
-		sprite.texture = tex
-		sprite.pixel_size = 0.0005
-		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
-		sprite.double_sided = true
-		sprite.no_depth_test = true
-		sprite.position = positions[idx]
-		sprite.rotation_degrees = Vector3(-90, 0, 180)
-		sprite.modulate = Color(
-			icon_data["color"].r, icon_data["color"].g,
-			icon_data["color"].b, 0.5,
-		)
-		sprite.cast_shadow = (
-			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		)
-		add_child(sprite)
-		_yield_sprites.append(sprite)
+		_add_yield_sprite(tex, tint, positions[idx])
+
+
+func _add_yield_sprite(
+	tex: Texture2D, tint: Color, pos: Vector3,
+) -> void:
+	# Background circle
+	var bg := MeshInstance3D.new()
+	var disc := PlaneMesh.new()
+	disc.size = Vector2(0.22, 0.22)
+	bg.mesh = disc
+	var bg_mat := StandardMaterial3D.new()
+	bg_mat.albedo_color = Color(0.12, 0.08, 0.05, 0.6)
+	bg_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	bg_mat.no_depth_test = true
+	bg.material_override = bg_mat
+	bg.position = pos
+	bg.cast_shadow = (
+		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	)
+	add_child(bg)
+
+	# Icon sprite
+	var sprite := Sprite3D.new()
+	sprite.texture = tex
+	sprite.pixel_size = 0.0004
+	sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sprite.double_sided = true
+	sprite.no_depth_test = true
+	sprite.position = Vector3(pos.x, pos.y + 0.01, pos.z)
+	sprite.modulate = Color(tint.r, tint.g, tint.b, 0.7)
+	sprite.cast_shadow = (
+		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	)
+	add_child(sprite)
+	_yield_sprites.append(sprite)
 
 
 func _get_yield_positions(count: int) -> Array[Vector3]:

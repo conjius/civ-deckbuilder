@@ -70,9 +70,9 @@ func setup_refs(
 
 
 func update_turn(turn_number: int) -> void:
-	turn_label.text = UIHelpers.icon_text(
+	UIHelpers.set_bbcode(turn_label, UIHelpers.icon_text(
 		"Turn", str(turn_number)
-	)
+	))
 
 
 func update_draw_count(count: int) -> void:

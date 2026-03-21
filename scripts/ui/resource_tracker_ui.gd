@@ -18,7 +18,9 @@ func _ready() -> void:
 
 
 func update_resources(materials: int, food: int) -> void:
-	materials_label.text = UIHelpers.icon_text(
+	UIHelpers.set_bbcode(materials_label, UIHelpers.icon_text(
 		"Materials", str(materials)
+	))
+	UIHelpers.set_bbcode(
+		food_label, UIHelpers.icon_text("Food", str(food))
 	)
-	food_label.text = UIHelpers.icon_text("Food", str(food))

@@ -68,6 +68,7 @@ const ENTITY_ICONS: Dictionary = {
 	"Turn": "res://assets/icons/entities/turn.svg",
 	"Draw": "res://assets/icons/entities/card.svg",
 	"Discard": "res://assets/icons/entities/card.svg",
+	"Tile": "res://assets/icons/entities/hex.svg",
 }
 
 
@@ -111,6 +112,13 @@ static func icon_text(entity: String, value: String) -> String:
 	return "[img=%d]%s[/img] %s %s" % [
 		icon_sz, path, entity, value,
 	]
+
+
+static func set_bbcode(
+	label: RichTextLabel, bbcode: String,
+) -> void:
+	label.clear()
+	label.append_text(bbcode)
 
 
 static func s(value: int) -> int:

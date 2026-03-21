@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="TerrainType" format=3]
+[gd_resource type="Resource" script_class="TerrainType" load_steps=3 format=3]
 
 [ext_resource type="Script" uid="uid://c5r53j8qvp5eh" path="res://resources/terrain/terrain_type.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/terrain/desert_256_grayscale.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -9,3 +10,4 @@ movement_cost = 1
 is_passable = true
 height = 0.08
 color = Color(0.85, 0.75, 0.5, 1)
+texture = ExtResource("2")
