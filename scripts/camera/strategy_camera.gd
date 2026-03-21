@@ -86,9 +86,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				right * -event.relative.x
 				+ forward * event.relative.y
 			)
-			_target_position += (
-				move * drag_speed * _current_zoom * 0.05
-			)
+			var offset := move * drag_speed * _current_zoom * 0.05
+			global_position += offset
+			_target_position = global_position
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 			rotate_y(-event.relative.x * rotate_speed)
 
