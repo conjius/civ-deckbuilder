@@ -65,15 +65,13 @@ func update_unit(unit: Node3D) -> void:
 	))
 	health_label.visible = true
 	UIHelpers.set_bbcode(attack_label, UIHelpers.icon_text(
-		"Attack", str(unit.state.attack), true,
-	))
+		"Attack", str(unit.state.attack)))
 	attack_label.visible = true
 	var eff_def: int = (
 		unit.state.defense + unit.state.defense_modifier
 	)
 	UIHelpers.set_bbcode(defense_label, UIHelpers.icon_text(
-		"Defense", str(eff_def), true,
-	))
+		"Defense", str(eff_def)))
 	defense_label.visible = true
 	_clear_actions()
 
@@ -87,7 +85,7 @@ func update_settlement(
 	avatar_rect.modulate = player_color
 	unit_name_label.text = settlement_name
 	UIHelpers.set_bbcode(
-		health_label, UIHelpers.icon_text("HP", "50/50", true)
+		health_label, UIHelpers.icon_text("HP", "50/50")
 	)
 	health_label.visible = true
 	if terrain:
@@ -96,7 +94,7 @@ func update_settlement(
 		UIHelpers.set_bbcode(attack_label, "")
 	attack_label.visible = true
 	UIHelpers.set_bbcode(
-		defense_label, UIHelpers.icon_text("Defense", "0", true)
+		defense_label, UIHelpers.icon_text("Defense", "0")
 	)
 	defense_label.visible = true
 	_clear_actions()
