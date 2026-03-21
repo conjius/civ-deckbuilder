@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q Godot_v4.6.1-stable_linux.x86_64.zip
+          mv Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+      - name: Import project
+        run: godot --headless --import 2>&1 || true
+        timeout-minutes: 2
+
+      - name: Build check
+        run: godot --headless --check-only 2>&1
+        timeout-minutes: 2
+
+      - name: Run tests
+        run: godot --headless --script tests/test_runner.gd 2>&1
+        timeout-minutes: 3
+
+      - name: Install gdlint
+        run: pip install gdtoolkit
+
+      - name: Lint
+        run: gdlint scripts/**/*.gd resources/**/*.gd
