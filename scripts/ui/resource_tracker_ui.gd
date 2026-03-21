@@ -10,6 +10,9 @@ func _ready() -> void:
 	add_theme_stylebox_override(
 		"panel", UIHelpers.create_panel_style()
 	)
+	custom_minimum_size = Vector2(UIHelpers.CARD_WIDTH, 0)
+	size.x = UIHelpers.CARD_WIDTH
+	clip_contents = true
 	for lbl: RichTextLabel in [materials_label, food_label]:
 		lbl.add_theme_font_override("normal_font", _font)
 		lbl.add_theme_font_size_override(
