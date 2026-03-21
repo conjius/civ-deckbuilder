@@ -6,6 +6,7 @@ var _map: MapData
 var _move_card: CardData
 var _scout_card: CardData
 var _gather_card: CardData
+var _settle_card: CardData
 
 
 func before() -> void:
@@ -42,6 +43,10 @@ func before() -> void:
 	_gather_card = CardData.new()
 	_gather_card.card_type = CardData.CardType.GATHER
 	_gather_card.range_value = 1
+
+	_settle_card = CardData.new()
+	_settle_card.card_type = CardData.CardType.SETTLE
+	_settle_card.range_value = 0
 
 
 func test_get_move_targets_excludes_origin() -> void:
@@ -124,3 +129,41 @@ func test_resolve_gather() -> void:
 	TestAssert.assert_true(result.success)
 	TestAssert.assert_eq(result.materials_gained, 1)
 	TestAssert.assert_eq(result.food_gained, 0)
+
+
+func test_settle_valid_targets() -> void:
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		_settle_card, Vector2i(0, 0)
+	)
+	TestAssert.assert_size(targets, 1)
+	TestAssert.assert_contains(targets, Vector2i(0, 0))
+
+
+func test_settle_on_impassable_returns_empty() -> void:
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		_settle_card, Vector2i(0, -1)
+	)
+	TestAssert.assert_size(targets, 0)
+
+
+func test_resolve_settle() -> void:
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_settle_card, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_eq(result.settled_coord, Vector2i(0, 0))
+	TestAssert.assert_true(result.settlement_name.length() > 0)
+
+
+func test_settle_twice_fails() -> void:
+	var resolver := CardResolver.new(_map)
+	resolver.resolve_card(
+		_settle_card, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	var result := resolver.resolve_card(
+		_settle_card, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_false(result.success)

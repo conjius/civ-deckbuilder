@@ -1,7 +1,7 @@
 class_name CardData
 extends Resource
 
-enum CardType { MOVE, SCOUT, GATHER }
+enum CardType { MOVE, SCOUT, GATHER, SETTLE }
 
 @export var card_name: String = ""
 @export_multiline var description: String = ""

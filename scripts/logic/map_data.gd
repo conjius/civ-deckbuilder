@@ -2,6 +2,7 @@ class_name MapData
 extends RefCounted
 
 var _terrain: Dictionary = {}
+var _settlements: Dictionary = {}
 
 
 func set_terrain(coord: Vector2i, terrain: TerrainType) -> void:
@@ -24,6 +25,18 @@ func get_walkable_neighbors(coord: Vector2i) -> Array[Vector2i]:
 			if terrain.is_passable:
 				result.append(neighbor)
 	return result
+
+
+func has_settlement(coord: Vector2i) -> bool:
+	return _settlements.has(coord)
+
+
+func place_settlement(coord: Vector2i, sname: String) -> void:
+	_settlements[coord] = sname
+
+
+func get_settlement_name(coord: Vector2i) -> String:
+	return _settlements.get(coord, "") as String
 
 
 func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:

@@ -9,11 +9,7 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
 
-var _wood_tex: Texture2D = preload(
-	"res://assets/textures/ui/wood_panel_256_grayscale.png"
-)
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
-var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
@@ -89,14 +85,8 @@ func update_resources(materials: int, food: int) -> void:
 
 
 func _apply_styles() -> void:
-	var wood_style := StyleBoxTexture.new()
-	wood_style.texture = _wood_tex
-	wood_style.modulate_color = Color(0.45, 0.3, 0.18)
-	wood_style.content_margin_left = 8.0
-	wood_style.content_margin_right = 8.0
-	wood_style.content_margin_top = 8.0
-	wood_style.content_margin_bottom = 8.0
-	bottom_bar.add_theme_stylebox_override("panel", wood_style)
+	var empty_style := StyleBoxEmpty.new()
+	bottom_bar.add_theme_stylebox_override("panel", empty_style)
 
 	turn_label.add_theme_font_override("font", _font_bold)
 	turn_label.add_theme_font_size_override("font_size", 14)

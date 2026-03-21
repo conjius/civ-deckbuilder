@@ -9,13 +9,16 @@ var _parchment_tex: Texture2D = preload(
 )
 var _card_icon_textures: Dictionary = {
 	CardData.CardType.MOVE: preload(
-		"res://assets/icons/boot_64.png"
+		"res://assets/icons/move_64.svg"
 	),
 	CardData.CardType.SCOUT: preload(
-		"res://assets/icons/binoculars_64.svg"
+		"res://assets/icons/scout_64.svg"
 	),
 	CardData.CardType.GATHER: preload(
-		"res://assets/icons/mining_64.png"
+		"res://assets/icons/gather_64.svg"
+	),
+	CardData.CardType.SETTLE: preload(
+		"res://assets/icons/settle_64.svg"
 	),
 }
 var _cards: Array[CardData] = []

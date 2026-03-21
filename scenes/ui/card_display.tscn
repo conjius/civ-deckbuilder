@@ -16,7 +16,7 @@ theme_override_constants/separation = 2
 [node name="Header" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 mouse_filter = 2
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 28)
 size_flags_vertical = 0
 clip_contents = true
 
@@ -30,7 +30,7 @@ text = "Card Name"
 [node name="Avatar" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 mouse_filter = 2
-custom_minimum_size = Vector2(0, 55)
+custom_minimum_size = Vector2(0, 52)
 size_flags_vertical = 0
 clip_contents = true
 
@@ -71,7 +71,7 @@ text = "Description"
 [node name="Footer" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 mouse_filter = 2
-custom_minimum_size = Vector2(0, 28)
+custom_minimum_size = Vector2(0, 29)
 size_flags_vertical = 0
 clip_contents = true
 

@@ -11,9 +11,10 @@ var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
 
 var _card_icon_textures: Dictionary = {
-	CardData.CardType.MOVE: preload("res://assets/icons/boot_64.png"),
-	CardData.CardType.SCOUT: preload("res://assets/icons/binoculars_64.svg"),
-	CardData.CardType.GATHER: preload("res://assets/icons/mining_64.png"),
+	CardData.CardType.MOVE: preload("res://assets/icons/move_64.svg"),
+	CardData.CardType.SCOUT: preload("res://assets/icons/scout_64.svg"),
+	CardData.CardType.GATHER: preload("res://assets/icons/gather_64.svg"),
+	CardData.CardType.SETTLE: preload("res://assets/icons/settle_64.svg"),
 }
 var _parchment_tex: Texture2D = preload(
 	"res://assets/textures/ui/parchment_256_grayscale.png"

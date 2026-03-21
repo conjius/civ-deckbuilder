@@ -2,6 +2,7 @@ extends Node
 
 signal effect_completed
 signal gathered(materials: int, food: int)
+signal settled(coord: Vector2i, settlement_name: String)
 
 var hex_map: Node3D
 var player_unit: Node3D
@@ -33,6 +34,10 @@ func execute_card(card: CardData, target_coord: Vector2i) -> bool:
 					tile.set_fog(false)
 		CardData.CardType.GATHER:
 			gathered.emit(result.materials_gained, result.food_gained)
+		CardData.CardType.SETTLE:
+			settled.emit(
+				result.settled_coord, result.settlement_name
+			)
 
 	effect_completed.emit()
 	return true

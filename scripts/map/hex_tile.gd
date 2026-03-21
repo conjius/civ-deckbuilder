@@ -50,3 +50,28 @@ func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> v
 func set_fog(value: bool) -> void:
 	is_revealed = not value
 	$FogOverlay.visible = value
+
+
+func place_settlement(settlement_name: String) -> void:
+	var marker := MeshInstance3D.new()
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = 0.15
+	cylinder.bottom_radius = 0.3
+	cylinder.height = 0.6
+	marker.mesh = cylinder
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.85, 0.55, 0.15)
+	marker.material_override = mat
+	marker.position = Vector3(0, 0.4, 0)
+	add_child(marker)
+
+	var label := Label3D.new()
+	label.text = settlement_name
+	label.font_size = 48
+	label.pixel_size = 0.01
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = Vector3(0, 1.0, 0)
+	label.modulate = Color(1.0, 0.95, 0.8)
+	label.outline_modulate = Color(0.15, 0.1, 0.05)
+	label.outline_size = 8
+	add_child(label)

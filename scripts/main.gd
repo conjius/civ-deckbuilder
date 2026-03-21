@@ -4,6 +4,7 @@ var _move_1: CardData = preload("res://resources/cards/move_1.tres")
 var _move_2: CardData = preload("res://resources/cards/move_2.tres")
 var _scout: CardData = preload("res://resources/cards/scout.tres")
 var _gather: CardData = preload("res://resources/cards/gather.tres")
+var _settle: CardData = preload("res://resources/cards/settle.tres")
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -41,6 +42,7 @@ func _ready() -> void:
 	turn_manager.phase_changed.connect(_on_phase_changed)
 	player_unit.movement_finished.connect(_on_unit_moved)
 	card_effects.gathered.connect(_on_gathered)
+	card_effects.settled.connect(_on_settled)
 
 	# Build the starter deck
 	var deck: Array[CardData] = [
@@ -48,6 +50,7 @@ func _ready() -> void:
 		_move_2, _move_2,
 		_scout, _scout,
 		_gather, _gather,
+		_settle,
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
@@ -120,7 +123,15 @@ func _on_unit_moved() -> void:
 
 func _on_gathered(materials: int, food: int) -> void:
 	player_unit.state.add_resources(materials, food)
-	game_ui.update_resources(player_unit.state.materials, player_unit.state.food)
+	game_ui.update_resources(
+		player_unit.state.materials, player_unit.state.food
+	)
+
+
+func _on_settled(coord: Vector2i, settlement_name: String) -> void:
+	var tile: Node3D = hex_map.get_tile(coord)
+	if tile:
+		tile.place_settlement(settlement_name)
 
 
 func _highlight_active_unit() -> void:
