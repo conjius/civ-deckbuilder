@@ -60,7 +60,7 @@ func _create_yield_markers() -> void:
 	if icons.is_empty():
 		return
 	var count: int = icons.size()
-	var spacing := 0.35
+	var spacing := 0.2
 	@warning_ignore("integer_division")
 	var start_x := -spacing * (count - 1) / 2.0
 	for idx in range(count):
@@ -72,7 +72,7 @@ func _create_yield_markers() -> void:
 			continue
 		var sprite := Sprite3D.new()
 		sprite.texture = tex
-		sprite.pixel_size = 0.003
+		sprite.pixel_size = 0.0005
 		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		sprite.axis = Vector3.AXIS_Y
 		sprite.position = Vector3(
