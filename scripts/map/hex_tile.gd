@@ -97,14 +97,15 @@ func _add_yield_sprite(
 	)
 	add_child(bg)
 
-	# Icon sprite
+	# Icon sprite lying flat facing sky
 	var sprite := Sprite3D.new()
 	sprite.texture = tex
 	sprite.pixel_size = 0.0004
-	sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	sprite.double_sided = true
 	sprite.no_depth_test = true
 	sprite.position = Vector3(pos.x, pos.y + 0.01, pos.z)
+	sprite.rotation_degrees = Vector3(-90, 0, 0)
 	sprite.modulate = Color(tint.r, tint.g, tint.b, 0.7)
 	sprite.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
