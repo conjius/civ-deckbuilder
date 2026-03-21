@@ -113,12 +113,12 @@ static func _make_parchment_tex() -> Texture2D:
 	return tex
 
 
-static func create_panel_style() -> StyleBoxTexture:
-	var ptex: Texture2D = _make_parchment_tex()
-	var style := StyleBoxTexture.new()
-	if ptex:
-		style.texture = ptex
-	style.modulate_color = Color(0.95, 0.88, 0.75, 1.0)
+static func create_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.88, 0.82, 0.72, 0.95)
+	style.border_color = Color(0.55, 0.4, 0.15)
+	style.set_border_width_all(CARD_BORDER)
+	style.set_corner_radius_all(CARD_CORNER_RADIUS)
 	style.content_margin_left = PANEL_MARGIN_H
 	style.content_margin_right = PANEL_MARGIN_H
 	style.content_margin_top = PANEL_MARGIN_V
