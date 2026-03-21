@@ -116,18 +116,11 @@ func _add_yield_sprite(
 
 func _get_yield_positions(count: int) -> Array[Vector3]:
 	var y_off := 0.15
-	var r := 0.36
-	if count == 1:
-		return [Vector3(0, y_off, 0)] as Array[Vector3]
+	var spacing := 0.28
 	var result: Array[Vector3] = []
+	var start_x := -spacing * (count - 1) * 0.5
 	for i in range(count):
-		if i < 3:
-			var angle := deg_to_rad(90.0 + 120.0 * i)
-			result.append(Vector3(
-				cos(angle) * r, y_off, -sin(angle) * r
-			))
-		else:
-			result.append(Vector3(0, y_off, 0))
+		result.append(Vector3(start_x + i * spacing, y_off, 0))
 	return result
 
 
