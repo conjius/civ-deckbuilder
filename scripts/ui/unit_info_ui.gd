@@ -6,8 +6,14 @@ var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
 )
+var _scout_icon: Texture2D = preload(
+	"res://assets/icons/move_64.svg"
+)
+var _settle_icon: Texture2D = preload(
+	"res://assets/icons/settle_64.svg"
+)
 
-@onready var avatar_rect: ColorRect = %AvatarRect
+@onready var avatar_rect: TextureRect = %AvatarRect
 @onready var unit_name_label: Label = %UnitNameLabel
 @onready var health_label: Label = %HealthLabel
 @onready var attack_label: Label = %AttackLabel
@@ -19,6 +25,7 @@ func _ready() -> void:
 	add_theme_stylebox_override(
 		"panel", UIHelpers.create_panel_style()
 	)
+	custom_minimum_size.x = UIHelpers.CARD_WIDTH
 	unit_name_label.add_theme_font_override("font", _font_bold)
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME
@@ -35,7 +42,8 @@ func update_unit(unit: Node3D) -> void:
 		visible = false
 		return
 	visible = true
-	avatar_rect.color = unit.avatar_color
+	avatar_rect.texture = _scout_icon
+	avatar_rect.modulate = unit.avatar_color
 	unit_name_label.text = unit.state.unit_name
 	health_label.text = "HP: %d/%d" % [
 		unit.state.health, unit.state.max_health,
@@ -53,19 +61,21 @@ func update_unit(unit: Node3D) -> void:
 
 func update_settlement(
 	settlement_name: String, player_color: Color,
-	coord: Vector2i, terrain: TerrainType,
+	_coord: Vector2i, terrain: TerrainType,
 ) -> void:
 	visible = true
-	avatar_rect.color = player_color
+	avatar_rect.texture = _settle_icon
+	avatar_rect.modulate = player_color
 	unit_name_label.text = settlement_name
-	health_label.text = "(%d, %d)" % [coord.x, coord.y]
+	health_label.text = "HP: 50/50"
 	health_label.visible = true
 	if terrain:
 		attack_label.text = terrain.terrain_name
-		attack_label.visible = true
 	else:
-		attack_label.visible = false
-	defense_label.visible = false
+		attack_label.text = ""
+	attack_label.visible = true
+	defense_label.text = "DEF: 0"
+	defense_label.visible = true
 	_clear_actions()
 	_add_action("Build")
 
