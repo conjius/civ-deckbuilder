@@ -134,7 +134,7 @@ static func icon_text(
 		text = "%s: %s" % [entity, value]
 	else:
 		var icon_sz: int = int(FONT_LABEL * 1.2)
-		var num_sz: int = int(FONT_LABEL * 2.0)
+		var num_sz: int = int(FONT_LABEL * 1.4)
 		text = "[img=%d]%s[/img] [font_size=%d]%s[/font_size] %s" % [
 			icon_sz, path, num_sz, value, entity,
 		]
