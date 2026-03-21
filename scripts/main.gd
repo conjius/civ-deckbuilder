@@ -92,10 +92,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			var terrain: TerrainType = hex_map.get_terrain(coord)
 			if terrain:
 				game_ui.update_info(
-					"%s (%d,%d)" % [terrain.terrain_name, coord.x, coord.y]
+					"%s (%d,%d)" % [
+						terrain.terrain_name, coord.x, coord.y,
+					]
 				)
 		else:
 			game_ui.update_info("")
+
+	# Click to select
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_handle_click(event.position)
 
 
 func _on_card_dropped(card: CardData, target: Vector2i) -> void:
@@ -148,6 +155,24 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 			settlement_name, player_unit.avatar_color
 		)
 	_reveal_around(coord, player_unit.state.sight_range)
+
+
+func _handle_click(screen_pos: Vector2) -> void:
+	var coord: Vector2i = hex_map.raycast_to_hex(
+		$CameraRig/CameraPivot/Camera3D, screen_pos
+	)
+	if coord == Vector2i(-999, -999):
+		game_ui.refresh_unit_info()
+		return
+	var map_data: MapData = hex_map.map_data
+	if map_data.has_settlement(coord):
+		var sname: String = map_data.get_settlement_name(coord)
+		var terrain: TerrainType = hex_map.get_terrain(coord)
+		game_ui.show_settlement_info(
+			sname, player_unit.avatar_color, coord, terrain
+		)
+	else:
+		game_ui.refresh_unit_info()
 
 
 func _highlight_active_unit() -> void:

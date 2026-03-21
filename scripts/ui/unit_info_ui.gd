@@ -1,7 +1,9 @@
 extends PanelContainer
 
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
-var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
+var _font_regular: Font = preload(
+	"res://assets/fonts/Cinzel-Regular.ttf"
+)
 
 @onready var avatar_rect: ColorRect = %AvatarRect
 @onready var unit_name_label: Label = %UnitNameLabel
@@ -29,7 +31,26 @@ func update_unit(unit: Node3D) -> void:
 	visible = true
 	avatar_rect.color = unit.avatar_color
 	unit_name_label.text = unit.state.unit_name
-	health_label.text = "HP: %d/%d" % [unit.state.health, unit.state.max_health]
+	health_label.text = "HP: %d/%d" % [
+		unit.state.health, unit.state.max_health,
+	]
 	attack_label.text = "ATK: %d" % unit.state.attack
-	var eff_def: int = unit.state.defense + unit.state.defense_modifier
+	var eff_def: int = (
+		unit.state.defense + unit.state.defense_modifier
+	)
 	defense_label.text = "DEF: %d" % eff_def
+
+
+func update_settlement(
+	settlement_name: String, player_color: Color,
+	coord: Vector2i, terrain: TerrainType,
+) -> void:
+	visible = true
+	avatar_rect.color = player_color
+	unit_name_label.text = settlement_name
+	health_label.text = "(%d, %d)" % [coord.x, coord.y]
+	if terrain:
+		attack_label.text = terrain.terrain_name
+	else:
+		attack_label.text = ""
+	defense_label.text = ""

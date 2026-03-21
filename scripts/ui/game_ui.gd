@@ -98,6 +98,13 @@ func refresh_unit_info() -> void:
 	unit_info.update_unit(active_unit)
 
 
+func show_settlement_info(
+	sname: String, color: Color,
+	coord: Vector2i, terrain: TerrainType,
+) -> void:
+	unit_info.update_settlement(sname, color, coord, terrain)
+
+
 func update_resources(materials: int, food: int) -> void:
 	resource_tracker.update_resources(materials, food)
 
