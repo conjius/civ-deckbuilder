@@ -78,8 +78,11 @@ func _add_yield_sprite(
 ) -> void:
 	# Background circle
 	var bg := MeshInstance3D.new()
-	var disc := PlaneMesh.new()
-	disc.size = Vector2(0.22, 0.22)
+	var disc := CylinderMesh.new()
+	disc.top_radius = 0.12
+	disc.bottom_radius = 0.12
+	disc.height = 0.01
+	disc.radial_segments = 16
 	bg.mesh = disc
 	var bg_mat := StandardMaterial3D.new()
 	bg_mat.albedo_color = Color(0.12, 0.08, 0.05, 0.6)
