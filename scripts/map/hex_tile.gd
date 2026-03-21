@@ -84,7 +84,7 @@ func place_settlement(
 		return
 	var tent: Node3D = tent_scene.instantiate()
 	tent.scale = Vector3(1.0, 1.0, 1.0)
-	tent.position = Vector3(0, 0.2, 0)
+	tent.position = Vector3(0, 0.1, 0)
 	add_child(tent)
 	for child in tent.get_children():
 		if child is MeshInstance3D:

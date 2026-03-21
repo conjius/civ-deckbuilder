@@ -94,6 +94,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_target_zoom = minf(
 					zoom_max, _target_zoom + zoom_speed
 				)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_LEFT:
+			rotate_y(deg_to_rad(orbit_speed))
+		elif event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
+			rotate_y(deg_to_rad(-orbit_speed))
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				_dragging = true
