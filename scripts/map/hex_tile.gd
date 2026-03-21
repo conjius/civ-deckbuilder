@@ -115,15 +115,9 @@ func _add_yield_sprite(
 
 func _get_yield_positions(count: int) -> Array[Vector3]:
 	var y_off := 0.15
-	var r := 0.18
+	var r := 0.36
 	if count == 1:
 		return [Vector3(0, y_off, 0)] as Array[Vector3]
-	if count == 2:
-		return [
-			Vector3(-r * 0.5, y_off, 0),
-			Vector3(r * 0.5, y_off, 0),
-		] as Array[Vector3]
-	# 3+ arranged in equilateral triangle
 	var result: Array[Vector3] = []
 	for i in range(count):
 		if i < 3:
