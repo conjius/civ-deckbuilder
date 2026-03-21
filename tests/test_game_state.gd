@@ -19,7 +19,7 @@ func before() -> void:
 	_mountain.terrain_name = "Mountain"
 	_mountain.is_passable = false
 	_mountain.height = 0.5
-	_mountain.materials_yield = 3
+	_mountain.materials_yield = 0
 	_mountain.food_yield = 0
 
 	_move_card = CardData.new()

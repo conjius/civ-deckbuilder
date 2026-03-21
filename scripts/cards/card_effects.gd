@@ -3,6 +3,7 @@ extends Node
 signal effect_completed
 signal gathered(materials: int, food: int)
 signal settled(coord: Vector2i, settlement_name: String)
+signal turn_should_end
 
 var hex_map: Node3D
 var player_unit: Node3D
@@ -40,6 +41,8 @@ func execute_card(card: CardData, target_coord: Vector2i) -> bool:
 			)
 
 	effect_completed.emit()
+	if result.ends_turn:
+		turn_should_end.emit()
 	return true
 
 

@@ -8,5 +8,5 @@ card_name = "Explore"
 description = "Move up to 2 tiles away."
 range_value = 2
 card_color = Color(0.1, 0.35, 0.1, 1)
-icon_path = "res://assets/icons/sprint_64.svg"
+icon_path = "res://assets/icons/explore_64.svg"
 

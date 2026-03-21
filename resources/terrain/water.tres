@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1")
 terrain_name = "Water"
-movement_cost = 999
-is_passable = false
+movement_cost = 1
+is_passable = true
 height = 0.05
 color = Color(0.247, 0.498, 0.769, 1)
 texture = ExtResource("2")
 materials_yield = 0
-food_yield = 2
+food_yield = 1

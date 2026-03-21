@@ -12,6 +12,7 @@ class CardResult extends RefCounted:
 	var food_gained: int = 0
 	var settled_coord: Vector2i = Vector2i(-999, -999)
 	var settlement_name: String = ""
+	var ends_turn: bool = false
 
 
 func _init(map: MapData) -> void:
@@ -29,7 +30,7 @@ func get_valid_targets(card: CardData, origin: Vector2i) -> Array[Vector2i]:
 		CardData.CardType.SCOUT:
 			return _get_scout_targets(origin, card.range_value)
 		CardData.CardType.GATHER:
-			return _map.get_walkable_neighbors(origin)
+			return _get_gather_targets(origin)
 		CardData.CardType.SETTLE:
 			return _get_settle_targets(origin)
 	return []
@@ -79,6 +80,8 @@ func _resolve_move(card: CardData, target: Vector2i, origin: Vector2i) -> CardRe
 		return result
 	result.success = true
 	result.new_coord = target
+	if terrain.stops_movement:
+		result.ends_turn = true
 	return result
 
 
@@ -89,6 +92,17 @@ func _resolve_scout(card: CardData, target: Vector2i) -> CardResult:
 	for coord in hexes:
 		if _map.has_tile(coord):
 			result.revealed_tiles.append(coord)
+	return result
+
+
+func _get_gather_targets(origin: Vector2i) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for neighbor in HexUtil.get_neighbors(origin):
+		var terrain: TerrainType = _map.get_terrain(neighbor)
+		if terrain == null:
+			continue
+		if terrain.materials_yield > 0 or terrain.food_yield > 0:
+			result.append(neighbor)
 	return result
 
 

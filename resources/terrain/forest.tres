@@ -11,5 +11,6 @@ is_passable = true
 height = 0.15
 color = Color(0.196, 0.463, 0.157, 1)
 texture = ExtResource("2")
-materials_yield = 2
+materials_yield = 1
 food_yield = 1
+stops_movement = true

@@ -21,7 +21,7 @@ func before() -> void:
 	_mountain.terrain_name = "Mountain"
 	_mountain.is_passable = false
 	_mountain.height = 0.5
-	_mountain.materials_yield = 3
+	_mountain.materials_yield = 0
 	_mountain.food_yield = 0
 
 	_map = MapData.new()
@@ -138,6 +138,31 @@ func test_settle_valid_targets() -> void:
 	)
 	TestAssert.assert_size(targets, 1)
 	TestAssert.assert_contains(targets, Vector2i(0, 0))
+
+
+func test_move_into_forest_ends_turn() -> void:
+	var forest := TerrainType.new()
+	forest.terrain_name = "Forest"
+	forest.is_passable = true
+	forest.stops_movement = true
+	forest.materials_yield = 1
+	forest.food_yield = 1
+	_map.set_terrain(Vector2i(1, -1), forest)
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_move_card, Vector2i(1, -1), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_true(result.ends_turn)
+
+
+func test_move_into_plains_does_not_end_turn() -> void:
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_move_card, Vector2i(1, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_false(result.ends_turn)
 
 
 func test_settle_on_impassable_returns_empty() -> void:

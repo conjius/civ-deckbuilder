@@ -9,3 +9,4 @@ extends Resource
 @export var texture: Texture2D
 @export var materials_yield: int = 0
 @export var food_yield: int = 0
+@export var stops_movement: bool = false

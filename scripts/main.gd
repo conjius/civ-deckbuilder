@@ -43,6 +43,7 @@ func _ready() -> void:
 	player_unit.movement_finished.connect(_on_unit_moved)
 	card_effects.gathered.connect(_on_gathered)
 	card_effects.settled.connect(_on_settled)
+	card_effects.turn_should_end.connect(_on_end_turn)
 
 	# Build the starter deck
 	var deck: Array[CardData] = [
