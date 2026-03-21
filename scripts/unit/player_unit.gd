@@ -2,7 +2,7 @@ extends Node3D
 
 signal movement_finished
 
-@export var move_speed: float = 2.7
+@export var move_speed: float = 1.35
 
 var state: PlayerState = PlayerState.new()
 var avatar_color: Color = Color(0.9, 0.2, 0.2, 1)

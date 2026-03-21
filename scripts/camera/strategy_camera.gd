@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var shift: bool = event.shift_pressed
-		var cmd: bool = event.meta_pressed or event.ctrl_pressed
+		var cmd: bool = event.meta_pressed
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			if shift:
 				rotate_y(deg_to_rad(orbit_speed))
@@ -111,7 +111,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var pan_event: InputEventPanGesture = (
 			event as InputEventPanGesture
 		)
-		if pan_event.ctrl_pressed or pan_event.meta_pressed:
+		if pan_event.meta_pressed:
 			_target_tilt = clampf(
 				_target_tilt + pan_event.delta.y * tilt_speed,
 				tilt_min, tilt_max,
