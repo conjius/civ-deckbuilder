@@ -16,7 +16,7 @@ func _ready() -> void:
 	for lbl: RichTextLabel in [materials_label, food_label]:
 		lbl.add_theme_font_override("normal_font", _font)
 		lbl.add_theme_font_size_override(
-			"normal_font_size", UIHelpers.FONT_LABEL
+			"normal_font_size", UIHelpers.FONT_UNIT_STAT
 		)
 	update_resources(0, 0)
 

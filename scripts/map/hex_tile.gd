@@ -58,9 +58,9 @@ func _create_yield_markers() -> void:
 		) as Texture2D
 	var icons: Array[Array] = []
 	for i in range(terrain.materials_yield):
-		icons.append([_materials_icon, Color(0.8, 0.6, 0.3)])
+		icons.append([_materials_icon, Color(1.0, 1.0, 1.0)])
 	for i in range(terrain.food_yield):
-		icons.append([_food_icon, Color(0.9, 0.8, 0.2)])
+		icons.append([_food_icon, Color(1.0, 1.0, 1.0)])
 	if icons.is_empty():
 		return
 	var count: int = icons.size()
@@ -74,7 +74,7 @@ func _create_yield_markers() -> void:
 
 
 func _add_yield_sprite(
-	tex: Texture2D, tint: Color, pos: Vector3,
+	tex: Texture2D, _tint: Color, pos: Vector3,
 ) -> void:
 	# Background circle
 	var bg := MeshInstance3D.new()
@@ -104,7 +104,7 @@ func _add_yield_sprite(
 	sprite.double_sided = true
 	sprite.position = Vector3(pos.x, pos.y + 0.01, pos.z)
 	sprite.rotation_degrees = Vector3(-90, 0, 0)
-	sprite.modulate = Color(tint.r, tint.g, tint.b, 0.7)
+	sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	sprite.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	)
