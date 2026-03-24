@@ -4,9 +4,10 @@ extends Node3D
 const TREE_SCENE_PATH := (
 	"res://assets/models/trees/Trees collection.fbx"
 )
-const MIN_TREES := 20
-const MAX_TREES := 40
-const MIN_SPACING := 0.12
+const MIN_TREES := 5
+const MAX_TREES := 10
+const MIN_SPACING := 0.15
+const CHUNK_SIZE := 8
 const TARGET_HEIGHT := 0.25
 const TREE_HEIGHT_JITTER := 0.2
 
@@ -100,20 +101,41 @@ func build_multimeshes() -> void:
 		var transforms: Array = _pending[i]
 		if transforms.is_empty():
 			continue
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = _tree_meshes[i]
-		mm.instance_count = transforms.size()
-		for j in transforms.size():
-			mm.set_instance_transform(
-				j, transforms[j] as Transform3D
+		var chunks: Dictionary = {}
+		for xform: Transform3D in transforms:
+			@warning_ignore("integer_division")
+			var cx: int = int(floor(
+				xform.origin.x / (CHUNK_SIZE * 1.5)
+			))
+			@warning_ignore("integer_division")
+			var cz: int = int(floor(
+				xform.origin.z / (CHUNK_SIZE * 1.7)
+			))
+			var key := Vector2i(cx, cz)
+			if not chunks.has(key):
+				chunks[key] = []
+			chunks[key].append(xform)
+		for key: Vector2i in chunks:
+			var chunk_xforms: Array = chunks[key]
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = _tree_meshes[i]
+			mm.instance_count = chunk_xforms.size()
+			for j in chunk_xforms.size():
+				mm.set_instance_transform(
+					j, chunk_xforms[j] as Transform3D
+				)
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			mmi.cast_shadow = (
+				GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			)
-		var mmi := MultiMeshInstance3D.new()
-		mmi.multimesh = mm
-		mmi.cast_shadow = (
-			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		)
-		add_child(mmi)
+			mmi.visibility_range_end = 35.0
+			mmi.visibility_range_fade_mode = (
+				GeometryInstance3D
+				.VISIBILITY_RANGE_FADE_SELF
+			)
+			add_child(mmi)
 	_pending.clear()
 
 
