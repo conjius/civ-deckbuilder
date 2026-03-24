@@ -10,6 +10,8 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: Control
 
+var _fps_label: Label
+
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -41,8 +43,25 @@ func _ready() -> void:
 		func(name: String) -> void:
 			action_pressed.emit(name)
 	)
+	_setup_fps_label()
 	_apply_styles()
 	_apply_sizes()
+
+
+func _process(_delta: float) -> void:
+	_fps_label.text = "%d FPS" % Engine.get_frames_per_second()
+
+
+func _setup_fps_label() -> void:
+	_fps_label = Label.new()
+	_fps_label.position = Vector2(8, 4)
+	_fps_label.add_theme_font_override("font", _font_bold)
+	_fps_label.add_theme_font_size_override("font_size", 14)
+	_fps_label.add_theme_color_override(
+		"font_color", Color(1.0, 1.0, 1.0, 0.6)
+	)
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_fps_label)
 
 
 func setup_refs(

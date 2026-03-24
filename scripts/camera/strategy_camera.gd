@@ -51,18 +51,21 @@ func _process(delta: float) -> void:
 			* pan_speed * delta
 		)
 
-	global_position = global_position.lerp(
-		_target_position, smooth_factor * delta
-	)
-
-	_current_zoom = lerpf(
-		_current_zoom, _target_zoom, smooth_factor * delta
-	)
+	if _dragging:
+		global_position = _target_position
+		_current_zoom = _target_zoom
+		_current_tilt = _target_tilt
+	else:
+		global_position = global_position.lerp(
+			_target_position, smooth_factor * delta
+		)
+		_current_zoom = lerpf(
+			_current_zoom, _target_zoom, smooth_factor * delta
+		)
+		_current_tilt = lerpf(
+			_current_tilt, _target_tilt, smooth_factor * delta
+		)
 	_apply_zoom()
-
-	_current_tilt = lerpf(
-		_current_tilt, _target_tilt, smooth_factor * delta
-	)
 	_apply_tilt()
 
 
@@ -133,6 +136,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var diff := _drag_origin - current
 			global_position += diff
 			_target_position = global_position
+			_drag_origin = _screen_to_ground(event.position)
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 			rotate_y(-event.relative.x * rotate_speed * 2.0)
 			_target_tilt = clampf(

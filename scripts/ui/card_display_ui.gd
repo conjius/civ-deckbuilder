@@ -118,6 +118,9 @@ func _start_drag(mouse_pos: Vector2) -> void:
 			hex_map.highlight_tiles(
 				_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
 			)
+	if card_data.card_type == CardData.CardType.MOVE:
+		if active_unit and active_unit.has_method("set_targeting_move"):
+			active_unit.set_targeting_move(true)
 	drag_started.emit(card_data)
 
 
@@ -129,6 +132,8 @@ func _cancel_drag() -> void:
 		arrow_indicator.hide_arrow()
 	_valid_targets.clear()
 	_restore_card_visuals()
+	if active_unit and active_unit.has_method("set_targeting_move"):
+		active_unit.set_targeting_move(false)
 
 
 func _end_drag(mouse_pos: Vector2) -> void:
@@ -138,6 +143,8 @@ func _end_drag(mouse_pos: Vector2) -> void:
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
 	var target := _raycast_hex(mouse_pos)
+	if active_unit and active_unit.has_method("set_targeting_move"):
+		active_unit.set_targeting_move(false)
 	var is_valid := (
 		target != Vector2i(-999, -999)
 		and _is_valid_target(target)

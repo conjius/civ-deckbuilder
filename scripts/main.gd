@@ -44,7 +44,7 @@ func _ready() -> void:
 	game_ui.action_pressed.connect(_on_action_pressed)
 	card_manager.card_played.connect(game_ui.card_hand.remove_card)
 	game_ui.card_hand.draw_pile = game_ui.draw_pile
-	card_manager.card_played.connect(game_ui.on_card_played)
+	game_ui.card_hand.card_discarded.connect(game_ui.on_card_played)
 	card_manager.draw_pile_changed.connect(game_ui.update_draw_count)
 	card_manager.discard_pile_changed.connect(game_ui.update_discard_count)
 	turn_manager.turn_started.connect(_on_turn_started)
@@ -68,7 +68,7 @@ func _ready() -> void:
 	# Find a passable starting tile near center
 	var start_coord: Vector2i = _find_start_coord()
 	var start_terrain: TerrainType = hex_map.get_terrain(start_coord)
-	player_unit.place_at(start_coord, start_terrain.height - 0.1)
+	player_unit.place_at(start_coord, 0.0)
 
 	# Center camera on player unit
 	var start_world: Vector3 = HexUtil.axial_to_world(
@@ -106,9 +106,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if coord != Vector2i(-999, -999):
 			var terrain: TerrainType = hex_map.get_terrain(coord)
 			if terrain:
-				var info := "%s (%d,%d)" % [
-					terrain.terrain_name, coord.x, coord.y,
-				]
+				var info: String = terrain.terrain_name
 				var yields: Array[String] = []
 				if terrain.materials_yield > 0:
 					yields.append(UIHelpers.icon_text(
@@ -119,7 +117,7 @@ func _unhandled_input(event: InputEvent) -> void:
 						"Food", str(terrain.food_yield)
 					))
 				if not yields.is_empty():
-					info += "\n" + " ".join(yields)
+					info += "\n" + "    ".join(yields)
 				game_ui.update_info(info)
 		else:
 			game_ui.update_info("")
@@ -250,7 +248,12 @@ func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
 func _update_packing() -> void:
 	var coord: Vector2i = player_unit.current_coord
 	var has_building: bool = hex_map.map_data.has_settlement(coord)
-	player_unit.offset_for_packing(has_building)
+	var terrain: TerrainType = hex_map.get_terrain(coord)
+	var has_yields: bool = (
+		terrain != null
+		and (terrain.materials_yield > 0 or terrain.food_yield > 0)
+	)
+	player_unit.offset_for_packing(has_building, has_yields)
 
 
 func _on_action_pressed(action_name: String) -> void:
@@ -294,7 +297,7 @@ func _setup_ai(
 	var ai_terrain: TerrainType = hex_map.get_terrain(
 		ai_start
 	)
-	ai_unit.place_at(ai_start, ai_terrain.height - 0.1)
+	ai_unit.place_at(ai_start, 0.0)
 	ai_unit.movement_finished.connect(_on_ai_unit_moved)
 	# Create AI controller
 	ai_controller = AIController.new()
@@ -345,12 +348,16 @@ func _on_ai_unit_moved() -> void:
 	var has_building: bool = (
 		hex_map.map_data.has_settlement(coord)
 	)
-	ai_unit.offset_for_packing(has_building)
+	var ai_terrain: TerrainType = hex_map.get_terrain(coord)
+	var has_yields: bool = (
+		ai_terrain != null
+		and (ai_terrain.materials_yield > 0
+		or ai_terrain.food_yield > 0)
+	)
+	ai_unit.offset_for_packing(has_building, has_yields)
 
 
 func _reveal_around(coord: Vector2i, radius: int) -> void:
 	var hexes := HexUtil.get_hexes_in_range(coord, radius)
 	for c in hexes:
-		var tile: Node3D = hex_map.get_tile(c)
-		if tile:
-			tile.set_fog(false)
+		hex_map.reveal_tile(c)

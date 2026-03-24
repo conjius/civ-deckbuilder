@@ -34,21 +34,16 @@ func execute_card(
 					hex_map.get_terrain(target_coord)
 				)
 				unit.move_to(
-					result.new_coord, terrain.height - 0.1
+					result.new_coord, 0.0
 				)
 			else:
 				var heights: Array[float] = []
 				for coord in path:
-					var terrain: TerrainType = (
-						hex_map.get_terrain(coord)
-					)
-					heights.append(terrain.height - 0.1)
+					heights.append(0.0)
 				unit.move_along_path(path, heights)
 		CardData.CardType.SCOUT:
 			for coord in result.revealed_tiles:
-				var tile: Node3D = hex_map.get_tile(coord)
-				if tile:
-					tile.set_fog(false)
+				hex_map.reveal_tile(coord)
 		CardData.CardType.GATHER:
 			gathered.emit(
 				result.materials_gained, result.food_gained

@@ -29,13 +29,13 @@ var defense: int:
 var _is_moving: bool = false
 var _move_tween: Tween = null
 var _model: Node3D
-var _anim_player: AnimationPlayer
 var _last_facing: Vector3 = Vector3(0, 0, -1)
 var _is_selected: bool = false
+var _is_targeting_move: bool = false
 var _camera: Camera3D
 
-var _model_scene_path: String = (
-	"res://assets/models/characters/scout.glb"
+var _boots_mesh_path: String = (
+	"res://assets/models/boots/boots.obj"
 )
 
 
@@ -43,20 +43,19 @@ func _ready() -> void:
 	var old_mesh: Node = get_node_or_null("MeshInstance3D")
 	if old_mesh:
 		old_mesh.queue_free()
-	var scene: PackedScene = load(_model_scene_path) as PackedScene
-	if scene:
-		_model = scene.instantiate()
-		_model.scale = Vector3(0.2, 0.2, 0.2)
+	var mesh_res: Mesh = load(_boots_mesh_path) as Mesh
+	if mesh_res:
+		_model = Node3D.new()
+		var mi := MeshInstance3D.new()
+		mi.mesh = mesh_res
+		mi.scale = Vector3(0.0176, 0.012, 0.0224)
+		mi.rotation.y = PI + PI / 2.0
+		_model.add_child(mi)
 		add_child(_model)
-		_anim_player = _model.get_node_or_null(
-			"AnimationPlayer"
-		) as AnimationPlayer
 	else:
 		_model = _build_boot_model()
 		add_child(_model)
 	_apply_color_wash()
-	if _anim_player and _anim_player.has_animation("Idle"):
-		_anim_player.play("Idle")
 
 
 func setup_camera(cam: Camera3D) -> void:
@@ -65,6 +64,13 @@ func setup_camera(cam: Camera3D) -> void:
 
 func set_selected(value: bool) -> void:
 	_is_selected = value
+	if not value and _model:
+		_is_targeting_move = false
+		_face_direction(_last_facing)
+
+
+func set_targeting_move(value: bool) -> void:
+	_is_targeting_move = value
 	if not value and _model:
 		_face_direction(_last_facing)
 
@@ -76,14 +82,18 @@ func is_moving() -> bool:
 func place_at(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.place_at(coord)
 	position = HexUtil.axial_to_world(coord.x, coord.y)
-	position.y = terrain_height + 0.5
+	position.y = terrain_height + 0.15
 
 
-func offset_for_packing(has_building: bool) -> void:
+func offset_for_packing(
+	has_building: bool, has_yields: bool = false,
+) -> void:
 	if not _model:
 		return
 	if has_building:
 		_model.position = Vector3(0.4, 0, 0.3)
+	elif has_yields:
+		_model.position = Vector3(0.15, 0, 0.55)
 	else:
 		_model.position = Vector3.ZERO
 
@@ -91,9 +101,8 @@ func offset_for_packing(has_building: bool) -> void:
 func move_to(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.move_to(coord)
 	var target := HexUtil.axial_to_world(coord.x, coord.y)
-	target.y = terrain_height + 0.5
+	target.y = terrain_height + 0.15
 	_is_moving = true
-	_play_anim("Walking_A")
 	_face_toward(target)
 	if _move_tween and _move_tween.is_running():
 		_move_tween.kill()
@@ -115,7 +124,6 @@ func move_along_path(
 		return
 	state.move_to(path_coords[path_coords.size() - 1])
 	_is_moving = true
-	_play_anim("Walking_A")
 	var first_target := HexUtil.axial_to_world(
 		path_coords[1].x, path_coords[1].y
 	)
@@ -127,7 +135,7 @@ func move_along_path(
 		var target := HexUtil.axial_to_world(
 			path_coords[i].x, path_coords[i].y
 		)
-		target.y = terrain_heights[i] + 0.5
+		target.y = terrain_heights[i] + 0.15
 		var prev := path_coords[i - 1]
 		var prev_world := HexUtil.axial_to_world(prev.x, prev.y)
 		var step_distance := prev_world.distance_to(
@@ -143,7 +151,7 @@ func move_along_path(
 
 
 func _process(_delta: float) -> void:
-	if _is_selected and not _is_moving and _camera and _model:
+	if _is_targeting_move and not _is_moving and _camera and _model:
 		var mouse_pos := get_viewport().get_mouse_position()
 		var ground := _screen_to_ground(mouse_pos)
 		if ground != Vector3.ZERO:
@@ -152,13 +160,7 @@ func _process(_delta: float) -> void:
 
 func _on_move_finished() -> void:
 	_is_moving = false
-	_play_anim("Idle")
 	movement_finished.emit()
-
-
-func _play_anim(anim_name: String) -> void:
-	if _anim_player and _anim_player.has_animation(anim_name):
-		_anim_player.play(anim_name)
 
 
 func _face_toward(target: Vector3) -> void:
@@ -227,7 +229,7 @@ func _build_boot_model() -> Node3D:
 	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.mesh = st.commit()
-	mi.scale = Vector3(0.6, 0.6, 0.6)
+	mi.scale = Vector3(0.85, 0.85, 0.85)
 	mi.position.y = -0.15
 	root.add_child(mi)
 	return root
@@ -284,7 +286,7 @@ func _color_wash_recursive(node: Node) -> void:
 		overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		overlay.albedo_color = Color(
 			avatar_color.r, avatar_color.g,
-			avatar_color.b, 0.7,
+			avatar_color.b, 0.45,
 		)
 		overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		mi.material_overlay = overlay

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dj7yfuomx4sby"
+path="res://.godot/imported/boots.obj-d63fd68f777deb653ff8a78951a49e01.mesh"
+
+[deps]
+
+files=["res://.godot/imported/boots.obj-d63fd68f777deb653ff8a78951a49e01.mesh"]
+
+source_file="res://assets/models/boots/boots.obj"
+dest_files=["res://.godot/imported/boots.obj-d63fd68f777deb653ff8a78951a49e01.mesh", "res://.godot/imported/boots.obj-d63fd68f777deb653ff8a78951a49e01.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

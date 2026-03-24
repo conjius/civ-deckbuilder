@@ -1,0 +1,57 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v6.0.0)
+
+newmtl Par de botaMtl1
+Kd 0.121568628 0.117647059 0.121568628
+Ka 0.221568629 0.217647061 0.221568629
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Ttbot.png
+
+newmtl Par de botaMtl2
+Kd 0.145098045 0.141176477 0.13333334
+Ka 0.245098054 0.241176486 0.233333349
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Tibot.png
+
+newmtl Par de botaMtl3
+Kd 0.0941176489 0.0980392173 0.101960786
+Ka 0.19411765 0.198039219 0.201960787
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Tcuer.png
+
+newmtl Par de botaMtl4
+Kd 0.13333334 0.121568628 0.129411772
+Ka 0.233333349 0.221568629 0.229411781
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Tfbot.png
+
+newmtl Par de botaMtl5
+Kd 0.113725491 0.109803922 0.113725491
+Ka 0.213725492 0.209803924 0.213725492
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Tlbot.png
+
+newmtl Par de botaMtl6
+Kd 0.23137255 0.215686277 0.219607845
+Ka 0.331372559 0.315686285 0.319607854
+Ks 1 1 1
+Ke 0 0 0
+d 1
+illum 1
+map_Kd Tsuel.png
+

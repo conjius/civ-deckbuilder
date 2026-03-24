@@ -1,5 +1,11 @@
 extends Node3D
 
+static var _materials_icon: Texture2D
+static var _food_icon: Texture2D
+static var _parchment_tex: Texture2D
+static var _yield_bg_mat: StandardMaterial3D
+static var _yield_bg_mesh: CylinderMesh
+
 var coord: Vector2i
 var terrain: TerrainType
 var is_revealed: bool = false
@@ -8,46 +14,34 @@ var _highlight_mat: StandardMaterial3D
 var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _yield_sprites: Array[Sprite3D] = []
-var _materials_icon: Texture2D
-var _food_icon: Texture2D
-var _parchment_tex: Texture2D
 var _has_settlement: bool = false
-var _fog_particles: Node3D
 
 
 func setup(
 	axial_coord: Vector2i, terrain_type: TerrainType,
-	mesh: ArrayMesh, shape: ConvexPolygonShape3D
+	mesh: Mesh, shape: ConvexPolygonShape3D,
+	terrain_mat: StandardMaterial3D = null,
 ) -> void:
 	coord = axial_coord
 	terrain = terrain_type
 
 	$MeshInstance3D.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = terrain.color
-	if terrain.texture:
-		mat.albedo_texture = terrain.texture
-	$MeshInstance3D.material_override = mat
+	if terrain_mat:
+		$MeshInstance3D.material_override = terrain_mat
+	else:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = terrain.color
+		if terrain.texture:
+			mat.albedo_texture = terrain.texture
+		$MeshInstance3D.material_override = mat
 
 	$StaticBody3D/CollisionShape3D.shape = shape
 
-	_highlight_mat = StandardMaterial3D.new()
-	_highlight_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_highlight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_highlight_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_highlight_mat.albedo_color = Color(1.0, 0.9, 0.2, 0.9)
-	_highlight_mat.emission_enabled = true
-	_highlight_mat.emission = Color(1.0, 0.9, 0.2)
-	_highlight_mat.emission_energy_multiplier = 2.5
-	$HighlightMesh.material_override = _highlight_mat
-
 	position = HexUtil.axial_to_world(coord.x, coord.y)
-	position.y = terrain.height - 0.1
+	position.y = 0.0
 
 	$HighlightMesh.visible = false
 	$FogOverlay.visible = not is_revealed
-	if not is_revealed:
-		_fog_particles = _create_fog_clouds()
 	_create_yield_markers()
 
 
@@ -77,32 +71,39 @@ func _create_yield_markers() -> void:
 		_add_yield_sprite(tex, tint, positions[idx])
 
 
-func _add_yield_sprite(
-	tex: Texture2D, _tint: Color, pos: Vector3,
-) -> void:
-	# Background circle
-	var bg := MeshInstance3D.new()
-	var disc := CylinderMesh.new()
-	disc.top_radius = 0.156
-	disc.bottom_radius = 0.156
-	disc.height = 0.01
-	disc.radial_segments = 16
-	bg.mesh = disc
+static func _ensure_yield_shared() -> void:
+	if _yield_bg_mesh == null:
+		_yield_bg_mesh = CylinderMesh.new()
+		_yield_bg_mesh.top_radius = 0.156
+		_yield_bg_mesh.bottom_radius = 0.156
+		_yield_bg_mesh.height = 0.01
+		_yield_bg_mesh.radial_segments = 16
 	if _parchment_tex == null:
 		_parchment_tex = load(
 			"res://assets/textures/ui/parchment_256_grayscale.png"
 		) as Texture2D
-	var bg_mat := StandardMaterial3D.new()
-	if _parchment_tex:
-		bg_mat.albedo_texture = _parchment_tex
-	bg_mat.albedo_color = Color(0.3, 0.22, 0.15, 0.8)
-	bg_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	bg.material_override = bg_mat
+	if _yield_bg_mat == null:
+		_yield_bg_mat = StandardMaterial3D.new()
+		if _parchment_tex:
+			_yield_bg_mat.albedo_texture = _parchment_tex
+		_yield_bg_mat.albedo_color = Color(0.3, 0.22, 0.15, 0.9)
+		_yield_bg_mat.transparency = (
+			BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		)
+		_yield_bg_mat.alpha_scissor_threshold = 0.3
+		_yield_bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+
+
+func _add_yield_sprite(
+	tex: Texture2D, _tint: Color, pos: Vector3,
+) -> void:
+	_ensure_yield_shared()
+	var bg := MeshInstance3D.new()
+	bg.mesh = _yield_bg_mesh
+	bg.material_override = _yield_bg_mat
 	bg.position = pos
 	bg.cast_shadow = (
-		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	)
 	add_child(bg)
 
@@ -116,7 +117,7 @@ func _add_yield_sprite(
 	sprite.rotation_degrees = Vector3(-90, 0, 0)
 	sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	sprite.cast_shadow = (
-		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	)
 	add_child(sprite)
 	_yield_sprites.append(sprite)
@@ -124,6 +125,10 @@ func _add_yield_sprite(
 
 func _get_yield_positions(count: int) -> Array[Vector3]:
 	var y_off := 0.15
+	if terrain.terrain_name == "Mountain":
+		y_off = 0.85
+	elif terrain.terrain_name == "Forest":
+		y_off = 0.55
 	var spacing := 0.56 if not _has_settlement else 0.72
 	var result: Array[Vector3] = []
 	var start_x := -spacing * (count - 1) * 0.5
@@ -151,9 +156,24 @@ func _reposition_yields() -> void:
 				bg.position = positions[i]
 
 
+func _ensure_highlight_mat() -> void:
+	if _highlight_mat:
+		return
+	_highlight_mat = StandardMaterial3D.new()
+	_highlight_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_highlight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_highlight_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_highlight_mat.albedo_color = Color(1.0, 0.9, 0.2, 0.9)
+	_highlight_mat.emission_enabled = true
+	_highlight_mat.emission = Color(1.0, 0.9, 0.2)
+	_highlight_mat.emission_energy_multiplier = 2.5
+	$HighlightMesh.material_override = _highlight_mat
+
+
 func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> void:
 	$HighlightMesh.visible = value
 	if value:
+		_ensure_highlight_mat()
 		_highlight_mat.albedo_color = color
 		_highlight_mat.emission = Color(color.r, color.g, color.b)
 
@@ -175,155 +195,19 @@ func stop_pulse() -> void:
 	if _pulse_tween:
 		_pulse_tween.kill()
 		_pulse_tween = null
-	_highlight_mat.emission_energy_multiplier = 2.5
+	if _highlight_mat:
+		_highlight_mat.emission_energy_multiplier = 2.5
 
 
 func set_fog(value: bool) -> void:
 	is_revealed = not value
 	$FogOverlay.visible = value
-	if value and _fog_particles == null:
-		_fog_particles = _create_fog_clouds()
-	if _fog_particles:
-		_fog_particles.visible = value
-
-
-func _create_fog_clouds() -> Node3D:
-	var root := Node3D.new()
-	root.position = Vector3(0, 0.55, 0)
-	add_child(root)
-	var cloud_mat := StandardMaterial3D.new()
-	cloud_mat.transparency = (
-		BaseMaterial3D.TRANSPARENCY_ALPHA
-	)
-	cloud_mat.albedo_color = Color(0.6, 0.6, 0.65, 0.2)
-	cloud_mat.cull_mode = BaseMaterial3D.CULL_BACK
-	cloud_mat.render_priority = -1
-	cloud_mat.shading_mode = (
-		BaseMaterial3D.SHADING_MODE_PER_VERTEX
-	)
-	var shadow_mat := StandardMaterial3D.new()
-	shadow_mat.albedo_color = Color.BLACK
-	var cloud_count := 2
-	for i in cloud_count:
-		var angle := randf() * TAU
-		var dist := randf_range(0.0, 0.5)
-		var cluster := Node3D.new()
-		cluster.position = Vector3(
-			cos(angle) * dist,
-			randf_range(-0.05, 0.15),
-			sin(angle) * dist,
-		)
-		root.add_child(cluster)
-		var blob_count := randi_range(2, 3)
-		for j in blob_count:
-			var mesh := SphereMesh.new()
-			mesh.radius = randf_range(0.25, 0.5)
-			mesh.height = randf_range(0.4, 0.7)
-			mesh.radial_segments = 16
-			mesh.rings = 8
-			mesh.material = cloud_mat
-			var mi := MeshInstance3D.new()
-			mi.mesh = mesh
-			var blob_pos := Vector3(
-				randf_range(-0.2, 0.2),
-				randf_range(-0.06, 0.1),
-				randf_range(-0.2, 0.2),
-			)
-			var blob_scale := Vector3(
-				randf_range(0.7, 1.8),
-				randf_range(0.4, 1.0),
-				randf_range(0.7, 1.8),
-			)
-			var blob_rot := Vector3(
-				randf_range(-0.3, 0.3),
-				randf() * TAU,
-				randf_range(-0.3, 0.3),
-			)
-			mi.position = blob_pos
-			mi.scale = blob_scale
-			mi.rotation = blob_rot
-			cluster.add_child(mi)
-			# Shadow caster
-			var shadow_mesh := SphereMesh.new()
-			shadow_mesh.radius = mesh.radius * 0.8
-			shadow_mesh.height = mesh.height * 0.5
-			shadow_mesh.radial_segments = 8
-			shadow_mesh.rings = 4
-			shadow_mesh.material = shadow_mat
-			var shadow_mi := MeshInstance3D.new()
-			shadow_mi.mesh = shadow_mesh
-			shadow_mi.position = blob_pos
-			shadow_mi.scale = blob_scale
-			shadow_mi.rotation = blob_rot
-			shadow_mi.cast_shadow = (
-				GeometryInstance3D
-				.SHADOW_CASTING_SETTING_SHADOWS_ONLY
-			)
-			cluster.add_child(shadow_mi)
-		_animate_cloud(cluster)
-	return root
-
-
-func _animate_cloud(cloud: Node3D) -> void:
-	_animate_cloud_step(cloud)
-	for child in cloud.get_children():
-		if child is MeshInstance3D:
-			_animate_blob_breathe(child)
-
-
-func _animate_cloud_step(cloud: Node3D) -> void:
-	var duration := randf_range(25.0, 45.0)
-	var angle := randf() * TAU
-	var dist := randf_range(1.0, 3.0)
-	var target := Vector3(
-		cos(angle) * dist,
-		randf_range(-0.08, 0.15),
-		sin(angle) * dist,
-	)
-	var tween := create_tween()
-	tween.tween_property(
-		cloud, "position", target, duration
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.finished.connect(
-		func() -> void: _animate_cloud_step(cloud)
-	)
-
-
-func _animate_blob_breathe(blob: MeshInstance3D) -> void:
-	var base_scale := blob.scale
-	_animate_blob_step(blob, base_scale)
-
-
-func _animate_blob_step(
-	blob: MeshInstance3D, base_scale: Vector3,
-) -> void:
-	var duration := randf_range(8.0, 18.0)
-	var factor := randf_range(0.7, 1.3)
-	var target_scale := Vector3(
-		base_scale.x * factor,
-		base_scale.y * randf_range(0.75, 1.25),
-		base_scale.z * factor,
-	)
-	var target_alpha := randf_range(0.4, 1.0)
-	var tween := blob.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(
-		blob, "scale", target_scale, duration
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(
-		blob, "transparency", target_alpha, duration
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.chain().tween_callback(
-		func() -> void: _animate_blob_step(
-			blob, base_scale
-		)
-	)
 
 
 func place_settlement(
 	settlement_name: String,
 	player_color: Color = Color(0.9, 0.2, 0.2),
-	map_data: MapData = null,
+	_map_data: MapData = null,
 ) -> void:
 	_has_settlement = true
 	var tent := _build_procedural_tent(player_color)
@@ -331,13 +215,7 @@ func place_settlement(
 	add_child(tent)
 	_reposition_yields()
 
-	var max_h := terrain.height
-	if map_data:
-		for neighbor in HexUtil.get_neighbors(coord):
-			var nt: TerrainType = map_data.get_terrain(neighbor)
-			if nt and nt.height > max_h:
-				max_h = nt.height
-	var label_y := max_h - (terrain.height - 0.1) + 1.2
+	var label_y := 1.2
 	var label := Label3D.new()
 	label.text = settlement_name
 	label.font = _font_bold

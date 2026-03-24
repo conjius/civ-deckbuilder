@@ -1,6 +1,7 @@
 extends Control
 
 signal card_dropped(card: CardData, target: Vector2i)
+signal card_discarded(card: CardData)
 signal animations_finished
 
 const FLIP_SQUISH: float = 0.12
@@ -22,6 +23,7 @@ var _card_display_scene: PackedScene = preload(
 var _focused_card: Control = null
 var _any_dragging: bool = false
 var _animating: bool = false
+var _discarding: bool = false
 
 
 func _ready() -> void:
@@ -124,28 +126,6 @@ func animate_discard_hand() -> void:
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
 			Tween.EASE_IN
 		)
-		# Flip face down near end of slide
-		var flip_tween := card_ctrl.create_tween()
-		var flip_total := FLIP_SQUISH + FLIP_STRETCH
-		var flip_start := (
-			delay + SLIDE_DURATION - flip_total * 1.2
-		)
-		flip_tween.tween_interval(maxf(flip_start, 0.0))
-		flip_tween.tween_property(
-			card_ctrl, "scale:x", 0.01, FLIP_SQUISH,
-		).set_trans(Tween.TRANS_QUAD).set_ease(
-			Tween.EASE_OUT
-		)
-		flip_tween.tween_callback(
-			func() -> void: card_ctrl.set_face_up(false)
-		)
-		flip_tween.tween_property(
-			card_ctrl, "scale:x",
-			UIHelpers.HAND_DEFAULT_SCALE.x,
-			FLIP_STRETCH,
-		).set_trans(Tween.TRANS_QUAD).set_ease(
-			Tween.EASE_IN
-		)
 	var total := float(n - 1) * DISCARD_STAGGER + SLIDE_DURATION
 	await get_tree().create_timer(maxf(total, 0.01)).timeout
 	for child in get_children():
@@ -160,6 +140,7 @@ func remove_card(card: CardData) -> void:
 		if child.card_data == card:
 			if child == _focused_card:
 				_focused_card = null
+			_discarding = true
 			var discard_pos := _get_discard_pile_local()
 			var card_ctrl: Control = child
 			card_ctrl.z_index = 100
@@ -175,32 +156,20 @@ func remove_card(card: CardData) -> void:
 				card_ctrl, "rotation", 0.0,
 				SLIDE_DURATION * 0.5,
 			).set_trans(Tween.TRANS_SINE)
-			# Flip face down
-			var flip_tween := card_ctrl.create_tween()
-			var ft := FLIP_SQUISH + FLIP_STRETCH
-			var flip_start := SLIDE_DURATION - ft * 1.2
-			flip_tween.tween_interval(maxf(flip_start, 0.0))
-			flip_tween.tween_property(
-				card_ctrl, "scale:x", 0.01,
-				FLIP_SQUISH,
-			).set_trans(Tween.TRANS_QUAD).set_ease(
-				Tween.EASE_OUT
-			)
-			flip_tween.tween_callback(
-				func() -> void:
-					card_ctrl.set_face_up(false)
-			)
-			flip_tween.tween_property(
-				card_ctrl, "scale:x",
-				UIHelpers.HAND_DEFAULT_SCALE.x,
-				FLIP_STRETCH,
-			).set_trans(Tween.TRANS_QUAD).set_ease(
+			tween.tween_property(
+				card_ctrl, "modulate",
+				Color(0.45, 0.45, 0.45, 1.0),
+				SLIDE_DURATION,
+			).set_trans(Tween.TRANS_SINE).set_ease(
 				Tween.EASE_IN
 			)
+			var card_ref: CardData = card
 			tween.chain().tween_callback(
 				func() -> void:
+					_discarding = false
 					child.queue_free()
 					_layout_cards.call_deferred()
+					card_discarded.emit(card_ref)
 			)
 			break
 
@@ -250,7 +219,9 @@ func _get_discard_pile_local() -> Vector2:
 	return Vector2(size.x + 200, size.y * 0.5)
 
 
-func _layout_cards() -> void:
+func _layout_cards(animate: bool = true) -> void:
+	if _discarding:
+		return
 	var cards := _get_card_children()
 	var n := cards.size()
 	if n == 0:
@@ -273,10 +244,31 @@ func _layout_cards() -> void:
 			UIHelpers.HAND_FAN_ANGLE * t
 		)
 		if card != _focused_card:
-			card.position.x = rest_x
-			card.rotation = angle
-			if not _any_dragging:
-				card.position.y = _hidden_y(absf(t))
+			var target_y := _hidden_y(absf(t))
+			if animate:
+				var tw := card.create_tween()
+				tw.set_parallel(true)
+				tw.tween_property(
+					card, "position:x", rest_x, 0.2,
+				).set_trans(Tween.TRANS_SINE).set_ease(
+					Tween.EASE_OUT
+				)
+				tw.tween_property(
+					card, "rotation", angle, 0.2,
+				).set_trans(Tween.TRANS_SINE).set_ease(
+					Tween.EASE_OUT
+				)
+				if not _any_dragging:
+					tw.tween_property(
+						card, "position:y", target_y, 0.2,
+					).set_trans(Tween.TRANS_SINE).set_ease(
+						Tween.EASE_OUT
+					)
+			else:
+				card.position.x = rest_x
+				card.rotation = angle
+				if not _any_dragging:
+					card.position.y = target_y
 
 
 func _get_rest_position(card: Control) -> Vector2:
@@ -314,7 +306,7 @@ func _get_card_children() -> Array[Control]:
 
 
 func _input(event: InputEvent) -> void:
-	if _any_dragging or _animating:
+	if _any_dragging or _animating or _discarding:
 		return
 	if event is InputEventMouseMotion:
 		_update_focus(event.global_position)
@@ -370,6 +362,8 @@ func _focus_card(card: Control) -> void:
 
 
 func _unfocus_card(card: Control) -> void:
+	if _discarding:
+		return
 	if card == _focused_card:
 		_focused_card = null
 	card.z_index = 0
@@ -402,4 +396,5 @@ func _on_drag_ended(
 ) -> void:
 	_any_dragging = false
 	if success:
+		_discarding = true
 		card_dropped.emit(card, target)
