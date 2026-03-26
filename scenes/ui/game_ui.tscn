@@ -57,6 +57,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
+[node name="EndTurnButton" type="Control" parent="FullScreen/VBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+script = ExtResource("7")
+
 [node name="MiddleArea" type="Control" parent="FullScreen/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -66,20 +73,10 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 1
 
-[node name="HBox" type="HBoxContainer" parent="FullScreen/VBox/BottomBar"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CardHand" type="Control" parent="FullScreen/VBox/BottomBar/HBox"]
+[node name="CardHand" type="Control" parent="FullScreen/VBox/BottomBar"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("2")
-
-[node name="EndTurnButton" type="Control" parent="FullScreen/VBox/BottomBar/HBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 8
-script = ExtResource("7")

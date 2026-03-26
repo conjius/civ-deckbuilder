@@ -136,8 +136,3 @@ func _apply_sizes() -> void:
 	bottom_bar.custom_minimum_size = Vector2(
 		0, UIHelpers.BOTTOM_BAR_HEIGHT
 	)
-
-	var hbox: HBoxContainer = bottom_bar.get_node("HBox")
-	hbox.add_theme_constant_override(
-		"separation", UIHelpers.SPACING_LARGE
-	)
