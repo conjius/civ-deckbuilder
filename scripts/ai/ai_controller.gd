@@ -13,19 +13,18 @@ var hex_map: Node3D
 
 
 func initialize(deck: Array[CardData]) -> void:
-	deck_manager.hand_size = 5
 	deck_manager.initialize(deck)
 
 
 func take_turn() -> void:
-	deck_manager.draw_hand()
-	var cards_to_play: Array[CardData] = deck_manager.hand.duplicate()
+	var cards_to_play: Array[CardData] = deck_manager.cards.duplicate()
 	for card in cards_to_play:
+		if card.card_type == CardData.CardType.RESOURCE:
+			continue
 		var targets := card_resolver.get_valid_targets(
 			card, ai_unit.current_coord
 		)
 		if targets.is_empty():
-			deck_manager.play_card(card)
 			continue
 		var target: Vector2i = targets[randi() % targets.size()]
 		var result: CardResolver.CardResult = (
@@ -38,9 +37,7 @@ func take_turn() -> void:
 				if ai_unit.is_moving():
 					await ai_unit.movement_finished
 			await get_tree().create_timer(PLAY_DELAY).timeout
-		else:
-			deck_manager.play_card(card)
-	deck_manager.discard_hand()
+	deck_manager.end_turn()
 	turn_completed.emit()
 
 
@@ -49,9 +46,8 @@ func _handle_result(
 ) -> void:
 	match card.card_type:
 		CardData.CardType.GATHER:
-			ai_unit.state.add_resources(
-				result.materials_gained, result.food_gained
-			)
+			for gained_card: CardData in result.gained_cards:
+				deck_manager.add_card(gained_card)
 		CardData.CardType.SETTLE:
 			var tile: Node3D = hex_map.get_tile(
 				result.settled_coord

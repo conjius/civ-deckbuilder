@@ -19,16 +19,11 @@ var _font_regular: Font = _font_bold
 @onready var full_screen: MarginContainer = $FullScreen
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: Control = %CardHand
-@onready var draw_pile: VBoxContainer = %DrawPile
-@onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: RichTextLabel = %TurnLabel
 @onready var end_turn_button: Control = %EndTurnButton
 @onready var info_label: RichTextLabel = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
-@onready var discard_column: VBoxContainer = (
-	$FullScreen/VBox/BottomBar/HBox/DiscardColumn
-)
 
 
 func _ready() -> void:
@@ -79,7 +74,6 @@ func setup_refs(
 	card_hand.card_effects = p_card_effects
 	card_hand.active_unit = p_unit
 	card_hand.arrow_indicator = p_arrow
-	card_hand.discard_pile = discard_pile
 	unit_info.update_unit(p_unit)
 
 
@@ -87,18 +81,6 @@ func update_turn(turn_number: int) -> void:
 	UIHelpers.set_bbcode(turn_label, UIHelpers.icon_text(
 		"Turn", str(turn_number)
 	))
-
-
-func update_draw_count(count: int) -> void:
-	draw_pile.update_count(count)
-
-
-func update_discard_count(count: int) -> void:
-	discard_pile.update_count(count)
-
-
-func on_card_played(card: CardData) -> void:
-	discard_pile.add_card(card)
 
 
 func update_info(text: String) -> void:
@@ -161,24 +143,4 @@ func _apply_sizes() -> void:
 	var hbox: HBoxContainer = bottom_bar.get_node("HBox")
 	hbox.add_theme_constant_override(
 		"separation", UIHelpers.SPACING_LARGE
-	)
-
-	draw_pile.custom_minimum_size = Vector2(
-		UIHelpers.PILE_WIDTH, 0
-	)
-	var draw_stack: Control = draw_pile.get_node("Stack")
-	draw_stack.custom_minimum_size = Vector2(
-		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-	)
-
-	discard_column.custom_minimum_size = Vector2(
-		UIHelpers.PILE_WIDTH, 0
-	)
-	discard_column.add_theme_constant_override(
-		"separation", UIHelpers.SPACING_SMALL
-	)
-
-	var disc_stack: Control = discard_pile.get_node("Stack")
-	disc_stack.custom_minimum_size = Vector2(
-		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
 	)

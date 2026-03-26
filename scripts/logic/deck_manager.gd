@@ -1,45 +1,36 @@
 class_name DeckManager
 extends RefCounted
 
-var hand_size: int = 5
-var draw_pile: Array[CardData] = []
-var hand: Array[CardData] = []
-var discard_pile: Array[CardData] = []
+var cards: Array[CardData] = []
+var used_this_turn: Array[CardData] = []
 
 
 func initialize(deck: Array[CardData]) -> void:
-	draw_pile = deck.duplicate()
-	hand.clear()
-	discard_pile.clear()
-	draw_pile.shuffle()
-
-
-func draw_hand() -> void:
-	for i in range(hand_size):
-		_draw_card()
+	cards = deck.duplicate()
+	used_this_turn.clear()
 
 
 func play_card(card: CardData) -> bool:
-	var idx := hand.find(card)
+	var idx := cards.find(card)
 	if idx == -1:
 		return false
-	hand.remove_at(idx)
-	discard_pile.append(card)
+	cards.remove_at(idx)
+	used_this_turn.append(card)
 	return true
 
 
-func discard_hand() -> void:
-	discard_pile.append_array(hand)
-	hand.clear()
+func end_turn() -> void:
+	cards.append_array(used_this_turn)
+	used_this_turn.clear()
 
 
-func add_to_discard(card: CardData) -> void:
-	discard_pile.append(card)
+func add_card(card: CardData) -> void:
+	cards.append(card)
 
 
 func count_resources() -> Dictionary:
 	var totals := {"food": 0, "materials": 0}
-	for pile: Array[CardData] in [draw_pile, hand, discard_pile]:
+	for pile: Array[CardData] in [cards, used_this_turn]:
 		for card: CardData in pile:
 			if card.card_type != CardData.CardType.RESOURCE:
 				continue
@@ -49,19 +40,3 @@ func count_resources() -> Dictionary:
 				CardData.ResourceType.MATERIALS:
 					totals["materials"] += card.resource_value
 	return totals
-
-
-func _draw_card() -> void:
-	if draw_pile.is_empty():
-		if discard_pile.is_empty():
-			return
-		_reshuffle_discard()
-	if not draw_pile.is_empty():
-		var card: CardData = draw_pile.pop_back()
-		hand.append(card)
-
-
-func _reshuffle_discard() -> void:
-	draw_pile = discard_pile.duplicate()
-	discard_pile.clear()
-	draw_pile.shuffle()

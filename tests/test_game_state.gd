@@ -2,6 +2,7 @@ extends RefCounted
 
 var _plains: TerrainType
 var _mountain: TerrainType
+var _forest: TerrainType
 var _move_card: CardData
 var _scout_card: CardData
 var _gather_card: CardData
@@ -21,6 +22,13 @@ func before() -> void:
 	_mountain.height = 0.5
 	_mountain.materials_yield = 0
 	_mountain.food_yield = 0
+
+	_forest = TerrainType.new()
+	_forest.terrain_name = "Forest"
+	_forest.is_passable = true
+	_forest.stops_movement = true
+	_forest.materials_yield = 1
+	_forest.food_yield = 1
 
 	_move_card = CardData.new()
 	_move_card.card_name = "March"
@@ -61,61 +69,48 @@ func test_setup_initializes_state() -> void:
 	var gs := _make_game()
 	TestAssert.assert_eq(gs.player.current_coord, Vector2i(0, 0))
 	TestAssert.assert_eq(gs.turn.current_turn, 1)
-	TestAssert.assert_eq(gs.turn.current_phase, TurnStateMachine.Phase.PLAY)
-	TestAssert.assert_eq(gs.deck.hand.size(), 5)
+	TestAssert.assert_eq(
+		gs.turn.current_phase, TurnStateMachine.Phase.PLAY
+	)
+	TestAssert.assert_eq(gs.deck.cards.size(), 5)
 
 
 func test_play_card_move() -> void:
 	var gs := _make_game()
-	var card: CardData = gs.deck.hand[0]
-	if card.card_type != CardData.CardType.MOVE:
-		return
-	var result := gs.play_card(card, Vector2i(1, 0))
+	var result := gs.play_card(_move_card, Vector2i(1, 0))
 	TestAssert.assert_true(result.success)
 	TestAssert.assert_eq(gs.player.current_coord, Vector2i(1, 0))
-	TestAssert.assert_eq(gs.deck.hand.size(), 4)
+	TestAssert.assert_eq(gs.deck.cards.size(), 4)
+	TestAssert.assert_contains(gs.deck.used_this_turn, _move_card)
 
 
 func test_play_card_invalid_target() -> void:
 	var gs := _make_game()
-	var move_in_hand: CardData = null
-	for c in gs.deck.hand:
-		if c.card_type == CardData.CardType.MOVE:
-			move_in_hand = c
-			break
-	if move_in_hand == null:
-		return
-	var result := gs.play_card(move_in_hand, Vector2i(0, -1))
+	var result := gs.play_card(_move_card, Vector2i(0, -1))
 	TestAssert.assert_false(result.success)
 	TestAssert.assert_eq(gs.player.current_coord, Vector2i(0, 0))
+	TestAssert.assert_eq(gs.deck.cards.size(), 5)
 
 
 func test_play_card_not_in_play_phase() -> void:
 	var gs := _make_game()
 	gs.turn.current_phase = TurnStateMachine.Phase.DRAW
-	var card: CardData = gs.deck.hand[0]
-	var result := gs.play_card(card, Vector2i(1, 0))
+	var result := gs.play_card(_move_card, Vector2i(1, 0))
 	TestAssert.assert_false(result.success)
 
 
-func test_end_turn_flow() -> void:
+func test_end_turn_returns_used_cards() -> void:
 	var gs := _make_game()
-	var old_turn := gs.turn.current_turn
+	gs.play_card(_move_card, Vector2i(1, 0))
+	TestAssert.assert_eq(gs.deck.cards.size(), 4)
 	gs.end_turn()
-	TestAssert.assert_eq(gs.turn.current_turn, old_turn + 1)
-	TestAssert.assert_gt(gs.deck.hand.size(), 0)
+	TestAssert.assert_eq(gs.deck.cards.size(), 5)
+	TestAssert.assert_eq(gs.turn.current_turn, 2)
 
 
 func test_gather_adds_resource_cards_to_deck() -> void:
 	var gs := _make_game()
-	var gather_in_hand: CardData = null
-	for c in gs.deck.hand:
-		if c.card_type == CardData.CardType.GATHER:
-			gather_in_hand = c
-			break
-	if gather_in_hand == null:
-		return
-	var result := gs.play_card(gather_in_hand, Vector2i(1, 0))
+	var result := gs.play_card(_gather_card, Vector2i(1, 0))
 	TestAssert.assert_true(result.success)
 	var totals: Dictionary = gs.deck.count_resources()
 	TestAssert.assert_eq(totals["materials"], 1)
@@ -123,47 +118,30 @@ func test_gather_adds_resource_cards_to_deck() -> void:
 
 
 func test_gather_mixed_terrain_produces_both_types() -> void:
-	var forest := TerrainType.new()
-	forest.terrain_name = "Forest"
-	forest.is_passable = true
-	forest.stops_movement = true
-	forest.materials_yield = 1
-	forest.food_yield = 1
 	var map := MapData.new()
 	map.set_terrain(Vector2i(0, 0), _plains)
-	map.set_terrain(Vector2i(1, 0), forest)
-	var deck: Array[CardData] = [_gather_card, _move_card, _move_card, _move_card, _move_card]
+	map.set_terrain(Vector2i(1, 0), _forest)
+	var deck: Array[CardData] = [
+		_gather_card, _move_card, _move_card,
+		_move_card, _move_card,
+	]
 	var gs := GameState.new()
 	gs.setup(map, deck, Vector2i(0, 0))
-	var gather_in_hand: CardData = null
-	for c in gs.deck.hand:
-		if c.card_type == CardData.CardType.GATHER:
-			gather_in_hand = c
-			break
-	if gather_in_hand == null:
-		return
-	gs.play_card(gather_in_hand, Vector2i(1, 0))
+	gs.play_card(_gather_card, Vector2i(1, 0))
 	var totals: Dictionary = gs.deck.count_resources()
 	TestAssert.assert_eq(totals["materials"], 1)
 	TestAssert.assert_eq(totals["food"], 1)
 
 
-func test_gather_cards_in_discard_survive_reshuffle() -> void:
+func test_gather_cards_survive_end_turn() -> void:
 	var gs := _make_game()
-	var gather_in_hand: CardData = null
-	for c in gs.deck.hand:
-		if c.card_type == CardData.CardType.GATHER:
-			gather_in_hand = c
-			break
-	if gather_in_hand == null:
-		return
-	gs.play_card(gather_in_hand, Vector2i(1, 0))
+	gs.play_card(_gather_card, Vector2i(1, 0))
 	var totals_before: Dictionary = gs.deck.count_resources()
 	gs.end_turn()
 	var totals_after: Dictionary = gs.deck.count_resources()
 	TestAssert.assert_eq(
-		totals_after["materials"], totals_before["materials"],
-		"resource cards survive turn cycling",
+		totals_after["materials"],
+		totals_before["materials"],
 	)
 
 
@@ -172,3 +150,17 @@ func test_get_valid_targets() -> void:
 	var targets := gs.get_valid_targets(_move_card)
 	TestAssert.assert_contains(targets, Vector2i(1, 0))
 	TestAssert.assert_not_contains(targets, Vector2i(0, -1))
+
+
+func test_resource_cards_not_playable() -> void:
+	var food := CardData.new()
+	food.card_type = CardData.CardType.RESOURCE
+	food.resource_type = CardData.ResourceType.FOOD
+	food.resource_value = 1
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	var deck: Array[CardData] = [food, _move_card]
+	var gs := GameState.new()
+	gs.setup(map, deck, Vector2i(0, 0))
+	var targets := gs.get_valid_targets(food)
+	TestAssert.assert_size(targets, 0)

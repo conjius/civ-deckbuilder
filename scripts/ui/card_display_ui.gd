@@ -11,7 +11,6 @@ var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: Control
-var discard_pile: Control
 var is_face_up: bool = true
 
 var _dragging: bool = false
@@ -159,24 +158,9 @@ func _end_drag(mouse_pos: Vector2) -> void:
 
 
 func _animate_to_discard(target: Vector2i) -> void:
-	var dest := _original_position
-	if discard_pile:
-		dest = discard_pile.global_position
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(
-		self, "global_position", dest, 0.25
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	tween.tween_property(
-		self, "modulate", Color.WHITE, 0.2
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(
-		self, "scale", Vector2.ONE, 0.2
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.chain().tween_callback(func() -> void:
-		z_index = 0
-		UIHelpers.restore_default_cursor()
-		drag_ended.emit(card_data, target, true)
+	z_index = 0
+	UIHelpers.restore_default_cursor()
+	drag_ended.emit(card_data, target, true
 	)
 
 

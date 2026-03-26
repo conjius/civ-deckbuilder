@@ -21,8 +21,6 @@ func setup(p_map: MapData, starting_deck: Array[CardData], start_coord: Vector2i
 
 	resolver = CardResolver.new(map)
 
-	deck.draw_hand()
-
 
 func play_card(card: CardData, target: Vector2i) -> CardResolver.CardResult:
 	var empty := CardResolver.CardResult.new()
@@ -38,23 +36,16 @@ func play_card(card: CardData, target: Vector2i) -> CardResolver.CardResult:
 			player.move_to(result.new_coord)
 		CardData.CardType.GATHER:
 			for gained_card: CardData in result.gained_cards:
-				deck.add_to_discard(gained_card)
+				deck.add_card(gained_card)
 
 	deck.play_card(card)
-
-	if deck.hand.is_empty():
-		var turn_result := turn.on_hand_empty()
-		if turn_result.turn_ended:
-			deck.draw_hand()
-
 	return result
 
 
 func end_turn() -> void:
 	var result := turn.end_turn()
 	if result.turn_ended:
-		deck.discard_hand()
-		deck.draw_hand()
+		deck.end_turn()
 
 
 func get_valid_targets(card: CardData) -> Array[Vector2i]:

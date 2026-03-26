@@ -8,6 +8,14 @@ var _move_2: CardData = preload("res://resources/cards/move_2.tres")
 var _scout: CardData = preload("res://resources/cards/scout.tres")
 var _gather: CardData = preload("res://resources/cards/gather.tres")
 var _settle: CardData = preload("res://resources/cards/settle.tres")
+var _chicken: CardData = preload("res://resources/cards/chicken.tres")
+var _beef: CardData = preload("res://resources/cards/beef.tres")
+var _pork: CardData = preload("res://resources/cards/pork.tres")
+var _ore: CardData = preload("res://resources/cards/ore.tres")
+var _iron: CardData = preload("res://resources/cards/iron.tres")
+var _copper: CardData = preload("res://resources/cards/copper.tres")
+var _wood: CardData = preload("res://resources/cards/wood.tres")
+var _glass: CardData = preload("res://resources/cards/glass.tres")
 var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
 
@@ -43,16 +51,11 @@ func _ready() -> void:
 	game_ui.end_turn_pressed.connect(_on_end_turn)
 	game_ui.action_pressed.connect(_on_action_pressed)
 	card_manager.card_played.connect(game_ui.card_hand.remove_card)
-	game_ui.card_hand.draw_pile = game_ui.draw_pile
-	game_ui.card_hand.card_discarded.connect(game_ui.on_card_played)
-	card_manager.draw_pile_changed.connect(game_ui.update_draw_count)
-	card_manager.discard_pile_changed.connect(game_ui.update_discard_count)
 	turn_manager.turn_started.connect(_on_turn_started)
 	turn_manager.phase_changed.connect(_on_phase_changed)
 	player_unit.movement_finished.connect(_on_unit_moved)
 	card_effects.gathered.connect(_on_gathered)
 	card_effects.settled.connect(_on_settled)
-	# Cards no longer auto-end turns
 
 	# Build the starter deck
 	var deck: Array[CardData] = [
@@ -61,6 +64,8 @@ func _ready() -> void:
 		_scout, _scout,
 		_gather, _gather,
 		_settle,
+		_chicken, _beef, _pork,
+		_ore, _iron, _copper, _wood, _glass,
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
@@ -89,8 +94,8 @@ func _ready() -> void:
 
 	# Start the game
 	turn_manager.start_game()
-	game_ui.card_hand.animate_draw_hand(
-		card_manager.deck_manager.hand
+	game_ui.card_hand.show_cards(
+		card_manager.deck_manager.cards
 	)
 
 
@@ -144,16 +149,14 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 func _on_end_turn() -> void:
 	hex_map.clear_highlights()
 	game_ui.set_end_turn_enabled(false)
-	# Animate discard
-	await game_ui.card_hand.animate_discard_hand()
-	# AI takes its turn
 	await ai_controller.take_turn()
-	# End turn and draw new hand
 	turn_manager.end_turn()
+	card_manager.end_turn()
 	_highlight_active_unit()
-	game_ui.card_hand.animate_draw_hand(
-		card_manager.deck_manager.hand
+	game_ui.card_hand.show_cards(
+		card_manager.deck_manager.cards
 	)
+	_update_resource_display()
 
 
 func _on_turn_started(turn_number: int) -> void:
@@ -175,9 +178,12 @@ func _on_unit_moved() -> void:
 	_highlight_active_unit()
 
 
-func _on_gathered(cards: Array[CardData]) -> void:
-	for card: CardData in cards:
-		card_manager.deck_manager.add_to_discard(card)
+func _on_gathered(gained_cards: Array[CardData]) -> void:
+	for card: CardData in gained_cards:
+		card_manager.deck_manager.add_card(card)
+	game_ui.card_hand.show_cards(
+		card_manager.deck_manager.cards
+	)
 	_update_resource_display()
 
 

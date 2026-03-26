@@ -1,11 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://game_ui_001"]
+[gd_scene load_steps=5 format=3 uid="uid://game_ui_001"]
 
 [ext_resource type="Script" path="res://scripts/ui/game_ui.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/card_hand_ui.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/unit_info.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/resource_tracker.tscn" id="4"]
-[ext_resource type="Script" path="res://scripts/ui/draw_pile_ui.gd" id="5"]
-[ext_resource type="Script" path="res://scripts/ui/discard_pile_ui.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/ui/end_turn_button_ui.gd" id="7"]
 
 [node name="GameUI" type="CanvasLayer"]
@@ -78,24 +76,6 @@ mouse_filter = 1
 layout_mode = 2
 mouse_filter = 2
 
-[node name="DrawPile" type="VBoxContainer" parent="FullScreen/VBox/BottomBar/HBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 8
-mouse_filter = 2
-script = ExtResource("5")
-
-[node name="Stack" type="Control" parent="FullScreen/VBox/BottomBar/HBox/DrawPile"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CountLabel" type="RichTextLabel" parent="FullScreen/VBox/BottomBar/HBox/DrawPile"]
-layout_mode = 2
-mouse_filter = 2
-bbcode_enabled = true
-fit_content = true
-text = "Draw: 0"
-
 [node name="CardHand" type="Control" parent="FullScreen/VBox/BottomBar/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -104,32 +84,8 @@ size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("2")
 
-[node name="DiscardColumn" type="VBoxContainer" parent="FullScreen/VBox/BottomBar/HBox"]
-layout_mode = 2
-size_flags_vertical = 8
-mouse_filter = 2
-theme_override_constants/separation = 8
-
-[node name="EndTurnButton" type="Control" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn"]
+[node name="EndTurnButton" type="Control" parent="FullScreen/VBox/BottomBar/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
 script = ExtResource("7")
-
-[node name="DiscardPile" type="VBoxContainer" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 10
-mouse_filter = 2
-script = ExtResource("6")
-
-[node name="Stack" type="Control" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn/DiscardPile"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CountLabel" type="RichTextLabel" parent="FullScreen/VBox/BottomBar/HBox/DiscardColumn/DiscardPile"]
-layout_mode = 2
-mouse_filter = 2
-bbcode_enabled = true
-fit_content = true
-text = "Discard: 0"
