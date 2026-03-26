@@ -186,25 +186,14 @@ static func _build_resource_footer(
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var type_name: String
 	var icon_name: String
 	if card.resource_type == CardData.ResourceType.FOOD:
-		type_name = "Food"
 		icon_name = "Food"
 	else:
-		type_name = "Materials"
 		icon_name = "Materials"
-	var icon_sz: int = int(
-		UIHelpers.FONT_UNIT_STAT * 1.2 * UIHelpers.ICON_SCALE
-	)
-	var icon_path: String = UIHelpers.ENTITY_ICONS.get(
-		icon_name, ""
-	) as String
-	var num_sz: int = UIHelpers.FONT_STAT_NUM
-	var text := (
-		"[center]%s  [img=%d]%s[/img]"
-		+ "  [font_size=%d]%d[/font_size][/center]"
-	) % [type_name, icon_sz, icon_path, num_sz, card.resource_value]
+	var text := "[center]" + UIHelpers.icon_text(
+		icon_name, str(card.resource_value)
+	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
 
