@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Curved arrow: tail at bottom-left, arcs above center, ends pointing slightly down-right -->
-  <path d="M8 52 Q20 8 38 28" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-  <!-- Large arrowhead -->
-  <polygon points="42,28 26,18 30,38" fill="#222"/>
-  <!-- X mark near right edge, vertically centered, with gap from arrowhead -->
-  <line x1="50" y1="24" x2="60" y2="36" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-  <line x1="60" y1="24" x2="50" y2="36" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+  <!-- Curved arrow: tail at top-left, arcs up, sweeps down toward bottom-right -->
+  <path d="M6 10 Q4 -4 36 20 Q50 30 42 42" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+  <!-- Large arrowhead pointing toward bottom-right -->
+  <polygon points="46,44 34,34 38,48" fill="#222"/>
+  <!-- X mark at bottom-right corner, slightly larger -->
+  <line x1="50" y1="48" x2="62" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="62" y1="48" x2="50" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
 </svg>
