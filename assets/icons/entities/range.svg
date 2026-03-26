@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Curved arrow: tail at top-left, arcs up, sweeps down toward bottom-right -->
-  <path d="M6 10 Q4 -4 36 20 Q50 30 42 42" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-  <!-- Large arrowhead pointing toward bottom-right -->
-  <polygon points="46,44 34,34 38,48" fill="#222"/>
-  <!-- X mark at bottom-right corner, slightly larger -->
-  <line x1="50" y1="48" x2="62" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
-  <line x1="62" y1="48" x2="50" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Frown parabola: starts bottom-left, peaks above center, descends toward bottom-right -->
+  <path d="M4 56 Q32 4 48 44" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+  <!-- Arrowhead at end of curve, pointing toward bottom-right -->
+  <polygon points="50,48 40,36 44,50" fill="#222"/>
+  <!-- X mark at bottom-right corner -->
+  <line x1="52" y1="50" x2="62" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="62" y1="50" x2="52" y2="62" stroke="#222" stroke-width="4.5" stroke-linecap="round"/>
 </svg>
