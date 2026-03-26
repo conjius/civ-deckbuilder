@@ -2,7 +2,7 @@
   <!-- Curved arrow: tail at bottom-left, arcs above center, ends pointing slightly down-right -->
   <path d="M8 52 Q20 8 38 28" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
   <!-- Large arrowhead -->
-  <polygon points="38,28 28,22 32,33" fill="#222"/>
+  <polygon points="42,28 26,18 30,38" fill="#222"/>
   <!-- X mark near right edge, vertically centered, with gap from arrowhead -->
   <line x1="50" y1="24" x2="60" y2="36" stroke="#222" stroke-width="4" stroke-linecap="round"/>
   <line x1="60" y1="24" x2="50" y2="36" stroke="#222" stroke-width="4" stroke-linecap="round"/>

@@ -53,7 +53,7 @@ const HAND_TWEEN_DURATION: float = 0.18
 const HAND_FAN_ANGLE: float = 8.0
 
 const CONTAINER_SCALE: float = 0.91
-const ICON_SCALE: float = 0.91
+const ICON_SCALE: float = 1.274
 const _CARD_INNER_W: int = CARD_WIDTH - CARD_BORDER * 2
 const _CARD_INNER_H: int = (
 	CARD_HEIGHT - CARD_BORDER * 2 - CARD_PADDING * 2
