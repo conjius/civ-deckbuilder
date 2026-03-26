@@ -2,7 +2,7 @@
   <!-- Frown parabola: bottom-left, peak at top-center, ends earlier on right -->
   <path d="M4 56 Q32 -8 38 32" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
   <!-- Arrowhead: larger triangle pointing toward bottom-right (toward the X) -->
-  <polygon points="14,14 32,26 26,8" fill="#222"/>
+  <polygon points="26,26 44,38 38,20" fill="#222"/>
   <!-- X mark at bottom-right corner, large -->
   <line x1="47" y1="44" x2="64" y2="64" stroke="#222" stroke-width="5.5" stroke-linecap="round"/>
   <line x1="64" y1="44" x2="47" y2="64" stroke="#222" stroke-width="5.5" stroke-linecap="round"/>
