@@ -136,7 +136,6 @@ func _toggle_gallery() -> void:
 
 func _on_gallery_closing() -> void:
 	_animate_overlay(false)
-	_slide_hand_in()
 	_slide_ui_in()
 
 
@@ -175,7 +174,7 @@ func _slide_ui_in() -> void:
 
 
 func _on_gallery_closed() -> void:
-	pass
+	_slide_hand_in()
 
 
 func _animate_overlay(show: bool) -> void:
@@ -218,7 +217,6 @@ func _slide_hand_out() -> void:
 
 func _slide_hand_in() -> void:
 	var tween := bottom_bar.create_tween()
-	tween.tween_interval(0.3)
 	tween.set_parallel(true)
 	tween.tween_property(
 		bottom_bar, "position:y", _hand_original_pos.y, 0.35,
