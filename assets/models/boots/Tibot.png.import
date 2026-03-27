@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3e6wg1pvvlxr"
 path.s3tc="res://.godot/imported/Tibot.png-4c961ecf8c7ab532cd6fbcdacbd50ccc.s3tc.ctex"
+path.etc2="res://.godot/imported/Tibot.png-4c961ecf8c7ab532cd6fbcdacbd50ccc.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/models/boots/Tibot.png"
-dest_files=["res://.godot/imported/Tibot.png-4c961ecf8c7ab532cd6fbcdacbd50ccc.s3tc.ctex"]
+dest_files=["res://.godot/imported/Tibot.png-4c961ecf8c7ab532cd6fbcdacbd50ccc.s3tc.ctex", "res://.godot/imported/Tibot.png-4c961ecf8c7ab532cd6fbcdacbd50ccc.etc2.ctex"]
 
 [params]
 

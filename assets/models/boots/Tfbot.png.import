@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dry1pbq7vk4yy"
 path.s3tc="res://.godot/imported/Tfbot.png-4f0b1a8313d67cf1cd2c7eb514d81076.s3tc.ctex"
+path.etc2="res://.godot/imported/Tfbot.png-4f0b1a8313d67cf1cd2c7eb514d81076.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/models/boots/Tfbot.png"
-dest_files=["res://.godot/imported/Tfbot.png-4f0b1a8313d67cf1cd2c7eb514d81076.s3tc.ctex"]
+dest_files=["res://.godot/imported/Tfbot.png-4f0b1a8313d67cf1cd2c7eb514d81076.s3tc.ctex", "res://.godot/imported/Tfbot.png-4f0b1a8313d67cf1cd2c7eb514d81076.etc2.ctex"]
 
 [params]
 

@@ -99,11 +99,26 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
+      - name: Capture screenshots
+        run: |
+          mkdir -p screenshots
+          /Applications/Godot.app/Contents/MacOS/Godot --path . --autoload res://scripts/tools/screenshot_capture.gd 2>&1 || true
+          ls -la screenshots/
+        timeout-minutes: 2
+        continue-on-error: true
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: civ-deckbuilder-macOS
           path: build/civ-deckbuilder.zip
+
+      - name: Upload screenshots
+        if: hashFiles('screenshots/screenshot-main.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
 
   publish:
     needs: export
@@ -155,6 +170,13 @@ jobs:
           name: civ-deckbuilder-macOS
           path: build
 
+      - name: Download screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+        continue-on-error: true
+
       - name: Rename artifact with version
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
@@ -166,20 +188,35 @@ jobs:
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
           IS_STABLE="${{ needs.publish.outputs.is_stable }}"
+          FILES="build/civ-deckbuilder-${TAG}-macOS.zip"
+          if [ -f screenshots/screenshot-main.png ]; then
+            FILES="$FILES screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
+          fi
           if [ "$IS_STABLE" = "true" ]; then
-            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+            gh release create "$TAG" $FILES \
               --title "$TAG" \
               --notes "Automated build from commit ${{ github.sha }}" \
               --latest
           else
-            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+            gh release create "$TAG" $FILES \
               --title "$TAG" \
               --notes "Automated build from commit ${{ github.sha }}" \
               --prerelease
           fi
 
-      - name: Update stable tag
+      - name: Update stable tag and screenshots
         if: needs.publish.outputs.is_stable == 'true'
         run: |
           git tag -f stable
           git push origin stable --force
+          gh release delete stable --yes 2>/dev/null || true
+          STABLE_FILES=""
+          if [ -f screenshots/screenshot-main.png ]; then
+            STABLE_FILES="screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
+          fi
+          if [ -n "$STABLE_FILES" ]; then
+            gh release create stable $STABLE_FILES \
+              --title "stable" \
+              --notes "Latest stable release screenshots" \
+              --latest
+          fi

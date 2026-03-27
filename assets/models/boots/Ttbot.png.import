@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bw7lur8r3nen6"
 path.s3tc="res://.godot/imported/Ttbot.png-0fe950528965ec619bc4062bea63aaec.s3tc.ctex"
+path.etc2="res://.godot/imported/Ttbot.png-0fe950528965ec619bc4062bea63aaec.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/models/boots/Ttbot.png"
-dest_files=["res://.godot/imported/Ttbot.png-0fe950528965ec619bc4062bea63aaec.s3tc.ctex"]
+dest_files=["res://.godot/imported/Ttbot.png-0fe950528965ec619bc4062bea63aaec.s3tc.ctex", "res://.godot/imported/Ttbot.png-0fe950528965ec619bc4062bea63aaec.etc2.ctex"]
 
 [params]
 
