@@ -82,13 +82,9 @@ func _gui_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if _needs_cursor_update and _drag_cursor_tex != null:
 		_needs_cursor_update = false
-		@warning_ignore("integer_division")
-		var hotspot := Vector2(
-			UIHelpers.DRAG_CURSOR_SIZE / 2,
-			UIHelpers.DRAG_CURSOR_SIZE / 2,
-		)
+		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
 		Input.set_custom_mouse_cursor(
-			_drag_cursor_tex, Input.CURSOR_ARROW, hotspot
+			_drag_cursor_tex, Input.CURSOR_ARROW, Vector2(1, 1)
 		)
 
 
