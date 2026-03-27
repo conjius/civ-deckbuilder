@@ -70,8 +70,12 @@ func _gui_input(event: InputEvent) -> void:
 				_start_drag()
 				accept_event()
 			elif not event.pressed and _dragging:
-				_end_drag(event.global_position)
-				accept_event()
+				var elapsed: int = (
+					Time.get_ticks_msec() - _drag_start_time
+				)
+				if elapsed >= MIN_DRAG_MS:
+					_end_drag(event.global_position)
+					accept_event()
 
 
 func _apply_drag_cursor() -> void:
