@@ -1,7 +1,7 @@
 # civ-deckbuilder
 
 [![CI](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml)
-[![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?filter=v*.*.*&exclude_prereleases&label=stable)](https://github.com/conjius/civ-deckbuilder/releases/latest)
+[![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?label=stable)](https://github.com/conjius/civ-deckbuilder/releases/latest)
 [![Nightly](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?include_prereleases&label=nightly)](https://github.com/conjius/civ-deckbuilder/releases)
 
 A hex-based civilization strategy game with deckbuilding mechanics, built in Godot 4.6.
