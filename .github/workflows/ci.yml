@@ -95,7 +95,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.3.${PATCH}-stable" >> "$GITHUB_OUTPUT"
       - name: upload
         uses: actions/upload-artifact@v7
         with:
@@ -117,7 +117,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.3.${PATCH}-stable" >> "$GITHUB_OUTPUT"
       - name: announce
         run: echo "::notice::Version ${{ steps.version.outputs.tag }}"
       - name: tag
