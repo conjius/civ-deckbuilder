@@ -192,14 +192,11 @@ jobs:
           sudo cp -R Godot.app /Applications/Godot.app
       - name: capture
         run: |
+          GODOT=/Applications/Godot.app/Contents/MacOS/Godot
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          /Applications/Godot.app/Contents/MacOS/Godot --editor --quit 2>&1 | tail -3 || true
-          /Applications/Godot.app/Contents/MacOS/Godot --path . --resolution 1920x1080 2>&1 &
-          GODOT_PID=$!
-          sleep 15
-          kill $GODOT_PID 2>/dev/null || true
-          wait $GODOT_PID 2>/dev/null || true
+          timeout 30 $GODOT --headless --editor --quit 2>&1 | tail -3 || true
+          timeout 15 $GODOT --path . --resolution 1920x1080 2>&1 || true
           SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
           cp "$SS_DIR"/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
