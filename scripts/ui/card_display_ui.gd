@@ -75,15 +75,17 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _apply_drag_cursor() -> void:
-	if _drag_cursor_tex:
-		@warning_ignore("integer_division")
-		var hotspot := Vector2(
-			UIHelpers.DRAG_CURSOR_SIZE / 2,
-			UIHelpers.DRAG_CURSOR_SIZE / 2,
-		)
-		Input.set_custom_mouse_cursor(
-			_drag_cursor_tex, Input.CURSOR_ARROW, hotspot
-		)
+	if _drag_cursor_tex == null:
+		print("[DRAG] cursor tex is null")
+		return
+	@warning_ignore("integer_division")
+	var hotspot := Vector2(
+		UIHelpers.DRAG_CURSOR_SIZE / 2,
+		UIHelpers.DRAG_CURSOR_SIZE / 2,
+	)
+	Input.set_custom_mouse_cursor(
+		_drag_cursor_tex, Input.CURSOR_ARROW, hotspot
+	)
 
 
 func _input(event: InputEvent) -> void:
