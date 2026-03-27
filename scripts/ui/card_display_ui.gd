@@ -25,6 +25,7 @@ var _footer_section: PanelContainer
 var _footer_label: Control
 var _is_blocked: bool = false
 var _valid_targets: Array[Vector2i] = []
+var _drag_cursor_tex: ImageTexture
 var _card_back: Control
 var _face_container: Control
 
@@ -73,10 +74,23 @@ func _gui_input(event: InputEvent) -> void:
 				accept_event()
 
 
+func _apply_drag_cursor() -> void:
+	if _drag_cursor_tex:
+		@warning_ignore("integer_division")
+		var hotspot := Vector2(
+			UIHelpers.DRAG_CURSOR_SIZE / 2,
+			UIHelpers.DRAG_CURSOR_SIZE / 2,
+		)
+		Input.set_custom_mouse_cursor(
+			_drag_cursor_tex, Input.CURSOR_ARROW, hotspot
+		)
+
+
 func _input(event: InputEvent) -> void:
 	if not _dragging:
 		return
 	if event is InputEventMouseMotion:
+		_apply_drag_cursor()
 		_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
@@ -94,10 +108,10 @@ func _start_drag() -> void:
 	_original_position = global_position
 	z_index = 100
 	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
-	if icon_tex:
-		UIHelpers.set_drag_cursor(
-			icon_tex, card_data.card_color
-		)
+	_drag_cursor_tex = UIHelpers.make_drag_cursor_tex(
+		icon_tex, card_data.card_color
+	)
+	_apply_drag_cursor()
 	_valid_targets.clear()
 	if hex_map and card_effects and active_unit:
 		_valid_targets = card_effects.get_valid_targets(
