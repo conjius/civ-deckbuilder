@@ -199,6 +199,21 @@ jobs:
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
           kill %1 2>/dev/null || true
+      - name: validate
+        run: |
+          FAIL=0
+          for f in screenshot-main.png screenshot-gallery.png; do
+            if [ ! -f "screenshots/$f" ]; then
+              echo "FAIL: $f missing"
+              FAIL=1
+            elif [ $(stat -f%z "screenshots/$f" 2>/dev/null || stat -c%s "screenshots/$f") -lt 50000 ]; then
+              echo "FAIL: $f too small (likely blank)"
+              FAIL=1
+            else
+              echo "OK: $f ($(stat -f%z "screenshots/$f" 2>/dev/null || stat -c%s "screenshots/$f") bytes)"
+            fi
+          done
+          exit $FAIL
         timeout-minutes: 2
       - name: upload
         env:
