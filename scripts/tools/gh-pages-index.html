@@ -50,12 +50,13 @@ var srcs=['screenshot-main.png','screenshot-gallery.png']
 var keys=['main','gallery']
 var currentIdx=0
 var modalOpen=false
-var cameFromExternal=!!document.referrer&&!document.referrer.includes(location.hostname)
-function openModal(idx){
+var openedViaDeepLink=false
+function openModal(idx,deepLink){
   currentIdx=idx
   document.getElementById('modalImg').src=srcs[idx]
   document.getElementById('modal').classList.add('open')
-  if(!modalOpen&&!cameFromExternal)history.pushState({modal:true},'','#'+keys[idx])
+  openedViaDeepLink=!!deepLink
+  if(!deepLink&&!modalOpen)history.pushState({modal:true},'','#'+keys[idx])
   modalOpen=true
   document.body.style.visibility='visible'
 }
@@ -65,7 +66,7 @@ function closeModal(){
   document.getElementById('modal').classList.remove('open')
 }
 function closeAndBack(){
-  if(cameFromExternal){history.back()}
+  if(openedViaDeepLink){history.back()}
   else{closeModal();history.replaceState(null,'',location.pathname)}
 }
 function navigate(dir){
@@ -83,7 +84,7 @@ document.addEventListener('keydown',function(e){
 function checkHash(){
   var h=location.hash.slice(1)
   var idx=keys.indexOf(h)
-  if(idx>=0)openModal(idx)
+  if(idx>=0)openModal(idx,true)
 }
 if(location.hash)checkHash()
 window.addEventListener('hashchange',function(){
