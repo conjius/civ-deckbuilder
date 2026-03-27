@@ -23,13 +23,13 @@ func _process(delta: float) -> void:
 		print("[SS] frame=" + str(_frame_count) + " elapsed=" + str(snapped(_elapsed, 0.1)))
 	if _state == 0 and _elapsed >= 2.0:
 		print("[SS] Capturing main")
-		_capture("screenshot-main.png")
+		_capture("screenshot-main.jpg")
 		_open_gallery()
 		_state = 1
 		_elapsed = 0.0
 	elif _state == 1 and _elapsed >= 2.0:
 		print("[SS] Capturing gallery")
-		_capture("screenshot-gallery.png")
+		_capture("screenshot-gallery.jpg")
 		get_tree().quit()
 
 
@@ -39,7 +39,7 @@ func _capture(filename: String) -> void:
 	if img == null:
 		print("[SS] ERROR: image is null for " + filename)
 		return
-	var err := img.save_png(path)
+	var err := img.save_jpg(path, 0.85)
 	print("[SS] Saved " + filename + ": " + str(img.get_size()) + " err=" + str(err))
 
 

@@ -32,7 +32,7 @@ echo "==> Restoring project.godot..."
 cleanup
 
 echo "==> Checking screenshots..."
-if [ ! -f "$SS_DIR/screenshot-main.png" ] || [ ! -f "$SS_DIR/screenshot-gallery.png" ]; then
+if [ ! -f "$SS_DIR/screenshot-main.jpg" ] || [ ! -f "$SS_DIR/screenshot-gallery.jpg" ]; then
     echo "FAIL: Screenshots not captured"
     ls -la "$SS_DIR/" 2>/dev/null
     exit 1
@@ -41,11 +41,11 @@ fi
 echo "==> Pushing to gh-pages..."
 TMPDIR=$(mktemp -d)
 git clone --branch gh-pages --depth 1 "$(git remote get-url origin)" "$TMPDIR"
-cp "$SS_DIR/screenshot-main.png" "$TMPDIR/"
-cp "$SS_DIR/screenshot-gallery.png" "$TMPDIR/"
+cp "$SS_DIR/screenshot-main.jpg" "$TMPDIR/"
+cp "$SS_DIR/screenshot-gallery.jpg" "$TMPDIR/"
 cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
 cd "$TMPDIR"
-git add screenshot-main.png screenshot-gallery.png index.html
+git add screenshot-main.jpg screenshot-gallery.jpg index.html
 git commit -m "Update screenshots from local machine" || true
 git push
 rm -rf "$TMPDIR"
