@@ -11,16 +11,12 @@ func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(_output_dir)
 	print("[SS] Screenshot dir: " + _output_dir)
 	print("[SS] Viewport size: " + str(get_viewport().size))
-	# Disable expensive features for software renderer
-	RenderingServer.directional_shadow_atlas_set_size(256, false)
-	get_viewport().positional_shadow_atlas_size = 256
-	get_viewport().msaa_3d = Viewport.MSAA_DISABLED
 
 
 func _process(delta: float) -> void:
 	_elapsed += delta
 	_frame_count += 1
-	if _frame_count % 5 == 0:
+	if _frame_count % 10 == 0:
 		print("[SS] frame=" + str(_frame_count) + " elapsed=" + str(snapped(_elapsed, 0.1)))
 	if _state == 0 and _elapsed >= 2.0:
 		print("[SS] Capturing main")

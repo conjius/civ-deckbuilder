@@ -169,36 +169,29 @@ jobs:
   screenshots:
     needs: release
     if: contains(github.event.head_commit.message, '#stable-release')
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     permissions:
       contents: write
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/cache@v5
+        id: godot-cache
         with:
-          path: /usr/local/bin/godot
-          key: godot-linux-${{ env.GODOT_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: .godot/imported
-          key: import-screenshots-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
-          restore-keys: import-screenshots-
+          path: /Applications/Godot.app
+          key: godot-macos-app-${{ env.GODOT_VERSION }}
       - name: setup
+        if: steps.godot-cache.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get install -y -qq xvfb 2>/dev/null || true
-          if [ ! -f /usr/local/bin/godot ]; then
-            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
-            chmod +x /usr/local/bin/godot
-          fi
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
+          sudo cp -R Godot.app /Applications/Godot.app
       - name: capture
         run: |
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 | tail -3 || true
-          timeout 90 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . --rendering-driver opengl3 2>&1 || true
+          /Applications/Godot.app/Contents/MacOS/Godot --editor --quit 2>&1 | tail -3 || true
+          timeout 20 /Applications/Godot.app/Contents/MacOS/Godot --path . 2>&1 || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
           kill %1 2>/dev/null || true
