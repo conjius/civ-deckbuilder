@@ -4,7 +4,7 @@ extends Control
 signal closing
 signal closed
 
-const COLS := 5
+const COLS := 6
 const ROW_GAP := 20
 const COL_GAP := 16
 const PADDING := 30
