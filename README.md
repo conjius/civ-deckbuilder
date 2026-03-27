@@ -8,9 +8,9 @@
 
 ## Description
 <p align="center">
-  <a href="https://conjius.github.io/civ-deckbuilder/#main"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-main.jpg?v=2" width="48%" alt=""></a>
+  <a href="https://conjius.github.io/civ-deckbuilder/#main"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-main.jpg?v=3" width="48%" alt=""></a>
   &nbsp;
-  <a href="https://conjius.github.io/civ-deckbuilder/#gallery"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-gallery.jpg?v=2" width="48%" alt=""></a>
+  <a href="https://conjius.github.io/civ-deckbuilder/#gallery"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-gallery.jpg?v=3" width="48%" alt=""></a>
 </p>
 
 A hex-based civilization strategy game with deckbuilding mechanics, built in Godot 4.6.
