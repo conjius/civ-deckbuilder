@@ -165,5 +165,50 @@ jobs:
               --prerelease
           fi
 
-  # Screenshots taken locally via git pre-push hook (needs GPU)
-  # Run manually: bash scripts/tools/take_screenshots.sh
+  screenshots:
+    needs: tag-release
+    if: contains(github.event.head_commit.message, '#stable-release')
+    runs-on: [self-hosted, gpu]
+    permissions:
+      contents: write
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - name: capture
+        run: |
+          GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
+          cp project.godot project.godot.bak
+          echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+          sed -i '' 's/\[display\]/[display]\nwindow\/size\/initial_position_type=0\nwindow\/size\/initial_position=Vector2i(-4000, -4000)/' project.godot
+          $GODOT --headless --editor --quit 2>/dev/null || true
+          mkdir -p screenshots
+          CIV_SCREENSHOTS=1 $GODOT --path . --resolution 1920x1080 2>/dev/null &
+          PID=$!
+          sleep 10
+          kill $PID 2>/dev/null; wait $PID 2>/dev/null || true
+          mv project.godot.bak project.godot
+          SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
+          cp "$SS_DIR"/*.png screenshots/ 2>/dev/null || true
+      - name: validate
+        run: |
+          for f in screenshot-main.png screenshot-gallery.png; do
+            if [ ! -f "screenshots/$f" ] || [ $(stat -f%z "screenshots/$f") -lt 50000 ]; then
+              echo "FAIL: $f missing or blank" && exit 1
+            fi
+            echo "OK: $f ($(stat -f%z "screenshots/$f") bytes)"
+          done
+      - name: upload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+          gh release upload "$TAG" screenshots/screenshot-main.png screenshots/screenshot-gallery.png --clobber
+          TMPDIR=$(mktemp -d)
+          git clone --branch gh-pages --depth 1 "$(git remote get-url origin)" "$TMPDIR"
+          cp screenshots/screenshot-*.png "$TMPDIR/"
+          cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
+          cd "$TMPDIR"
+          git add screenshot-main.png screenshot-gallery.png index.html
+          git commit -m "Update screenshots" || true
+          git push
+          rm -rf "$TMPDIR"
