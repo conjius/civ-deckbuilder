@@ -246,10 +246,19 @@ func _update_hover(mouse_pos: Vector2) -> void:
 		)
 	if arrow_indicator and camera:
 		var to_pos := _screen_to_ground(mouse_pos)
-		if hovered != Vector2i(-999, -999) and _is_valid_target(hovered):
+		var snapped := (
+			hovered != Vector2i(-999, -999)
+			and _is_valid_target(hovered)
+		)
+		if snapped:
 			to_pos = HexUtil.axial_to_world(
 				hovered.x, hovered.y
 			)
+		else:
+			var dir := to_pos - from_pos
+			var dist := dir.length()
+			if dist > 1.5:
+				to_pos = from_pos + dir.normalized() * (dist - 1.5)
 		var col := Color(
 			card_data.card_color.r,
 			card_data.card_color.g,
