@@ -255,10 +255,14 @@ func _update_hover(mouse_pos: Vector2) -> void:
 				hovered.x, hovered.y
 			)
 		else:
-			var dir := to_pos - from_pos
-			var dist := dir.length()
-			if dist > 1.5:
-				to_pos = from_pos + dir.normalized() * (dist - 1.5)
+			var to_screen := camera.unproject_position(to_pos)
+			var from_screen := camera.unproject_position(from_pos)
+			var screen_dir := to_screen - from_screen
+			var screen_dist := screen_dir.length()
+			var pull_back_px := float(UIHelpers.DRAG_CURSOR_SIZE) * 0.6
+			if screen_dist > pull_back_px:
+				var shortened := to_screen - screen_dir.normalized() * pull_back_px
+				to_pos = _screen_to_ground(shortened)
 		var col := Color(
 			card_data.card_color.r,
 			card_data.card_color.g,
