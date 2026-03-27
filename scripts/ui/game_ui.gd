@@ -31,20 +31,9 @@ var _font_regular: Font = _font_bold
 
 func _ready() -> void:
 	_dim_overlay = ColorRect.new()
-	_dim_overlay.color = Color.WHITE
+	_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_dim_overlay.visible = false
-	var blur_shader: Shader = load(
-		"res://assets/shaders/screen_blur.gdshader"
-	) as Shader
-	if blur_shader:
-		var mat := ShaderMaterial.new()
-		mat.shader = blur_shader
-		mat.set_shader_parameter("blur_amount", 0.0)
-		mat.set_shader_parameter(
-			"tint_color", Color(0.0, 0.0, 0.0, 0.0)
-		)
-		_dim_overlay.material = mat
 	add_child(_dim_overlay)
 	card_gallery = CardGalleryUI.new()
 	card_gallery.visible = false
@@ -143,55 +132,24 @@ func _toggle_gallery() -> void:
 
 
 func _animate_overlay(show: bool) -> void:
-	var mat: ShaderMaterial = (
-		_dim_overlay.material as ShaderMaterial
-	)
 	if show:
 		var vp := get_viewport().get_visible_rect().size
 		_dim_overlay.position = Vector2.ZERO
 		_dim_overlay.size = vp
+		_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 		_dim_overlay.visible = true
-		if mat:
-			var tween := create_tween()
-			tween.set_parallel(true)
-			tween.tween_method(
-				func(v: float) -> void:
-					mat.set_shader_parameter(
-						"blur_amount", v
-					),
-				0.0, 3.0, 0.3,
-			).set_trans(Tween.TRANS_SINE)
-			tween.tween_method(
-				func(v: float) -> void:
-					mat.set_shader_parameter(
-						"tint_color",
-						Color(0.0, 0.0, 0.0, v),
-					),
-				0.0, 0.55, 0.3,
-			).set_trans(Tween.TRANS_SINE)
+		var tween := create_tween()
+		tween.tween_property(
+			_dim_overlay, "color:a", 0.6, 0.25,
+		).set_trans(Tween.TRANS_SINE)
 	else:
-		if mat:
-			var tween := create_tween()
-			tween.set_parallel(true)
-			tween.tween_method(
-				func(v: float) -> void:
-					mat.set_shader_parameter(
-						"blur_amount", v
-					),
-				3.0, 0.0, 0.25,
-			).set_trans(Tween.TRANS_SINE)
-			tween.tween_method(
-				func(v: float) -> void:
-					mat.set_shader_parameter(
-						"tint_color",
-						Color(0.0, 0.0, 0.0, v),
-					),
-				0.55, 0.0, 0.25,
-			).set_trans(Tween.TRANS_SINE)
-			tween.chain().tween_callback(
-				func() -> void:
-					_dim_overlay.visible = false
-			)
+		var tween := create_tween()
+		tween.tween_property(
+			_dim_overlay, "color:a", 0.0, 0.25,
+		).set_trans(Tween.TRANS_SINE)
+		tween.tween_callback(
+			func() -> void: _dim_overlay.visible = false
+		)
 
 
 func _slide_hand_out() -> void:
