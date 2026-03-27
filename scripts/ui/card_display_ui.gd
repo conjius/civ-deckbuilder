@@ -92,11 +92,25 @@ func _show_cursor_node() -> void:
 	_cursor_node.custom_minimum_size = Vector2(sz, sz)
 	_cursor_node.size = Vector2(sz, sz)
 	_cursor_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_cursor_node.modulate = Color(
-		card_data.card_color.r, card_data.card_color.g,
-		card_data.card_color.b, 0.8,
-	)
 	_cursor_node.z_index = 200
+	var mat := ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = (
+		"shader_type canvas_item;\n"
+		+ "uniform vec4 tint_color : source_color;\n"
+		+ "void fragment() {\n"
+		+ "  vec4 tex = texture(TEXTURE, UV);\n"
+		+ "  COLOR = vec4(tint_color.rgb, tex.a * tint_color.a);\n"
+		+ "}\n"
+	)
+	mat.shader = shader
+	mat.set_shader_parameter(
+		"tint_color", Color(
+			card_data.card_color.r, card_data.card_color.g,
+			card_data.card_color.b, 0.8,
+		)
+	)
+	_cursor_node.material = mat
 	get_tree().root.add_child(_cursor_node)
 	_update_cursor_pos()
 
