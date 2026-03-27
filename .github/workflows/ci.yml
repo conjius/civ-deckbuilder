@@ -183,8 +183,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
-          gh release upload "$TAG" screenshots/screenshot-main.png screenshots/screenshot-gallery.png --clobber
           REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           TMPDIR=$(mktemp -d)
           git clone --branch gh-pages --depth 1 "$REPO_URL" "$TMPDIR"
