@@ -3,6 +3,8 @@ extends Node
 signal effect_completed
 signal gathered(cards: Array[CardData])
 signal settled(coord: Vector2i, settlement_name: String)
+signal attacked(target: Vector2i, damage: int)
+signal defended(bonus: int)
 signal turn_should_end
 
 var hex_map: Node3D
@@ -51,6 +53,11 @@ func execute_card(
 				result.settled_coord,
 				result.settlement_name,
 			)
+		CardData.CardType.ATTACK:
+			attacked.emit(target_coord, result.damage_dealt)
+		CardData.CardType.DEFENSE:
+			unit.state.defense_modifier += result.defense_gained
+			defended.emit(result.defense_gained)
 
 	effect_completed.emit()
 	return result

@@ -320,6 +320,7 @@ func _setup_ai(
 		ai_start
 	)
 	ai_unit.place_at(ai_start, 0.0)
+	hex_map.map_data.set_enemy_position(ai_start, true)
 	ai_unit.movement_finished.connect(_on_ai_unit_moved)
 	# Create AI controller
 	ai_controller = AIController.new()
@@ -362,6 +363,7 @@ func _find_ai_start_coord(
 
 
 func _on_ai_unit_moved() -> void:
+	_update_enemy_positions()
 	_reveal_around(
 		ai_unit.current_coord,
 		ai_unit.state.sight_range,
@@ -377,6 +379,14 @@ func _on_ai_unit_moved() -> void:
 		or ai_terrain.food_yield > 0)
 	)
 	ai_unit.offset_for_packing(has_building, has_yields)
+
+
+func _update_enemy_positions() -> void:
+	hex_map.map_data._enemies.clear()
+	if ai_unit:
+		hex_map.map_data.set_enemy_position(
+			ai_unit.current_coord, true
+		)
 
 
 func _reveal_around(coord: Vector2i, radius: int) -> void:
