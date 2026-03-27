@@ -27,7 +27,8 @@ a{color:#6ea8fe;text-decoration:none}
 .modal .nav.next{right:24px}
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
+<script>if(!location.hash)document.body.style.visibility='visible'</script>
 <h1>civ-deckbuilder</h1>
 <p class="desc">Hex-based civilization strategy game with deckbuilding mechanics</p>
 <div class="shots">
@@ -56,6 +57,7 @@ function openModal(idx){
   document.getElementById('modal').classList.add('open')
   if(!modalOpen&&!cameFromExternal)history.pushState({modal:true},'','#'+keys[idx])
   modalOpen=true
+  document.body.style.visibility='visible'
 }
 function closeModal(){
   if(!modalOpen)return
@@ -83,7 +85,7 @@ function checkHash(){
   var idx=keys.indexOf(h)
   if(idx>=0)openModal(idx)
 }
-if(location.hash)setTimeout(checkHash,100)
+if(location.hash)checkHash()
 window.addEventListener('hashchange',function(){
   var h=location.hash.slice(1)
   var idx=keys.indexOf(h)
