@@ -176,33 +176,35 @@ static func _point_in_polygon(
 static func make_drag_cursor_tex(
 	icon_tex: Texture2D, card_color: Color,
 ) -> ImageTexture:
-	if icon_tex == null:
-		return null
-	var src_img := icon_tex.get_image()
-	if src_img == null:
-		src_img = Image.create(
-			DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
-			false, Image.FORMAT_RGBA8,
-		)
-		src_img.fill(card_color)
-	else:
-		src_img = src_img.duplicate()
-	if src_img.get_format() != Image.FORMAT_RGBA8:
-		src_img.convert(Image.FORMAT_RGBA8)
-	src_img.resize(
-		DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
-		Image.INTERPOLATE_LANCZOS,
-	)
+	var sz := DRAG_CURSOR_SIZE
+	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
 	var tint := Color(0.85, 0.75, 0.6)
 	tint = tint.lerp(card_color, 0.4)
-	for y in src_img.get_height():
-		for x in src_img.get_width():
-			var px := src_img.get_pixel(x, y)
-			if px.a > 0.0:
-				src_img.set_pixel(x, y, Color(
-					tint.r, tint.g, tint.b, px.a
-				))
-	return ImageTexture.create_from_image(src_img)
+	if icon_tex != null:
+		var src := icon_tex.get_image()
+		if src != null:
+			src = src.duplicate()
+			src.convert(Image.FORMAT_RGBA8)
+			src.resize(sz, sz, Image.INTERPOLATE_LANCZOS)
+			for y in sz:
+				for x in sz:
+					var px := src.get_pixel(x, y)
+					if px.a > 0.0:
+						img.set_pixel(x, y, Color(
+							tint.r, tint.g, tint.b, px.a
+						))
+			return ImageTexture.create_from_image(img)
+	# Fallback: filled circle
+	var center := sz / 2.0
+	var radius := center - 2.0
+	for y in sz:
+		for x in sz:
+			var dist := Vector2(x, y).distance_to(
+				Vector2(center, center)
+			)
+			if dist <= radius:
+				img.set_pixel(x, y, tint)
+	return ImageTexture.create_from_image(img)
 
 
 static func set_drag_cursor(
