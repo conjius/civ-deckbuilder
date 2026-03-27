@@ -25,8 +25,7 @@ var _footer_section: PanelContainer
 var _footer_label: Control
 var _is_blocked: bool = false
 var _valid_targets: Array[Vector2i] = []
-var _drag_cursor_tex: ImageTexture
-var _needs_cursor_update: bool = false
+var _cursor_node: TextureRect
 var _card_back: Control
 var _face_container: Control
 
@@ -79,20 +78,49 @@ func _gui_input(event: InputEvent) -> void:
 					accept_event()
 
 
-func _process(_delta: float) -> void:
-	if _needs_cursor_update and _drag_cursor_tex != null:
-		_needs_cursor_update = false
-		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
-		Input.set_custom_mouse_cursor(
-			_drag_cursor_tex, Input.CURSOR_ARROW, Vector2(1, 1)
-		)
+func _show_cursor_node() -> void:
+	if _cursor_node != null:
+		return
+	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
+	if icon_tex == null:
+		return
+	var sz := UIHelpers.DRAG_CURSOR_SIZE
+	_cursor_node = TextureRect.new()
+	_cursor_node.texture = icon_tex
+	_cursor_node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_cursor_node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_cursor_node.custom_minimum_size = Vector2(sz, sz)
+	_cursor_node.size = Vector2(sz, sz)
+	_cursor_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cursor_node.modulate = Color(
+		card_data.card_color.r, card_data.card_color.g,
+		card_data.card_color.b, 0.8,
+	)
+	_cursor_node.z_index = 200
+	get_viewport().get_parent().add_child(_cursor_node)
+	_update_cursor_pos()
+
+
+func _update_cursor_pos() -> void:
+	if _cursor_node == null:
+		return
+	var mouse := get_viewport().get_mouse_position()
+	@warning_ignore("integer_division")
+	var half := UIHelpers.DRAG_CURSOR_SIZE / 2
+	_cursor_node.global_position = mouse - Vector2(half, half)
+
+
+func _hide_cursor_node() -> void:
+	if _cursor_node != null:
+		_cursor_node.queue_free()
+		_cursor_node = null
 
 
 func _input(event: InputEvent) -> void:
 	if not _dragging:
 		return
 	if event is InputEventMouseMotion:
-		_needs_cursor_update = true
+		_update_cursor_pos()
 		_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
@@ -111,11 +139,8 @@ func _start_drag() -> void:
 	_drag_start_time = Time.get_ticks_msec()
 	_original_position = global_position
 	z_index = 100
-	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
-	_drag_cursor_tex = UIHelpers.make_drag_cursor_tex(
-		icon_tex, card_data.card_color
-	)
-	_needs_cursor_update = true
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	_show_cursor_node()
 	_valid_targets.clear()
 	if hex_map and card_effects and active_unit:
 		_valid_targets = card_effects.get_valid_targets(
@@ -142,6 +167,8 @@ func _start_drag() -> void:
 
 func _cancel_drag() -> void:
 	_dragging = false
+	_hide_cursor_node()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_stop_all_pulses()
 	hex_map.clear_highlights()
 	if arrow_indicator:
@@ -181,6 +208,8 @@ func _animate_to_discard(
 	target: Vector2i, mouse_pos: Vector2,
 ) -> void:
 	z_index = 0
+	_hide_cursor_node()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	UIHelpers.restore_default_cursor()
 	drag_ended.emit(card_data, target, true, mouse_pos)
 
@@ -241,6 +270,8 @@ func _restore_card_visuals() -> void:
 	_is_blocked = false
 	z_index = 0
 	modulate = Color.WHITE
+	_hide_cursor_node()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	UIHelpers.restore_default_cursor()
 	if _bg_panel:
 		_bg_panel.visible = true
