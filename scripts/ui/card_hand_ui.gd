@@ -119,11 +119,16 @@ func _layout_cards(animate: bool = true) -> void:
 		return
 	var cw := float(UIHelpers.CARD_WIDTH)
 	var overlap := float(UIHelpers.CARD_OVERLAP)
-	var total_w := n * cw - (n - 1) * overlap
 	var available_w := size.x
+	var min_visible := cw * 0.15
+	var max_overlap := cw - min_visible
 	var actual_overlap := overlap
+	var total_w := n * cw - (n - 1) * overlap
 	if total_w > available_w and n > 1:
-		actual_overlap = (n * cw - available_w) / float(n - 1)
+		actual_overlap = minf(
+			(n * cw - available_w) / float(n - 1),
+			max_overlap,
+		)
 	var final_w := n * cw - (n - 1) * actual_overlap
 	var start_x := (available_w - final_w) * 0.5
 	var center_idx := (n - 1) * 0.5
@@ -170,11 +175,16 @@ func _get_rest_position(card: Control) -> Vector2:
 	var n := cards.size()
 	var cw := float(UIHelpers.CARD_WIDTH)
 	var overlap := float(UIHelpers.CARD_OVERLAP)
-	var total_w := n * cw - (n - 1) * overlap
 	var available_w := size.x
+	var min_visible := cw * 0.15
+	var max_overlap := cw - min_visible
 	var actual_overlap := overlap
+	var total_w := n * cw - (n - 1) * overlap
 	if total_w > available_w and n > 1:
-		actual_overlap = (n * cw - available_w) / float(n - 1)
+		actual_overlap = minf(
+			(n * cw - available_w) / float(n - 1),
+			max_overlap,
+		)
 	var final_w := n * cw - (n - 1) * actual_overlap
 	var start_x := (available_w - final_w) * 0.5
 	var center_idx := (n - 1) * 0.5
