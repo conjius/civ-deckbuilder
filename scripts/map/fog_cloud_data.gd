@@ -69,25 +69,21 @@ func add_tile(coord: Vector2i, world_pos: Vector3, _tile_height: float) -> void:
 func remove_tile(coord: Vector2i) -> void:
 	if not _tile_blobs.has(coord):
 		return
-	var indices: Array = _tile_blobs[coord]
-	indices.sort()
-	indices.reverse()
-	for idx: int in indices:
-		var last: int = _instances.size() - 1
-		if idx != last:
-			_instances[idx] = _instances[last]
-			_update_index_references(last, idx)
-		_instances.remove_at(last)
+	var to_remove: Dictionary = {}
+	for idx: int in _tile_blobs[coord]:
+		to_remove[idx] = true
 	_tile_blobs.erase(coord)
-
-
-func _update_index_references(old_idx: int, new_idx: int) -> void:
+	var new_instances: Array = []
+	var old_to_new: Dictionary = {}
+	for i in _instances.size():
+		if not to_remove.has(i):
+			old_to_new[i] = new_instances.size()
+			new_instances.append(_instances[i])
+	_instances = new_instances
 	for tile_coord: Vector2i in _tile_blobs:
 		var tile_indices: Array = _tile_blobs[tile_coord]
-		for i in tile_indices.size():
-			if tile_indices[i] == old_idx:
-				tile_indices[i] = new_idx
-				return
+		for j in tile_indices.size():
+			tile_indices[j] = old_to_new[tile_indices[j]]
 
 
 func get_instance_transforms() -> Array:
