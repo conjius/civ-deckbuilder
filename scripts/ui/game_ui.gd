@@ -14,6 +14,8 @@ var card_gallery: CardGalleryUI
 var _fps_label: Label
 var _current_cards: Array[CardData] = []
 var _hand_original_pos: Vector2 = Vector2.ZERO
+var _btn_original_x: float = -1.0
+var _unit_original_x: float = -1.0
 var _dim_overlay: ColorRect
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
@@ -128,12 +130,48 @@ func _toggle_gallery() -> void:
 	else:
 		_animate_overlay(true)
 		_slide_hand_out()
+		_slide_ui_out()
 		card_gallery.show_gallery(_current_cards)
 
 
 func _on_gallery_closing() -> void:
 	_animate_overlay(false)
 	_slide_hand_in()
+	_slide_ui_in()
+
+
+func _slide_ui_out() -> void:
+	if _btn_original_x < 0:
+		_btn_original_x = end_turn_button.position.x
+	if _unit_original_x < 0:
+		_unit_original_x = unit_info.position.x
+	var tw_btn := end_turn_button.create_tween()
+	tw_btn.tween_property(
+		end_turn_button, "position:x",
+		_btn_original_x + end_turn_button.size.x + 50,
+		0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	var tw_unit := unit_info.create_tween()
+	tw_unit.tween_property(
+		unit_info, "position:x",
+		_unit_original_x - unit_info.size.x - 50,
+		0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+
+
+func _slide_ui_in() -> void:
+	var tw_btn := end_turn_button.create_tween()
+	tw_btn.tween_property(
+		end_turn_button, "position:x",
+		_btn_original_x,
+		0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var tw_unit := unit_info.create_tween()
+	tw_unit.tween_property(
+		unit_info, "position:x",
+		_unit_original_x,
+		0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _on_gallery_closed() -> void:
@@ -180,6 +218,7 @@ func _slide_hand_out() -> void:
 
 func _slide_hand_in() -> void:
 	var tween := bottom_bar.create_tween()
+	tween.tween_interval(0.15)
 	tween.set_parallel(true)
 	tween.tween_property(
 		bottom_bar, "position:y", _hand_original_pos.y, 0.35,
