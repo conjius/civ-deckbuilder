@@ -12,8 +12,8 @@ jobs:
   build-test-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: /usr/local/bin/godot
           key: godot-linux-${{ env.GODOT_VERSION }}
@@ -36,14 +36,14 @@ jobs:
   exportmacos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: /usr/local/bin/godot
           key: godot-linux-${{ env.GODOT_VERSION }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: templates-cache
         with:
           path: ~/.local/share/godot/export_templates
@@ -94,7 +94,7 @@ jobs:
             echo "tag=v0.1.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
           fi
       - name: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
           path: build/civ-deckbuilder.zip
@@ -108,7 +108,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       is_stable: ${{ steps.version.outputs.is_stable }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: tag
@@ -136,9 +136,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: civ-deckbuilder-${{ needs.publish.outputs.tag }}-macOS
           path: build
@@ -169,8 +169,8 @@ jobs:
       contents: write
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: /usr/local/bin/godot
           key: godot-linux-${{ env.GODOT_VERSION }}
