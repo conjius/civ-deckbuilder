@@ -1,0 +1,16 @@
+#!/bin/bash
+# Takes screenshots on #stable-release pushes using local GPU
+# Screenshots are pushed to gh-pages AFTER main push succeeds (via post-push pattern)
+
+while read local_ref local_sha remote_ref remote_sha; do
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        COMMITS=$(git log --oneline "$remote_sha..$local_sha" 2>/dev/null || git log --oneline -5)
+        if echo "$COMMITS" | grep -q "#stable-release"; then
+            echo "==> #stable-release detected, screenshots will be taken after push..."
+            TOPLEVEL=$(git rev-parse --show-toplevel)
+            # Schedule screenshot capture after push completes
+            (sleep 2 && bash "$TOPLEVEL/scripts/tools/take_screenshots.sh" &>/dev/null) &
+            disown
+        fi
+    fi
+done
