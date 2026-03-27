@@ -49,11 +49,12 @@ var srcs=['screenshot-main.png','screenshot-gallery.png']
 var keys=['main','gallery']
 var currentIdx=0
 var modalOpen=false
+var cameFromExternal=!!document.referrer&&!document.referrer.includes(location.hostname)
 function openModal(idx){
   currentIdx=idx
   document.getElementById('modalImg').src=srcs[idx]
   document.getElementById('modal').classList.add('open')
-  if(!modalOpen)history.pushState({modal:true},'','#'+keys[idx])
+  if(!modalOpen&&!cameFromExternal)history.pushState({modal:true},'','#'+keys[idx])
   modalOpen=true
 }
 function closeModal(){
@@ -61,7 +62,10 @@ function closeModal(){
   modalOpen=false
   document.getElementById('modal').classList.remove('open')
 }
-function closeAndBack(){history.back()}
+function closeAndBack(){
+  if(cameFromExternal){window.location=document.referrer}
+  else{history.back()}
+}
 function navigate(dir){
   currentIdx=(currentIdx+dir+srcs.length)%srcs.length
   document.getElementById('modalImg').src=srcs[currentIdx]
@@ -70,7 +74,7 @@ function navigate(dir){
 window.addEventListener('popstate',function(){closeModal()})
 document.addEventListener('keydown',function(e){
   if(!modalOpen)return
-  if(e.key==='Escape')history.back()
+  if(e.key==='Escape')closeAndBack()
   else if(e.key==='ArrowLeft')navigate(-1)
   else if(e.key==='ArrowRight')navigate(1)
 })
