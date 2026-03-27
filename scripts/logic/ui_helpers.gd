@@ -177,22 +177,33 @@ static func make_drag_cursor_tex(
 	icon_tex: Texture2D, card_color: Color,
 ) -> ImageTexture:
 	if icon_tex == null:
+		print("[DRAG] icon_tex is null")
 		return null
-	var img := icon_tex.get_image()
-	if img == null:
-		return null
-	img = img.duplicate()
-	img.resize(DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE)
+	var src_img := icon_tex.get_image()
+	print("[DRAG] icon_tex type=", icon_tex.get_class(),
+		" get_image=", src_img != null)
+	if src_img == null:
+		src_img = Image.create(
+			DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
+			false, Image.FORMAT_RGBA8,
+		)
+		src_img.fill(card_color)
+	else:
+		src_img = src_img.duplicate()
+	src_img.resize(
+		DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
+		Image.INTERPOLATE_LANCZOS,
+	)
 	var tint := Color(0.85, 0.75, 0.6)
 	tint = tint.lerp(card_color, 0.4)
-	for y in img.get_height():
-		for x in img.get_width():
-			var px := img.get_pixel(x, y)
+	for y in src_img.get_height():
+		for x in src_img.get_width():
+			var px := src_img.get_pixel(x, y)
 			if px.a > 0.0:
-				img.set_pixel(x, y, Color(
+				src_img.set_pixel(x, y, Color(
 					tint.r, tint.g, tint.b, px.a
 				))
-	return ImageTexture.create_from_image(img)
+	return ImageTexture.create_from_image(src_img)
 
 
 static func set_drag_cursor(
