@@ -13,20 +13,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+
       - name: Install Godot
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
-          chmod +x /usr/local/bin/godot
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+
+      - name: Cache import
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported
+          key: import-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
+          restore-keys: import-
 
       - name: Import project
         run: godot --headless --editor --quit 2>&1 || true
-        timeout-minutes: 3
+        timeout-minutes: 2
 
       - name: Run tests
         run: godot --headless --script tests/test_runner.gd 2>&1
-        timeout-minutes: 3
+        timeout-minutes: 2
 
       - name: Lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
@@ -36,7 +51,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Godot + templates
+        uses: actions/cache@v4
+        id: godot-cache
+        with:
+          path: |
+            /Applications/Godot.app
+            ~/Library/Application Support/Godot/export_templates
+          key: godot-macos-${{ env.GODOT_VERSION }}
+
       - name: Install Godot + export templates
+        if: steps.godot-cache.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
           unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
@@ -46,12 +71,16 @@ jobs:
           unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mv templates/* ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable/
 
-      - name: Import project
-        run: /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
-        timeout-minutes: 3
+      - name: Cache import
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported
+          key: import-macos-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
+          restore-keys: import-macos-
 
-      - name: Build for macOS
+      - name: Import + export
         run: |
+          /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
           cat > export_presets.cfg << 'PRESETS'
           [preset.0]
           name="macOS"
@@ -69,7 +98,7 @@ jobs:
           PRESETS
           mkdir -p build
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
-        timeout-minutes: 5
+        timeout-minutes: 3
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -130,7 +159,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Godot
+        uses: actions/cache@v4
+        id: ss-cache
+        with:
+          path: /Applications/Godot.app
+          key: godot-macos-app-${{ env.GODOT_VERSION }}
+
       - name: Install Godot
+        if: steps.ss-cache.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
           unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
