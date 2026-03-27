@@ -4,7 +4,7 @@
 [![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?label=stable)](https://github.com/conjius/civ-deckbuilder/releases/latest)
 [![Nightly](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?include_prereleases&label=nightly)](https://github.com/conjius/civ-deckbuilder/releases)
 
-<img src="https://img.shields.io/badge/-macOS-999?logo=apple&logoColor=white&style=flat-square" height="20" title="macOS">&nbsp;&nbsp;<img src="https://img.shields.io/badge/-Godot%204.6-478CBF?logo=godotengine&logoColor=white&style=flat-square" height="20" title="Godot 4.6">&nbsp;&nbsp;<img src="https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat-square" height="20" title="Python (gdlint)">&nbsp;&nbsp;<img src="https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white&style=flat-square" height="20" title="GitHub Actions CI/CD">
+[![macOS](https://img.shields.io/badge/-macOS-999?logo=apple&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/releases/latest)&nbsp;&nbsp;[![Godot 4.6](https://img.shields.io/badge/-Godot%204.6-478CBF?logo=godotengine&logoColor=white&style=flat-square)](https://godotengine.org/article/godot-4-6-release/)&nbsp;&nbsp;[![Python 3.12](https://img.shields.io/badge/-Python%203.12-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/downloads/release/python-3120/)&nbsp;&nbsp;[![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/actions)
 
 <p align="center">
   <img src="https://github.com/conjius/civ-deckbuilder/releases/latest/download/screenshot-main.png" width="48%" alt="">
@@ -19,6 +19,7 @@ settle - all driven by a single visible deck of action and resource cards.
 ## Prerequisites
 
 - [**Godot 4.6.1**](https://godotengine.org/download)
+- [**Python 3.12+**](https://www.python.org/downloads/)
 - **macOS** (primary development platform)
 - **gdtoolkit** for linting - `pip install gdtoolkit`
 
