@@ -98,7 +98,7 @@ const ENTITY_ICONS: Dictionary = {
 }
 
 const CURSOR_SIZE: int = 32
-const DRAG_CURSOR_SIZE: int = 64
+const DRAG_CURSOR_SIZE: int = 32
 
 
 static func set_default_cursor() -> void:
@@ -194,14 +194,13 @@ static func make_drag_cursor_tex(
 							tint.r, tint.g, tint.b, px.a
 						))
 			return ImageTexture.create_from_image(img)
-	# Fallback: filled circle
 	var center := sz / 2.0
 	var radius := center - 2.0
 	for y in sz:
 		for x in sz:
-			var dist := Vector2(x, y).distance_to(
-				Vector2(center, center)
-			)
+			var dist := Vector2(
+				float(x), float(y)
+			).distance_to(Vector2(center, center))
 			if dist <= radius:
 				img.set_pixel(x, y, tint)
 	return ImageTexture.create_from_image(img)
