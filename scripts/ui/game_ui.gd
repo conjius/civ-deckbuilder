@@ -13,6 +13,7 @@ var card_gallery: CardGalleryUI
 
 var _fps_label: Label
 var _current_cards: Array[CardData] = []
+var _hand_original_pos: Vector2 = Vector2.ZERO
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -123,12 +124,15 @@ func _toggle_gallery() -> void:
 
 
 func _slide_hand_out() -> void:
-	var vp_h: float = get_viewport().get_visible_rect().size.y
-	var offset: float = float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0
+	_hand_original_pos = bottom_bar.position
+	var target_y: float = (
+		_hand_original_pos.y
+		+ float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0
+	)
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(
-		bottom_bar, "position:y", offset, 0.35,
+		bottom_bar, "position:y", target_y, 0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.tween_property(
 		bottom_bar, "modulate:a", 0.0, 0.25,
@@ -139,7 +143,7 @@ func _slide_hand_in() -> void:
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(
-		bottom_bar, "position:y", 0.0, 0.35,
+		bottom_bar, "position:y", _hand_original_pos.y, 0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(
 		bottom_bar, "modulate:a", 1.0, 0.25,
