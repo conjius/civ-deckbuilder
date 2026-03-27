@@ -11,6 +11,7 @@ func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(_output_dir)
 	print("[SS] Screenshot dir: " + _output_dir)
 	print("[SS] Viewport size: " + str(get_viewport().size))
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 
 
 func _process(delta: float) -> void:
