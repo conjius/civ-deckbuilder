@@ -87,9 +87,8 @@ func _apply_drag_cursor() -> void:
 		UIHelpers.DRAG_CURSOR_SIZE / 2,
 	)
 	Input.set_custom_mouse_cursor(
-		_drag_cursor_tex, Input.CURSOR_CROSS, hotspot
+		_drag_cursor_tex, Input.CURSOR_ARROW, hotspot
 	)
-	mouse_default_cursor_shape = Control.CURSOR_CROSS
 
 
 func _input(event: InputEvent) -> void:
@@ -245,7 +244,6 @@ func _restore_card_visuals() -> void:
 	_is_blocked = false
 	z_index = 0
 	modulate = Color.WHITE
-	mouse_default_cursor_shape = Control.CURSOR_ARROW
 	UIHelpers.restore_default_cursor()
 	if _bg_panel:
 		_bg_panel.visible = true

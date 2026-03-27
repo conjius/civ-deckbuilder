@@ -222,9 +222,6 @@ static func set_drag_cursor(
 
 
 static func restore_default_cursor() -> void:
-	Input.set_custom_mouse_cursor(
-		null, Input.CURSOR_CROSS
-	)
 	set_default_cursor()
 
 
