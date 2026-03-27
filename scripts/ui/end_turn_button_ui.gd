@@ -15,7 +15,7 @@ var _disabled: bool = false
 
 
 func _ready() -> void:
-	var sz: int = int(UIHelpers.CARD_WIDTH * 0.75)
+	var sz: int = int(UIHelpers.CARD_WIDTH * 0.6)
 	custom_minimum_size = Vector2(sz, sz)
 	size = Vector2(sz, sz)
 	mouse_filter = Control.MOUSE_FILTER_STOP
