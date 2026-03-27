@@ -39,7 +39,3 @@ gdlint scripts/**/*.gd resources/**/*.gd
 ```
 
 Press **F5** in the Godot editor to run the game.
-
-## License
-
-All rights reserved.
