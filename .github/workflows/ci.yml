@@ -99,26 +99,49 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
-      - name: Capture screenshots
-        run: |
-          mkdir -p screenshots
-          echo '[autoload]' >> project.godot
-          echo 'ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
-          /Applications/Godot.app/Contents/MacOS/Godot --path . --quit-after 15 2>&1 || true
-          git checkout project.godot
-          cp screenshots/screenshot-*.png build/ 2>/dev/null || true
-          ls -la screenshots/ build/
-        timeout-minutes: 1
-        continue-on-error: true
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: civ-deckbuilder-macOS
+          path: build/civ-deckbuilder.zip
+
+  screenshots:
+    needs: export
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_macos.universal.zip
+          unzip -q Godot_v4.6.1-stable_macos.universal.zip
+          sudo cp -R Godot.app /Applications/Godot.app
+
+      - name: Import project
+        run: /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 3
+
+      - name: Inject screenshot autoload
+        run: |
+          echo '' >> project.godot
+          echo '[autoload]' >> project.godot
+          echo 'ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+
+      - name: Capture screenshots
+        run: |
+          mkdir -p screenshots
+          /Applications/Godot.app/Contents/MacOS/Godot --path . --quit-after 15 2>&1 || true
+          ls -la screenshots/
+        timeout-minutes: 1
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
           path: |
-            build/civ-deckbuilder.zip
-            build/screenshot-main.png
-            build/screenshot-gallery.png
+            screenshots/screenshot-main.png
+            screenshots/screenshot-gallery.png
 
   publish:
     needs: export
@@ -155,7 +178,7 @@ jobs:
       is_stable: ${{ steps.version.outputs.is_stable }}
 
   release:
-    needs: publish
+    needs: [publish, screenshots]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -170,6 +193,13 @@ jobs:
           name: civ-deckbuilder-macOS
           path: build
 
+      - name: Download screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+        continue-on-error: true
+
       - name: Rename artifact with version
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
@@ -182,8 +212,8 @@ jobs:
           TAG="${{ needs.publish.outputs.tag }}"
           IS_STABLE="${{ needs.publish.outputs.is_stable }}"
           FILES="build/civ-deckbuilder-${TAG}-macOS.zip"
-          if [ -f build/screenshot-main.png ]; then
-            FILES="$FILES build/screenshot-main.png build/screenshot-gallery.png"
+          if [ -f screenshots/screenshot-main.png ]; then
+            FILES="$FILES screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
           fi
           if [ "$IS_STABLE" = "true" ]; then
             gh release create "$TAG" $FILES \
