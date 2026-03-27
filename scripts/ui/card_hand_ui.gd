@@ -66,7 +66,7 @@ func show_cards_with_drag(
 		- drag_display.size * UIHelpers.HAND_FOCUS_SCALE * 0.5
 	)
 	_any_dragging = true
-	drag_display._start_drag(mouse_pos)
+	drag_display._start_drag()
 	_layout_cards.call_deferred()
 
 
