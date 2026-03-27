@@ -18,7 +18,12 @@ func setup_camera(cam: Camera3D) -> void:
 	_camera = cam
 
 
-func show_arrow(from_pos: Vector3, to_pos: Vector3) -> void:
+func show_arrow(
+	from_pos: Vector3, to_pos: Vector3,
+	color: Color = Color(-1, -1, -1),
+) -> void:
+	if color.r >= 0:
+		arrow_color = color
 	if not _camera:
 		return
 	_from = _camera.unproject_position(

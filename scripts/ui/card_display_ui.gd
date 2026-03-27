@@ -207,7 +207,13 @@ func _update_hover(mouse_pos: Vector2) -> void:
 			to_pos = HexUtil.axial_to_world(
 				hovered.x, hovered.y
 			)
-		arrow_indicator.show_arrow(from_pos, to_pos)
+		var col := Color(
+			card_data.card_color.r,
+			card_data.card_color.g,
+			card_data.card_color.b,
+			0.85,
+		)
+		arrow_indicator.show_arrow(from_pos, to_pos, col)
 
 
 func _raycast_hex(screen_pos: Vector2) -> Vector2i:
