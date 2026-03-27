@@ -1,10 +1,10 @@
 extends Control
 
-@export var arrow_width: float = 0.7
-@export var dash_length: float = 1.2
-@export var gap_length: float = 0.6
-@export var arrowhead_length: float = 3.2
-@export var arrowhead_width: float = 2.8
+@export var arrow_width: float = 0.42
+@export var dash_length: float = 0.72
+@export var gap_length: float = 0.36
+@export var arrowhead_length: float = 1.92
+@export var arrowhead_width: float = 1.68
 @export var arrow_color: Color = Color(0.7, 0.15, 0.1, 0.85)
 @export var screen_scale: float = 40.0
 
