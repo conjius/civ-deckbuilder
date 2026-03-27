@@ -5,8 +5,6 @@
 [![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?label=stable)](https://github.com/conjius/civ-deckbuilder/releases/latest)
 [![Nightly](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?include_prereleases&label=nightly)](https://github.com/conjius/civ-deckbuilder/releases)
 
-## Tech Stack
-[![macOS](https://img.shields.io/badge/-macOS-999?logo=apple&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/releases/latest)&nbsp;&nbsp;[![Godot 4.6](https://img.shields.io/badge/-Godot%204.6-478CBF?logo=godotengine&logoColor=white&style=flat-square)](https://godotengine.org/article/godot-4-6-release/)&nbsp;&nbsp;[![Python 3.12.0](https://img.shields.io/badge/-Python%203.12.0-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/downloads/)&nbsp;&nbsp;[![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/actions)
 
 ## Description
 <p align="center">
@@ -25,6 +23,7 @@ settle - all driven by a single visible deck of action and resource cards.
 - [**Python 3.12.0+**](https://www.python.org/downloads/) with **pip**
 - **macOS** (primary development platform)
 - **gdtoolkit** for linting - `pip install gdtoolkit`
+[![macOS](https://img.shields.io/badge/-macOS-999?logo=apple&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/releases/latest)&nbsp;&nbsp;[![Godot 4.6](https://img.shields.io/badge/-Godot%204.6-478CBF?logo=godotengine&logoColor=white&style=flat-square)](https://godotengine.org/article/godot-4-6-release/)&nbsp;&nbsp;[![Python 3.12.0](https://img.shields.io/badge/-Python%203.12.0-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/downloads/)&nbsp;&nbsp;[![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/actions)
 
 ## Build & Run
 
