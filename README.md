@@ -3,7 +3,6 @@
 [![Pages](https://img.shields.io/badge/GitHub%20Pages-live-32cd32)](https://conjius.github.io/civ-deckbuilder/)
 [![CI/CD](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml)
 [![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?label=stable)](https://github.com/conjius/civ-deckbuilder/releases/latest)
-[![Nightly](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?include_prereleases&label=nightly)](https://github.com/conjius/civ-deckbuilder/releases)
 
 
 ## Description
@@ -16,6 +15,10 @@
 A hex-based civilization strategy game with deckbuilding mechanics, built in Godot 4.6.
 Explore a procedurally generated world, play cards to move, scout, gather resources, and
 settle - all driven by a single visible deck of action and resource cards.
+
+## Playing
+
+Download the [latest stable build](https://github.com/conjius/civ-deckbuilder/releases/latest), unzip it, and run on macOS.
 
 ## Build Prerequisites
 
