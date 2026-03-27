@@ -174,7 +174,7 @@ func _pick_terrain(noise_val: float) -> TerrainType:
 		return _terrain_desert
 	if noise_val < 0.15:
 		return _terrain_plains
-	if noise_val < 0.25:
+	if noise_val < 0.3:
 		return _terrain_forest
 	return _terrain_mountain
 
