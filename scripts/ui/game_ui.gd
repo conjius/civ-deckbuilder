@@ -154,7 +154,7 @@ func _animate_overlay(show: bool) -> void:
 	else:
 		var tween := _dim_overlay.create_tween()
 		tween.tween_property(
-			_dim_overlay, "color:a", 0.0, 0.25,
+			_dim_overlay, "color:a", 0.0, 0.35,
 		).set_trans(Tween.TRANS_SINE)
 		tween.tween_callback(
 			func() -> void: _dim_overlay.visible = false
