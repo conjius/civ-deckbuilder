@@ -181,22 +181,17 @@ func _slide_ui_in() -> void:
 func _on_gallery_card_drag(
 	card: CardData, mouse_pos: Vector2,
 ) -> void:
-	_pending_drag_card = card
-	_pending_drag_pos = mouse_pos
+	_animate_overlay(false)
+	_slide_hand_in()
+	_slide_ui_in()
+	card_hand.show_cards_with_drag(
+		_current_cards, card, mouse_pos
+	)
 	card_gallery.hide_gallery()
 
 
 func _on_gallery_closed() -> void:
-	if _pending_drag_card:
-		var drag_card: CardData = _pending_drag_card
-		var drag_pos: Vector2 = _pending_drag_pos
-		_pending_drag_card = null
-		_slide_hand_in()
-		_slide_ui_in()
-		card_hand.show_cards_with_drag(
-			_current_cards, drag_card, drag_pos
-		)
-	else:
+	if not _pending_drag_card:
 		_slide_hand_in()
 
 
