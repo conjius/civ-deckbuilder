@@ -7,7 +7,7 @@ const MAX_BLOBS_PER_CLUSTER := 3
 const CLOUD_Y_OFFSET := 0.55
 
 var _tile_blobs: Dictionary = {}  # Vector2i -> Array[int] (indices into _instances)
-var _instances: Array[Dictionary] = []  # {transform: Transform3D, custom: Color}
+var _instances: Array = []  # {transform: Transform3D, custom: Color}
 
 
 func has_tile(coord: Vector2i) -> bool:
