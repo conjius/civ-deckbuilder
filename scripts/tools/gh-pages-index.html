@@ -65,7 +65,7 @@ function closeModal(){
   document.getElementById('modal').classList.remove('open')
 }
 function closeAndBack(){
-  if(cameFromExternal){window.location=document.referrer}
+  if(cameFromExternal){history.back()}
   else{closeModal();history.replaceState(null,'',location.pathname)}
 }
 function navigate(dir){
