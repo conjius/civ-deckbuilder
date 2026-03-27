@@ -223,6 +223,7 @@ static func set_drag_cursor(
 
 static func restore_default_cursor() -> void:
 	print("[DRAG] restore_default_cursor called")
+	print(get_stack())
 	set_default_cursor()
 
 
