@@ -1,7 +1,7 @@
 # civ-deckbuilder
 
 [![Pages](https://img.shields.io/badge/GitHub%20Pages-live-32cd32)](https://conjius.github.io/civ-deckbuilder/)
-[![CI/CD](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml)
+[![Main CI/CD](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/conjius/civ-deckbuilder/actions/workflows/ci.yml)
 [![Stable](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?label=stable&v=2)](https://github.com/conjius/civ-deckbuilder/releases/latest)
 [![Nightly](https://img.shields.io/github/v/release/conjius/civ-deckbuilder?include_prereleases&label=nightly&v=2)](https://github.com/conjius/civ-deckbuilder/releases)
 
