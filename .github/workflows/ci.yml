@@ -95,12 +95,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
-          if [ "$IS_STABLE" = "true" ]; then
-            echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
-          fi
+          echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
       - name: upload
         uses: actions/upload-artifact@v7
         with:
@@ -114,7 +109,6 @@ jobs:
       contents: write
     outputs:
       tag: ${{ steps.version.outputs.tag }}
-      is_stable: ${{ steps.version.outputs.is_stable }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -123,14 +117,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
-          if [ "$IS_STABLE" = "true" ]; then
-            TAG="v0.3.${PATCH}"
-          else
-            TAG="v0.3.${PATCH}-nightly"
-          fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
       - name: announce
         run: echo "::notice::Version ${{ steps.version.outputs.tag }}"
       - name: tag
@@ -138,10 +125,8 @@ jobs:
           TAG="${{ steps.version.outputs.tag }}"
           git tag "$TAG"
           git push origin "$TAG"
-          if [ "${{ steps.version.outputs.is_stable }}" = "true" ]; then
-            git tag -f stable
-            git push origin stable --force
-          fi
+          git tag -f stable
+          git push origin stable --force
       - name: download-artifact
         uses: actions/download-artifact@v8
         with:
@@ -153,21 +138,13 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
-          if [ "${{ steps.version.outputs.is_stable }}" = "true" ]; then
-            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
-              --title "$TAG" \
-              --notes "Automated build from commit ${{ github.sha }}" \
-              --latest
-          else
-            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
-              --title "$TAG" \
-              --notes "Automated build from commit ${{ github.sha }}" \
-              --prerelease
-          fi
+          gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+            --title "$TAG" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            --latest
 
   screenshots:
     needs: tag-release
-    if: contains(github.event.head_commit.message, '#stable-release')
     runs-on: [self-hosted, gpu]
     permissions:
       contents: write
