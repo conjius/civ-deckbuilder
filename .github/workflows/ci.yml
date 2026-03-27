@@ -175,20 +175,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: capture
+        shell: bash
         run: |
+          set +e
           GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
           cp project.godot project.godot.bak
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           sed -i '' 's/\[display\]/[display]\nwindow\/size\/initial_position_type=0\nwindow\/size\/initial_position=Vector2i(-4000, -4000)/' project.godot
-          $GODOT --headless --editor --quit 2>/dev/null || true
+          $GODOT --headless --editor --quit 2>/dev/null
           mkdir -p screenshots
           CIV_SCREENSHOTS=1 $GODOT --path . --resolution 1920x1080 2>/dev/null &
           PID=$!
           sleep 10
-          kill $PID 2>/dev/null; wait $PID 2>/dev/null || true
+          kill $PID 2>/dev/null
+          wait $PID 2>/dev/null
           mv project.godot.bak project.godot
           SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
-          cp "$SS_DIR"/*.png screenshots/ 2>/dev/null || true
+          cp "$SS_DIR"/*.png screenshots/ 2>/dev/null
+          ls -la screenshots/
+          exit 0
       - name: validate
         run: |
           for f in screenshot-main.png screenshot-gallery.png; do
