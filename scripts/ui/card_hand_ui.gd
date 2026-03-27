@@ -291,7 +291,7 @@ func _on_drag_ended(
 
 
 func _is_in_hand_area(screen_pos: Vector2) -> bool:
-	var vp_h: float = get_viewport_rect().size.y
+	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var hand_top: float = vp_h - float(UIHelpers.CARD_HEIGHT)
 	return screen_pos.y >= hand_top
 

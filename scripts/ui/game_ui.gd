@@ -123,7 +123,7 @@ func _toggle_gallery() -> void:
 
 
 func _slide_hand_out() -> void:
-	var vp_h: float = get_viewport_rect().size.y
+	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var offset: float = float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0
 	var tween := create_tween()
 	tween.set_parallel(true)

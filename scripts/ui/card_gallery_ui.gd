@@ -38,7 +38,7 @@ func show_gallery(cards: Array[CardData]) -> void:
 	_rebuild()
 	visible = true
 	_animating = true
-	var vp_h: float = get_viewport_rect().size.y
+	var vp_h: float = get_viewport().get_visible_rect().size.y
 	_container.position.y = vp_h
 	_bg.color = Color(0.0, 0.0, 0.0, 0.0)
 	var tween := create_tween()
@@ -57,7 +57,7 @@ func show_gallery(cards: Array[CardData]) -> void:
 
 func hide_gallery() -> void:
 	_animating = true
-	var vp_h: float = get_viewport_rect().size.y
+	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(
@@ -80,7 +80,7 @@ func _rebuild() -> void:
 	for child in _container.get_children():
 		child.queue_free()
 
-	var vp_size: Vector2 = get_viewport_rect().size
+	var vp_size: Vector2 = get_viewport().get_visible_rect().size
 	var cw: float = (
 		(vp_size.x - PADDING * 2 - COL_GAP * (COLS - 1))
 		/ float(COLS)
