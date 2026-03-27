@@ -78,8 +78,12 @@ func _input(event: InputEvent) -> void:
 	if not _dragging:
 		return
 	if event is InputEventMouseMotion:
-		_update_hover(event.global_position)
-	elif event is InputEventMouseButton:
+		if card_data.card_type == CardData.CardType.RESOURCE:
+			global_position = event.global_position - _drag_offset
+		else:
+			_update_hover(event.global_position)
+		return
+	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			_cancel_drag()
 		elif event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
@@ -94,6 +98,9 @@ func _start_drag(mouse_pos: Vector2) -> void:
 	_original_position = global_position
 	_drag_offset = mouse_pos - global_position
 	z_index = 100
+	if card_data.card_type == CardData.CardType.RESOURCE:
+		_start_resource_reject()
+		return
 	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
 	if icon_tex:
 		UIHelpers.set_drag_cursor(
@@ -121,6 +128,33 @@ func _start_drag(mouse_pos: Vector2) -> void:
 		if active_unit and active_unit.has_method("set_targeting_move"):
 			active_unit.set_targeting_move(true)
 	drag_started.emit(card_data)
+
+
+func _start_resource_reject() -> void:
+	drag_started.emit(card_data)
+	var tween := create_tween()
+	tween.tween_interval(0.1)
+	tween.tween_callback(func() -> void:
+		_dragging = false
+		_returning = true
+	)
+	tween.tween_property(
+		self, "modulate", Color(1.0, 0.2, 0.2, 1.0), 0.25
+	).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(
+		self, "modulate", Color(1.0, 0.2, 0.2, 1.0), 0.25
+	)
+	tween.tween_property(
+		self, "modulate", Color.WHITE, 0.25
+	).set_trans(Tween.TRANS_SINE)
+	tween.parallel().tween_property(
+		self, "global_position", _original_position, 0.3
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(func() -> void:
+		_returning = false
+		z_index = 0
+		drag_ended.emit(card_data, Vector2i.ZERO, false)
+	)
 
 
 func _cancel_drag() -> void:
