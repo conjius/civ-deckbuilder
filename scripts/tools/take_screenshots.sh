@@ -1,5 +1,4 @@
 #!/bin/bash
-# Takes screenshots locally using your GPU, then pushes to gh-pages
 set -e
 
 GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
@@ -8,23 +7,29 @@ SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/scr
 
 cd "$PROJECT_DIR"
 
+cleanup() {
+    if [ -f project.godot.bak ]; then
+        mv project.godot.bak project.godot
+    fi
+}
+trap cleanup EXIT
+
 echo "==> Injecting screenshot autoload..."
 cp project.godot project.godot.bak
 echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
-# Start window off-screen and transparent
 sed -i '' 's/\[display\]/[display]\nwindow\/size\/initial_position_type=0\nwindow\/size\/initial_position=Vector2i(-4000, -4000)/' project.godot
 
 echo "==> Importing project..."
 $GODOT --headless --editor --quit 2>/dev/null || true
 
 echo "==> Launching game hidden (will auto-quit after screenshots)..."
-$GODOT --path . --resolution 1920x1080 2>/dev/null &
+CIV_SCREENSHOTS=1 $GODOT --path . --resolution 1920x1080 2>/dev/null &
 PID=$!
 sleep 10
 kill $PID 2>/dev/null; wait $PID 2>/dev/null || true
 
 echo "==> Restoring project.godot..."
-mv project.godot.bak project.godot
+cleanup
 
 echo "==> Checking screenshots..."
 if [ ! -f "$SS_DIR/screenshot-main.png" ] || [ ! -f "$SS_DIR/screenshot-gallery.png" ]; then

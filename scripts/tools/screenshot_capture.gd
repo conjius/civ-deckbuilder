@@ -7,6 +7,9 @@ var _frame_count: int = 0
 
 
 func _ready() -> void:
+	if OS.get_environment("CIV_SCREENSHOTS") != "1":
+		set_process(false)
+		return
 	_output_dir = OS.get_user_data_dir() + "/screenshots"
 	DirAccess.make_dir_recursive_absolute(_output_dir)
 	print("[SS] Screenshot dir: " + _output_dir)
