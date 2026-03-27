@@ -4,8 +4,82 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  GODOT_VERSION: "4.6.1"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
-  skip:
+  exportmacos:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - run: echo "PR checks disabled"
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v5
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        id: templates-cache
+        with:
+          path: ~/.local/share/godot/export_templates
+          key: export-templates-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        with:
+          path: .godot/imported
+          key: import-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
+          restore-keys: import-
+      - name: setup
+        run: |
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          if [ ! -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable ]; then
+            mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          fi
+      - name: export
+        run: |
+          if [ ! -d .godot/imported ]; then
+            godot --headless --editor --quit 2>&1 || true
+          fi
+          cat > export_presets.cfg << 'PRESETS'
+          [preset.0]
+          name="macOS"
+          platform="macOS"
+          runnable=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/civ-deckbuilder.zip"
+          [preset.0.options]
+          application/product_name="civ-deckbuilder"
+          application/bundle_identifier="com.civ-deckbuilder.game"
+          PRESETS
+          mkdir -p build
+          godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
+        timeout-minutes: 3
+      - name: version
+        id: version
+        run: |
+          PATCH=$(($(git rev-list --count HEAD) - 378))
+          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
+      - name: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
+          gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+            --title "$TAG" \
+            --notes "Nightly build from PR #${{ github.event.pull_request.number }}" \
+            --prerelease
