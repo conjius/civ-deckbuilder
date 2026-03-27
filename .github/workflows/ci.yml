@@ -33,32 +33,38 @@ jobs:
       - name: lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  buildnative:
-    runs-on: macos-latest
+  buildmacos:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/cache@v4
-        id: cache
         with:
-          path: |
-            /Applications/Godot.app
-            ~/Library/Application Support/Godot/export_templates
-          key: godot-macos-${{ env.GODOT_VERSION }}
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v4
+        id: templates-cache
+        with:
+          path: ~/.local/share/godot/export_templates
+          key: export-templates-${{ env.GODOT_VERSION }}
       - name: setup
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
-          unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
-          sudo cp -R Godot.app /Applications/Godot.app
-          mkdir -p ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable
-          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mv templates/* ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable/
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          if [ ! -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable ]; then
+            mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          fi
       - name: export
         run: |
-          /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
+          godot --headless --editor --quit 2>&1 || true
           cat > export_presets.cfg << 'PRESETS'
           [preset.0]
           name="macOS"
@@ -75,7 +81,7 @@ jobs:
           application/bundle_identifier="com.civ-deckbuilder.game"
           PRESETS
           mkdir -p build
-          /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
+          godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 3
       - name: version
         id: version
@@ -125,7 +131,7 @@ jobs:
           fi
 
   release:
-    needs: [publish, buildnative]
+    needs: [publish, buildmacos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
