@@ -170,7 +170,7 @@ func raycast_to_hex(camera: Camera3D, mouse_pos: Vector2) -> Vector2i:
 
 
 func _pick_terrain(noise_val: float) -> TerrainType:
-	if noise_val < -0.05:
+	if noise_val < -0.15:
 		return _terrain_desert
 	if noise_val < 0.15:
 		return _terrain_plains
