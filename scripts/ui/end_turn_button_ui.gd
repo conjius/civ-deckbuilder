@@ -15,7 +15,7 @@ var _disabled: bool = false
 
 
 func _ready() -> void:
-	var sz: int = int(UIHelpers.CARD_WIDTH * 0.6)
+	var sz: int = int(UIHelpers.CARD_WIDTH * 0.75)
 	custom_minimum_size = Vector2(sz, sz)
 	size = Vector2(sz, sz)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -31,7 +31,7 @@ func _ready() -> void:
 	add_child(_bg)
 	UIHelpers.apply_parchment_bg(_bg, false, true)
 
-	var icon_sz: float = sz * 0.35
+	var icon_sz: float = sz * 0.45
 	var icon_x: float = (sz - icon_sz) * 0.5
 	var icon_y: float = sz * 0.15
 	_icon = TextureRect.new()
@@ -52,7 +52,7 @@ func _ready() -> void:
 	)
 	_label.add_theme_color_override("font_color", Color.BLACK)
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.position = Vector2(0, sz * 0.55)
+	_label.position = Vector2(0, sz * 0.65)
 	_label.size = Vector2(sz, sz * 0.2)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.autowrap_mode = TextServer.AUTOWRAP_OFF
