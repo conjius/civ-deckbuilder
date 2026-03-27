@@ -286,14 +286,19 @@ func _highlight_active_unit() -> void:
 
 
 func _find_start_coord() -> Vector2i:
-	var passable: Array[Vector2i] = []
-	for coord: Vector2i in hex_map.tiles:
-		var terrain: TerrainType = hex_map.get_terrain(coord)
-		if terrain and terrain.is_passable:
-			passable.append(coord)
-	if passable.is_empty():
-		return Vector2i.ZERO
-	return passable[randi() % passable.size()]
+	@warning_ignore("integer_division")
+	var center := Vector2i(
+		hex_map.map_width / 2,
+		hex_map.map_height / 2 - hex_map.map_width / 4,
+	)
+	for radius in range(0, 10):
+		var hexes := HexUtil.get_hexes_in_range(center, radius)
+		hexes.shuffle()
+		for coord in hexes:
+			var terrain: TerrainType = hex_map.get_terrain(coord)
+			if terrain and terrain.is_passable:
+				return coord
+	return center
 
 
 func _setup_ai(
