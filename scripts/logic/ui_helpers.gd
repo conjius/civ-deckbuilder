@@ -1,7 +1,7 @@
 class_name UIHelpers
 extends RefCounted
 
-const UI_SCALE: float = 1.845
+const UI_SCALE: float = 3.69
 
 const CARD_WIDTH: int = int(115 * UI_SCALE)
 const CARD_HEIGHT: int = int(165 * UI_SCALE)
