@@ -168,13 +168,13 @@ jobs:
           wait $PID 2>/dev/null
           mv project.godot.bak project.godot
           SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
-          cp "$SS_DIR"/*.png screenshots/ 2>/dev/null
+          cp "$SS_DIR"/*.jpg screenshots/ 2>/dev/null
           ls -la screenshots/
           exit 0
       - name: validate
         run: |
-          for f in screenshot-main.png screenshot-gallery.png; do
-            if [ ! -f "screenshots/$f" ] || [ $(stat -f%z "screenshots/$f") -lt 50000 ]; then
+          for f in screenshot-main.jpg screenshot-gallery.jpg; do
+            if [ ! -f "screenshots/$f" ] || [ $(stat -f%z "screenshots/$f") -lt 10000 ]; then
               echo "FAIL: $f missing or blank" && exit 1
             fi
             echo "OK: $f ($(stat -f%z "screenshots/$f") bytes)"
@@ -186,12 +186,13 @@ jobs:
           REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           TMPDIR=$(mktemp -d)
           git clone --branch gh-pages --depth 1 "$REPO_URL" "$TMPDIR"
-          cp screenshots/screenshot-*.png "$TMPDIR/"
+          cp screenshots/screenshot-*.jpg "$TMPDIR/"
           cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
           cd "$TMPDIR"
+          git rm -f screenshot-main.png screenshot-gallery.png 2>/dev/null || true
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add screenshot-main.png screenshot-gallery.png index.html
+          git add screenshot-main.jpg screenshot-gallery.jpg index.html
           git commit -m "Update screenshots" || true
           git push
           rm -rf "$TMPDIR"
