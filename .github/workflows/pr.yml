@@ -13,21 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Godot
+      - uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - name: setup
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
-          chmod +x /usr/local/bin/godot
-
-      - name: Import project
-        run: godot --headless --editor --quit 2>&1 || true
-        timeout-minutes: 3
-
-      - name: Run tests
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 2
+      - name: test
         run: godot --headless --script tests/test_runner.gd 2>&1
-        timeout-minutes: 3
-
-      - name: Lint
+        timeout-minutes: 2
+      - name: lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd

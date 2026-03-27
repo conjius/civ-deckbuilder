@@ -13,14 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache Godot
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: /usr/local/bin/godot
           key: godot-linux-${{ env.GODOT_VERSION }}
-
-      - name: Install Godot
+      - name: setup
         run: |
           if [ ! -f /usr/local/bin/godot ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
@@ -28,43 +25,29 @@ jobs:
             mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
             chmod +x /usr/local/bin/godot
           fi
-
-      - name: Cache import
-        uses: actions/cache@v4
-        with:
-          path: .godot/imported
-          key: import-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
-          restore-keys: import-
-
-      - name: Import project
-        run: godot --headless --editor --quit 2>&1 || true
+          godot --headless --editor --quit 2>&1 || true
         timeout-minutes: 2
-
-      - name: Run tests
+      - name: test
         run: godot --headless --script tests/test_runner.gd 2>&1
         timeout-minutes: 2
-
-      - name: Lint
+      - name: lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  build-native:
+  buildnative:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Cache Godot + templates
-        uses: actions/cache@v4
-        id: godot-cache
+      - uses: actions/cache@v4
+        id: cache
         with:
           path: |
             /Applications/Godot.app
             ~/Library/Application Support/Godot/export_templates
           key: godot-macos-${{ env.GODOT_VERSION }}
-
-      - name: Install Godot + export templates
-        if: steps.godot-cache.outputs.cache-hit != 'true'
+      - name: setup
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
           unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
@@ -73,15 +56,7 @@ jobs:
           wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mv templates/* ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable/
-
-      - name: Cache import
-        uses: actions/cache@v4
-        with:
-          path: .godot/imported
-          key: import-macos-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
-          restore-keys: import-macos-
-
-      - name: Import + export
+      - name: export
         run: |
           /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
           cat > export_presets.cfg << 'PRESETS'
@@ -102,8 +77,7 @@ jobs:
           mkdir -p build
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 3
-
-      - name: Generate version
+      - name: version
         id: version
         run: |
           PATCH=$(git rev-list --count HEAD)
@@ -113,8 +87,7 @@ jobs:
           else
             echo "tag=v0.1.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Upload build artifact
+      - name: upload
         uses: actions/upload-artifact@v4
         with:
           name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
@@ -132,8 +105,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Generate version and tag
+      - name: tag
         id: version
         run: |
           PATCH=$(git rev-list --count HEAD)
@@ -153,20 +125,18 @@ jobs:
           fi
 
   release:
-    needs: [publish, build-native]
+    needs: [publish, buildnative]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download build artifact
+      - name: download
         uses: actions/download-artifact@v4
         with:
           name: civ-deckbuilder-${{ needs.publish.outputs.tag }}-macOS
           path: build
-
-      - name: Create GitHub release
+      - name: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -194,14 +164,11 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache Godot
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: /usr/local/bin/godot
           key: godot-linux-${{ env.GODOT_VERSION }}
-
-      - name: Install Godot + xvfb
+      - name: setup
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
           if [ ! -f /usr/local/bin/godot ]; then
@@ -210,12 +177,9 @@ jobs:
             mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
             chmod +x /usr/local/bin/godot
           fi
-
-      - name: Import project
-        run: |
-          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 || true
-
-      - name: Capture screenshots
+      - name: import
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 || true
+      - name: capture
         run: |
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
@@ -223,8 +187,7 @@ jobs:
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
         timeout-minutes: 2
-
-      - name: Upload screenshots to release
+      - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
