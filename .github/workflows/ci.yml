@@ -87,23 +87,23 @@ jobs:
           export_filter="all_resources"
           include_filter=""
           exclude_filter=""
-          export_path="build/CivDeckbuilder.zip"
+          export_path="build/civ-deckbuilder.zip"
           [preset.0.options]
-          application/product_name="Civ Deckbuilder"
-          application/bundle_identifier="com.civdeckbuilder.game"
+          application/product_name="civ-deckbuilder"
+          application/bundle_identifier="com.civ-deckbuilder.game"
           PRESETS
 
       - name: Build for macOS
         run: |
           mkdir -p build
-          /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/CivDeckbuilder.zip 2>&1
+          /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CivDeckbuilder-macOS
-          path: build/CivDeckbuilder.zip
+          name: civ-deckbuilder-macOS
+          path: build/civ-deckbuilder.zip
 
   publish:
     needs: export
@@ -152,13 +152,13 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: CivDeckbuilder-macOS
+          name: civ-deckbuilder-macOS
           path: build
 
       - name: Rename artifact with version
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
-          mv build/CivDeckbuilder.zip "build/CivDeckbuilder-${TAG}-macOS.zip"
+          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
 
       - name: Create GitHub release
         env:
@@ -170,7 +170,7 @@ jobs:
           if [ "$IS_STABLE" != "true" ]; then
             PRERELEASE="--prerelease"
           fi
-          gh release create "$TAG" "build/CivDeckbuilder-${TAG}-macOS.zip" \
+          gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
             --title "$TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
             --latest \
