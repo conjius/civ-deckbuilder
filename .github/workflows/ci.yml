@@ -188,10 +188,10 @@ jobs:
           export DISPLAY=:99
           Xvfb :99 -screen 0 1920x1080x24 &>/dev/null &
           sleep 1
-          godot --headless --editor --quit 2>&1 || true
+          godot --editor --quit 2>&1 | tail -5 || true
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          timeout 30 godot --path . 2>&1 | grep -v "ALSA\|pulse\|keysym\|xkbcomp\|V-Sync\|VK_KHR\|snd_func\|snd_config\|confmisc\|pcm\|Texture detected\|trace-depr" || true
+          timeout 30 godot --path . 2>&1 | grep -E "Screenshot|Capture|Image:|Save|ERROR.*null|Gallery" || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
           kill %1 2>/dev/null || true
