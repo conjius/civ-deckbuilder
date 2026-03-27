@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Make Camp"
-description = "Current tile"
+description = "Create a campsite on the tile the unit is on"
 card_type = 3
 range_value = 0
 card_color = Color(0.87, 0.82, 0.7, 1)
