@@ -174,27 +174,13 @@ static func _point_in_polygon(
 
 
 static func make_drag_cursor_tex(
-	icon_tex: Texture2D, card_color: Color,
+	_icon_tex: Texture2D, card_color: Color,
 ) -> ImageTexture:
 	var sz := DRAG_CURSOR_SIZE
 	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
 	var tint := Color(0.85, 0.75, 0.6)
 	tint = tint.lerp(card_color, 0.4)
-	if icon_tex != null:
-		var src := icon_tex.get_image()
-		if src != null:
-			src = src.duplicate()
-			src.convert(Image.FORMAT_RGBA8)
-			src.resize(sz, sz, Image.INTERPOLATE_LANCZOS)
-			for y in sz:
-				for x in sz:
-					var px := src.get_pixel(x, y)
-					if px.a > 0.0:
-						img.set_pixel(x, y, Color(
-							tint.r, tint.g, tint.b, px.a
-						))
-			return ImageTexture.create_from_image(img)
-	var center := sz / 2.0
+	var center := float(sz) / 2.0
 	var radius := center - 2.0
 	for y in sz:
 		for x in sz:
