@@ -286,6 +286,8 @@ func _on_drag_ended(
 				).set_trans(Tween.TRANS_SINE)
 			break
 	_layout_cards()
+	if in_hand:
+		_update_focus(drop_pos)
 
 
 func _is_in_hand_area(screen_pos: Vector2) -> bool:
