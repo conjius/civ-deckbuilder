@@ -16,7 +16,6 @@ var is_face_up: bool = true
 var _dragging: bool = false
 var _returning: bool = false
 var _drag_start_time: int = 0
-var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
 var _bg_panel: Panel
 var _sections: Array[PanelContainer] = []
@@ -67,7 +66,7 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed and not _dragging:
-				_start_drag(event.global_position)
+				_start_drag()
 				accept_event()
 			elif not event.pressed and _dragging:
 				_end_drag(event.global_position)
@@ -78,23 +77,7 @@ func _input(event: InputEvent) -> void:
 	if not _dragging:
 		return
 	if event is InputEventMouseMotion:
-		global_position = event.global_position - _drag_offset
-		var in_hand := _is_in_hand_area(event.global_position)
-		if in_hand:
-			if arrow_indicator:
-				arrow_indicator.hide_arrow()
-			if hex_map:
-				hex_map.clear_highlights()
-				hex_map.highlight_tiles(
-					_valid_targets,
-					Color(0.3, 0.8, 1.0, 0.8),
-				)
-			if card_data.card_type == CardData.CardType.RESOURCE:
-				modulate = Color.WHITE
-		elif card_data.card_type == CardData.CardType.RESOURCE:
-			modulate = Color(1.0, 0.3, 0.3, 0.7)
-		else:
-			_update_hover(event.global_position)
+		_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
@@ -103,13 +86,12 @@ func _input(event: InputEvent) -> void:
 			_end_drag(event.global_position)
 
 
-func _start_drag(mouse_pos: Vector2) -> void:
+func _start_drag() -> void:
 	if _returning:
 		return
 	_dragging = true
 	_drag_start_time = Time.get_ticks_msec()
 	_original_position = global_position
-	_drag_offset = mouse_pos - global_position
 	z_index = 100
 	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
 	if icon_tex:
