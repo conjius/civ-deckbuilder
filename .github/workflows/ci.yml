@@ -166,15 +166,17 @@ jobs:
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
           IS_STABLE="${{ needs.publish.outputs.is_stable }}"
-          PRERELEASE=""
-          if [ "$IS_STABLE" != "true" ]; then
-            PRERELEASE="--prerelease"
+          if [ "$IS_STABLE" = "true" ]; then
+            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+              --title "$TAG" \
+              --notes "Automated build from commit ${{ github.sha }}" \
+              --latest
+          else
+            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+              --title "$TAG" \
+              --notes "Automated build from commit ${{ github.sha }}" \
+              --prerelease
           fi
-          gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
-            --title "$TAG" \
-            --notes "Automated build from commit ${{ github.sha }}" \
-            --latest \
-            $PRERELEASE
 
       - name: Update stable tag
         if: needs.publish.outputs.is_stable == 'true'
