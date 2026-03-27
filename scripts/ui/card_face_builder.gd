@@ -134,7 +134,7 @@ static func _build_range_label(card: CardData) -> Control:
 		return _build_resource_footer(card)
 	if card.range_value == 0:
 		var lbl := Label.new()
-		lbl.text = "This tile"
+		lbl.text = "Current tile"
 		lbl.layout_mode = 1
 		lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
