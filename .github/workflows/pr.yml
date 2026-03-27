@@ -9,6 +9,30 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - name: setup
+        run: |
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 2
+      - name: test
+        run: godot --headless --script tests/test_runner.gd 2>&1
+        timeout-minutes: 2
+      - name: lint
+        run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
+
   exportmacos:
     runs-on: ubuntu-latest
     steps:
@@ -78,7 +102,7 @@ jobs:
           path: build/civ-deckbuilder.zip
 
   tag-release:
-    needs: exportmacos
+    needs: [build-test-lint, exportmacos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
