@@ -152,7 +152,7 @@ jobs:
 
   screenshots:
     needs: release
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     continue-on-error: true
@@ -161,24 +161,26 @@ jobs:
 
       - name: Cache Godot
         uses: actions/cache@v4
-        id: ss-cache
         with:
-          path: /Applications/Godot.app
-          key: godot-macos-app-${{ env.GODOT_VERSION }}
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
 
-      - name: Install Godot
-        if: steps.ss-cache.outputs.cache-hit != 'true'
+      - name: Install Godot + xvfb
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
-          unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
-          sudo cp -R Godot.app /Applications/Godot.app
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
 
       - name: Capture screenshots
         run: |
-          /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
+          godot --headless --editor --quit 2>&1 || true
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          /Applications/Godot.app/Contents/MacOS/Godot --path . --quit-after 15 2>&1 || true
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . --quit-after 15 2>&1 || true
           ls -la screenshots/
         timeout-minutes: 2
 
