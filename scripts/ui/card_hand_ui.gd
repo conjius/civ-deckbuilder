@@ -243,8 +243,7 @@ func _unfocus_card(card: Control) -> void:
 
 func _on_drag_started(_card: CardData) -> void:
 	_any_dragging = true
-	if _focused_card != null:
-		_unfocus_card(_focused_card)
+	_focused_card = null
 
 
 func _on_drag_ended(
