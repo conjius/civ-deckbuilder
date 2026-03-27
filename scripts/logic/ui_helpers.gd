@@ -98,7 +98,7 @@ const ENTITY_ICONS: Dictionary = {
 }
 
 const CURSOR_SIZE: int = 32
-const DRAG_CURSOR_SIZE: int = 48
+const DRAG_CURSOR_SIZE: int = 96
 
 
 static func set_default_cursor() -> void:
@@ -222,6 +222,7 @@ static func set_drag_cursor(
 
 
 static func restore_default_cursor() -> void:
+	print("[DRAG] restore_default_cursor called")
 	set_default_cursor()
 
 
