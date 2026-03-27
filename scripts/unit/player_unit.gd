@@ -2,7 +2,7 @@ extends Node3D
 
 signal movement_finished
 
-@export var move_speed: float = 1.35
+@export var move_speed: float = 2.7
 
 var state: PlayerState = PlayerState.new()
 var avatar_color: Color = Color(0.9, 0.2, 0.2, 1)
@@ -146,7 +146,7 @@ func move_along_path(
 		var duration := step_distance / move_speed
 		_move_tween.tween_property(
 			self, "position", target, duration
-		).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		).set_trans(Tween.TRANS_LINEAR)
 	_move_tween.finished.connect(_on_move_finished)
 
 
