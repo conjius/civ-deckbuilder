@@ -97,7 +97,7 @@ func _show_cursor_node() -> void:
 		card_data.card_color.b, 0.8,
 	)
 	_cursor_node.z_index = 200
-	get_viewport().get_parent().add_child(_cursor_node)
+	get_tree().root.add_child(_cursor_node)
 	_update_cursor_pos()
 
 
