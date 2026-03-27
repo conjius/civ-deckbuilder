@@ -37,6 +37,7 @@ func _ready() -> void:
 	add_child(_dim_overlay)
 	card_gallery = CardGalleryUI.new()
 	card_gallery.visible = false
+	card_gallery.closed.connect(_on_gallery_closed)
 	add_child(card_gallery)
 	end_turn_button.pressed.connect(
 		func() -> void: end_turn_pressed.emit()
@@ -122,13 +123,16 @@ func show_settlement_info(
 
 func _toggle_gallery() -> void:
 	if card_gallery.visible:
-		_animate_overlay(false)
 		card_gallery.hide_gallery()
-		_slide_hand_in()
 	else:
 		_animate_overlay(true)
 		_slide_hand_out()
 		card_gallery.show_gallery(_current_cards)
+
+
+func _on_gallery_closed() -> void:
+	_animate_overlay(false)
+	_slide_hand_in()
 
 
 func _animate_overlay(show: bool) -> void:
