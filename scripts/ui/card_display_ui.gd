@@ -259,7 +259,7 @@ func _update_hover(mouse_pos: Vector2) -> void:
 			var from_screen := camera.unproject_position(from_pos)
 			var screen_dir := to_screen - from_screen
 			var screen_dist := screen_dir.length()
-			var pull_back_px := float(UIHelpers.DRAG_CURSOR_SIZE) * 0.6
+			var pull_back_px := float(UIHelpers.DRAG_CURSOR_SIZE) * 0.85
 			if screen_dist > pull_back_px:
 				var shortened := to_screen - screen_dir.normalized() * pull_back_px
 				to_pos = _screen_to_ground(shortened)
