@@ -13,12 +13,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_elapsed += delta
-	if _state == 0 and _elapsed >= 5.0:
+	if _state == 0 and _elapsed >= 3.0:
 		_capture("screenshot-main.png")
 		_open_gallery()
 		_state = 1
 		_elapsed = 0.0
-	elif _state == 1 and _elapsed >= 3.0:
+	elif _state == 1 and _elapsed >= 2.0:
 		_capture("screenshot-gallery.png")
 		get_tree().quit()
 

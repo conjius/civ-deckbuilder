@@ -193,6 +193,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
-          if [ -f screenshots/screenshot-main.png ]; then
-            gh release upload "$TAG" screenshots/screenshot-main.png screenshots/screenshot-gallery.png --clobber
+          FILES=""
+          for f in screenshots/screenshot-*.png; do
+            [ -f "$f" ] && FILES="$FILES $f"
+          done
+          if [ -n "$FILES" ]; then
+            gh release upload "$TAG" $FILES --clobber
           fi
