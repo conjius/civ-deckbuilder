@@ -80,7 +80,9 @@ func _gui_input(event: InputEvent) -> void:
 
 func _apply_drag_cursor() -> void:
 	if _drag_cursor_tex == null:
+		print("[DRAG] _apply_drag_cursor: tex is null")
 		return
+	print("[DRAG] _apply_drag_cursor: applying cursor")
 	@warning_ignore("integer_division")
 	var hotspot := Vector2(
 		UIHelpers.DRAG_CURSOR_SIZE / 2,
@@ -110,6 +112,7 @@ func _input(event: InputEvent) -> void:
 func _start_drag() -> void:
 	if _returning:
 		return
+	print("[DRAG] _start_drag called")
 	_dragging = true
 	_drag_start_time = Time.get_ticks_msec()
 	_original_position = global_position
