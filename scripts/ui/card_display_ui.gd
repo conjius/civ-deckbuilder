@@ -139,13 +139,11 @@ func _start_resource_reject() -> void:
 		_returning = true
 	)
 	tween.tween_property(
-		self, "modulate", Color(1.0, 0.2, 0.2, 1.0), 0.25
+		self, "modulate", Color(1.0, 0.3, 0.3, 0.5), 0.1
 	).set_trans(Tween.TRANS_SINE)
+	tween.tween_interval(0.1)
 	tween.tween_property(
-		self, "modulate", Color(1.0, 0.2, 0.2, 1.0), 0.25
-	)
-	tween.tween_property(
-		self, "modulate", Color.WHITE, 0.25
+		self, "modulate", Color.WHITE, 0.1
 	).set_trans(Tween.TRANS_SINE)
 	tween.parallel().tween_property(
 		self, "global_position", _original_position, 0.3
