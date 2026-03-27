@@ -127,8 +127,8 @@ func _apply_scroll() -> void:
 	_container.position.y = -_scroll_offset
 
 
-func _gui_input(event: InputEvent) -> void:
-	if _animating:
+func _input(event: InputEvent) -> void:
+	if not visible or _animating:
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
@@ -144,10 +144,14 @@ func _gui_input(event: InputEvent) -> void:
 			)
 			_apply_scroll()
 			get_viewport().set_input_as_handled()
+		else:
+			get_viewport().set_input_as_handled()
 	if event is InputEventPanGesture:
 		_scroll_offset = clampf(
 			_scroll_offset + event.delta.y * 20.0,
 			0.0, _max_scroll,
 		)
 		_apply_scroll()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseMotion:
 		get_viewport().set_input_as_handled()
