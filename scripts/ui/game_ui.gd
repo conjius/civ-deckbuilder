@@ -218,7 +218,7 @@ func _slide_hand_out() -> void:
 
 func _slide_hand_in() -> void:
 	var tween := bottom_bar.create_tween()
-	tween.tween_interval(0.15)
+	tween.tween_interval(0.3)
 	tween.set_parallel(true)
 	tween.tween_property(
 		bottom_bar, "position:y", _hand_original_pos.y, 0.35,
