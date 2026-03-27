@@ -173,38 +173,6 @@ static func _point_in_polygon(
 	return inside
 
 
-static func make_drag_cursor_tex(
-	_icon_tex: Texture2D, card_color: Color,
-) -> ImageTexture:
-	var sz := DRAG_CURSOR_SIZE
-	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
-	var tint := Color(0.85, 0.75, 0.6)
-	tint = tint.lerp(card_color, 0.4)
-	var center := float(sz) / 2.0
-	var radius := center - 2.0
-	for y in sz:
-		for x in sz:
-			var dist := Vector2(
-				float(x), float(y)
-			).distance_to(Vector2(center, center))
-			if dist <= radius:
-				img.set_pixel(x, y, tint)
-	return ImageTexture.create_from_image(img)
-
-
-static func set_drag_cursor(
-	icon_tex: Texture2D, card_color: Color,
-) -> void:
-	var tex := make_drag_cursor_tex(icon_tex, card_color)
-	if tex == null:
-		return
-	@warning_ignore("integer_division")
-	var hotspot := Vector2(
-		DRAG_CURSOR_SIZE / 2, DRAG_CURSOR_SIZE / 2
-	)
-	Input.set_custom_mouse_cursor(
-		tex, Input.CURSOR_ARROW, hotspot
-	)
 
 
 static func restore_default_cursor() -> void:
