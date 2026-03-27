@@ -198,7 +198,7 @@ func _place_water_clumps() -> void:
 		if rng.randf() < 0.3:
 			clump_size = rng.randi_range(1, 3)
 		else:
-			clump_size = rng.randi_range(15, 25)
+			clump_size = rng.randi_range(25, 40)
 		var clump: Array[Vector2i] = _grow_clump(
 			seed_coord, clump_size, water_set, rng
 		)
