@@ -185,12 +185,17 @@ jobs:
           fi
       - name: capture
         run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 &
+          sleep 1
+          godot --editor --quit 2>&1 || true
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          timeout 45 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 || true
+          timeout 30 godot --path . 2>&1 || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
-        timeout-minutes: 1
+          kill %1 2>/dev/null || true
+        timeout-minutes: 2
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
