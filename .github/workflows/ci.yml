@@ -46,7 +46,7 @@ jobs:
       - name: Lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  export:
+  build-publish:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,7 +107,7 @@ jobs:
           path: build/civ-deckbuilder.zip
 
   release:
-    needs: [build-test-lint, export]
+    needs: [build-test-lint, build-publish]
     runs-on: ubuntu-latest
     permissions:
       contents: write
