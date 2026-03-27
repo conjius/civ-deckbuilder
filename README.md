@@ -30,15 +30,15 @@ Download the [latest stable build](https://github.com/conjius/civ-deckbuilder/re
 
 
 ## Build & Run
-Run the project:
+Run the project in Godot:
 ```bash
 open -a Godot project.godot
 ```
-Run the tests:
+Run the tests in a headless Godot instance:
 ```bash
 godot --headless --script tests/test_runner.gd
 ```
-Run the Linter:
+Run the Linter via `gdlint`:
 ```bash
 gdlint scripts/**/*.gd resources/**/*.gd
 ```
