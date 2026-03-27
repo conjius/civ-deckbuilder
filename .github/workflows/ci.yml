@@ -187,9 +187,13 @@ jobs:
         run: |
           export DISPLAY=:99
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+          echo "=== project.godot autoload section ==="
+          tail -5 project.godot
           mkdir -p screenshots
-          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 | tail -3 || true
-          timeout 30 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 | grep -E "Screenshot|Capture|Image:|Save|ERROR.*null|Gallery" || true
+          echo "=== editor import ==="
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 | tail -5 || true
+          echo "=== game capture ==="
+          timeout 30 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
           kill %1 2>/dev/null || true
