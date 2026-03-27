@@ -98,7 +98,7 @@ const ENTITY_ICONS: Dictionary = {
 }
 
 const CURSOR_SIZE: int = 32
-const DRAG_CURSOR_SIZE: int = 96
+const DRAG_CURSOR_SIZE: int = 64
 
 
 static func set_default_cursor() -> void:
@@ -187,6 +187,8 @@ static func make_drag_cursor_tex(
 		src_img.fill(card_color)
 	else:
 		src_img = src_img.duplicate()
+	if src_img.get_format() != Image.FORMAT_RGBA8:
+		src_img.convert(Image.FORMAT_RGBA8)
 	src_img.resize(
 		DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
 		Image.INTERPOLATE_LANCZOS,
