@@ -34,9 +34,15 @@ a{color:#6ea8fe;text-decoration:none}
 </div>
 <div class="modal" id="modal" onclick="closeModal()"><img id="modalImg" src=""></div>
 <script>
-function openModal(src){document.getElementById('modalImg').src=src;document.getElementById('modal').classList.add('open')}
+function openModal(src){document.getElementById('modalImg').src=src;document.getElementById('modal').classList.add('open');history.pushState({modal:true},'','')}
 function closeModal(){document.getElementById('modal').classList.remove('open')}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()})
+window.addEventListener('popstate',function(){closeModal()})
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('modal').classList.contains('open'))history.back()})
+document.getElementById('modal').addEventListener('click',function(){history.back()})
+var imgs={main:'screenshot-main.png',gallery:'screenshot-gallery.png'}
+function checkHash(){var h=location.hash.slice(1);if(imgs[h])openModal(imgs[h])}
+checkHash()
+window.addEventListener('hashchange',checkHash)
 </script>
 </body>
 </html>
