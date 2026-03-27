@@ -16,6 +16,9 @@ var _iron: CardData = preload("res://resources/cards/iron.tres")
 var _copper: CardData = preload("res://resources/cards/copper.tres")
 var _wood: CardData = preload("res://resources/cards/wood.tres")
 var _glass: CardData = preload("res://resources/cards/glass.tres")
+var _strike: CardData = preload("res://resources/cards/strike.tres")
+var _shoot: CardData = preload("res://resources/cards/shoot.tres")
+var _shields_up: CardData = preload("res://resources/cards/shields_up.tres")
 var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
 var _last_hover_time: int = 0
@@ -69,6 +72,7 @@ func _ready() -> void:
 		_settle,
 		_chicken, _beef, _pork,
 		_ore, _iron, _copper, _wood, _glass,
+		_strike, _shoot, _shields_up,
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()

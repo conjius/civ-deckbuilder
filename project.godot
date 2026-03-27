@@ -16,6 +16,8 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
+window/size/initial_position_type=0
+window/size/initial_position=Vector2i(-4000, -4000)
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
@@ -53,6 +55,9 @@ rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+
+[autoload]
+ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"
 
 [autoload]
 ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"

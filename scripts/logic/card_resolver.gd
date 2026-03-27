@@ -15,6 +15,8 @@ class CardResult extends RefCounted:
 	var settled_coord: Vector2i = Vector2i(-999, -999)
 	var settlement_name: String = ""
 	var ends_turn: bool = false
+	var damage_dealt: int = 0
+	var defense_gained: int = 0
 
 
 func _init(map: MapData) -> void:
@@ -70,7 +72,9 @@ func get_map_data() -> MapData:
 	return _map
 
 
-func get_valid_targets(card: CardData, origin: Vector2i) -> Array[Vector2i]:
+func get_valid_targets(
+	card: CardData, origin: Vector2i,
+) -> Array[Vector2i]:
 	match card.card_type:
 		CardData.CardType.MOVE:
 			return _get_move_targets(origin, card.range_value)
@@ -80,10 +84,16 @@ func get_valid_targets(card: CardData, origin: Vector2i) -> Array[Vector2i]:
 			return _get_gather_targets(origin)
 		CardData.CardType.SETTLE:
 			return _get_settle_targets(origin)
+		CardData.CardType.ATTACK:
+			return _get_attack_targets(origin, card.range_value)
+		CardData.CardType.DEFENSE:
+			return [origin] as Array[Vector2i]
 	return []
 
 
-func resolve_card(card: CardData, target: Vector2i, origin: Vector2i) -> CardResult:
+func resolve_card(
+	card: CardData, target: Vector2i, origin: Vector2i,
+) -> CardResult:
 	match card.card_type:
 		CardData.CardType.MOVE:
 			return _resolve_move(card, target, origin)
@@ -93,6 +103,10 @@ func resolve_card(card: CardData, target: Vector2i, origin: Vector2i) -> CardRes
 			return _resolve_gather(target)
 		CardData.CardType.SETTLE:
 			return _resolve_settle(target)
+		CardData.CardType.ATTACK:
+			return _resolve_attack(card, target, origin)
+		CardData.CardType.DEFENSE:
+			return _resolve_defense(card)
 	return CardResult.new()
 
 
@@ -179,6 +193,40 @@ func _resolve_settle(target: Vector2i) -> CardResult:
 	result.success = true
 	result.settled_coord = target
 	result.settlement_name = sname
+	return result
+
+
+func _get_attack_targets(
+	origin: Vector2i, max_range: int,
+) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	var hexes := HexUtil.get_hexes_in_range(origin, max_range)
+	for coord in hexes:
+		if coord == origin:
+			continue
+		if _map.has_enemy(coord) or _map.has_settlement(coord):
+			result.append(coord)
+	return result
+
+
+func _resolve_attack(
+	card: CardData, target: Vector2i, origin: Vector2i,
+) -> CardResult:
+	var result := CardResult.new()
+	var distance := HexUtil.axial_distance(origin, target)
+	if distance > card.range_value or distance == 0:
+		return result
+	if not _map.has_enemy(target) and not _map.has_settlement(target):
+		return result
+	result.success = true
+	result.damage_dealt = card.attack_damage
+	return result
+
+
+func _resolve_defense(card: CardData) -> CardResult:
+	var result := CardResult.new()
+	result.success = true
+	result.defense_gained = card.defense_bonus
 	return result
 
 

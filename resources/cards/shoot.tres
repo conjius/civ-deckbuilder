@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Shoot"
+description = "Ranged attack within 2 tiles"
+card_type = 5
+range_value = 2
+card_color = Color(0.29, 0.56, 0.85, 1)
+icon_path = "res://assets/icons/resources/shoot.svg"
+icon_scale = 0.9
+attack_damage = 1

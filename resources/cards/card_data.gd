@@ -1,7 +1,7 @@
 class_name CardData
 extends Resource
 
-enum CardType { MOVE, SCOUT, GATHER, SETTLE, RESOURCE }
+enum CardType { MOVE, SCOUT, GATHER, SETTLE, RESOURCE, ATTACK, DEFENSE }
 enum ResourceType { NONE, FOOD, MATERIALS }
 
 @export var card_name: String = ""
@@ -15,3 +15,5 @@ enum ResourceType { NONE, FOOD, MATERIALS }
 @export var icon_scale: float = 1.0
 @export var resource_type: ResourceType = ResourceType.NONE
 @export var resource_value: int = 0
+@export var attack_damage: int = 0
+@export var defense_bonus: int = 0

@@ -3,6 +3,7 @@ extends RefCounted
 
 var _terrain: Dictionary = {}
 var _settlements: Dictionary = {}
+var _enemies: Dictionary = {}
 
 
 func set_terrain(coord: Vector2i, terrain: TerrainType) -> void:
@@ -33,6 +34,17 @@ func has_settlement(coord: Vector2i) -> bool:
 
 func place_settlement(coord: Vector2i, sname: String) -> void:
 	_settlements[coord] = sname
+
+
+func set_enemy_position(coord: Vector2i, present: bool) -> void:
+	if present:
+		_enemies[coord] = true
+	else:
+		_enemies.erase(coord)
+
+
+func has_enemy(coord: Vector2i) -> bool:
+	return _enemies.has(coord)
 
 
 func get_settlement_name(coord: Vector2i) -> String:

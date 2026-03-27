@@ -37,6 +37,8 @@ func play_card(card: CardData, target: Vector2i) -> CardResolver.CardResult:
 		CardData.CardType.GATHER:
 			for gained_card: CardData in result.gained_cards:
 				deck.add_card(gained_card)
+		CardData.CardType.DEFENSE:
+			player.defense_modifier += result.defense_gained
 
 	deck.play_card(card)
 	return result

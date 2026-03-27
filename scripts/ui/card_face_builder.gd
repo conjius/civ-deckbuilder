@@ -132,6 +132,10 @@ static func build_face(
 static func _build_range_label(card: CardData) -> Control:
 	if card.card_type == CardData.CardType.RESOURCE:
 		return _build_resource_footer(card)
+	if card.card_type == CardData.CardType.ATTACK:
+		return _build_attack_footer(card)
+	if card.card_type == CardData.CardType.DEFENSE:
+		return _build_defense_footer(card)
 	if card.range_value == 0:
 		var lbl := Label.new()
 		lbl.text = "Current tile"
@@ -168,6 +172,50 @@ static func _build_range_label(card: CardData) -> Control:
 		"[center]Range  [img=%d]%s[/img]"
 		+ "  [font_size=%d]%d[/font_size][/center]"
 	) % [r_icon_sz, r_path, r_num_sz, card.range_value]
+	UIHelpers.set_bbcode(rtl, text)
+	return rtl
+
+
+static func _build_attack_footer(
+	card: CardData,
+) -> Control:
+	var rtl := RichTextLabel.new()
+	rtl.bbcode_enabled = true
+	rtl.fit_content = true
+	rtl.layout_mode = 1
+	rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rtl.add_theme_font_override("normal_font", _font_bold)
+	rtl.add_theme_color_override("default_color", Color.BLACK)
+	rtl.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
+	)
+	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var text := "[center]" + UIHelpers.icon_text(
+		"Attack", str(card.attack_damage)
+	) + "    " + UIHelpers.icon_text(
+		"Range", str(card.range_value)
+	) + "[/center]"
+	UIHelpers.set_bbcode(rtl, text)
+	return rtl
+
+
+static func _build_defense_footer(
+	card: CardData,
+) -> Control:
+	var rtl := RichTextLabel.new()
+	rtl.bbcode_enabled = true
+	rtl.fit_content = true
+	rtl.layout_mode = 1
+	rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rtl.add_theme_font_override("normal_font", _font_bold)
+	rtl.add_theme_color_override("default_color", Color.BLACK)
+	rtl.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
+	)
+	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var text := "[center]" + UIHelpers.icon_text(
+		"Defense", "+" + str(card.defense_bonus)
+	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
 
