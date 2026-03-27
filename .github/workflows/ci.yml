@@ -4,38 +4,20 @@ on:
   push:
     branches: [main]
 
+env:
+  GODOT_VERSION: "4.6.1"
+
 jobs:
-  build:
+  build-test-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Godot
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
-          unzip -q Godot_v4.6.1-stable_linux.x86_64.zip
-          mv Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
-          chmod +x /usr/local/bin/godot
-
-      - name: Import project
-        run: godot --headless --editor --quit 2>&1 || true
-        timeout-minutes: 3
-
-      - name: Verify scripts parse
-        run: godot --headless --script tests/test_runner.gd --quit-after 1 2>&1 || true
-        timeout-minutes: 2
-
-  test-lint:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Godot
-        run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
-          unzip -q Godot_v4.6.1-stable_linux.x86_64.zip
-          mv Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
 
       - name: Import project
@@ -46,14 +28,11 @@ jobs:
         run: godot --headless --script tests/test_runner.gd 2>&1
         timeout-minutes: 3
 
-      - name: Install gdlint
-        run: pip install gdtoolkit
-
       - name: Lint
-        run: gdlint scripts/**/*.gd resources/**/*.gd
+        run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  publish:
-    needs: test-lint
+  publish-release:
+    needs: build-test-lint
     runs-on: macos-latest
     permissions:
       contents: write
@@ -62,24 +41,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Godot
+      - name: Install Godot + export templates
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_macos.universal.zip
-          unzip -q Godot_v4.6.1-stable_macos.universal.zip
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
           sudo cp -R Godot.app /Applications/Godot.app
-
-      - name: Install export templates
-        run: |
-          mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.6.1.stable
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_export_templates.tpz
-          unzip -q Godot_v4.6.1-stable_export_templates.tpz
-          mv templates/* ~/Library/Application\ Support/Godot/export_templates/4.6.1.stable/
+          mkdir -p ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mv templates/* ~/Library/Application\ Support/Godot/export_templates/${GODOT_VERSION}.stable/
 
       - name: Import project
         run: /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
         timeout-minutes: 3
 
-      - name: Create export presets
+      - name: Build for macOS
         run: |
           cat > export_presets.cfg << 'PRESETS'
           [preset.0]
@@ -96,75 +72,31 @@ jobs:
           application/product_name="civ-deckbuilder"
           application/bundle_identifier="com.civ-deckbuilder.game"
           PRESETS
-
-      - name: Build for macOS
-        run: |
           mkdir -p build
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
-      - name: Generate version
-        id: version
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PATCH=$(git rev-list --count HEAD)
           IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
           if [ "$IS_STABLE" = "true" ]; then
-            VERSION="v0.1.${PATCH}"
+            TAG="v0.1.${PATCH}"
           else
-            VERSION="v0.1.${PATCH}-nightly"
+            TAG="v0.1.${PATCH}-nightly"
           fi
-          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION (stable=$IS_STABLE)"
-
-      - name: Create tag
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
+          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
           git tag "$TAG"
           git push origin "$TAG"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: civ-deckbuilder-macOS
-          path: build/civ-deckbuilder.zip
-
-    outputs:
-      tag: ${{ steps.version.outputs.tag }}
-      is_stable: ${{ steps.version.outputs.is_stable }}
-
-  release:
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: civ-deckbuilder-macOS
-          path: build
-
-      - name: Rename artifact with version
-        run: |
-          TAG="${{ needs.publish.outputs.tag }}"
-          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
-
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="${{ needs.publish.outputs.tag }}"
-          IS_STABLE="${{ needs.publish.outputs.is_stable }}"
           if [ "$IS_STABLE" = "true" ]; then
             gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
               --title "$TAG" \
               --notes "Automated build from commit ${{ github.sha }}" \
               --latest
+            git tag -f stable
+            git push origin stable --force
           else
             gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
               --title "$TAG" \
@@ -172,14 +104,8 @@ jobs:
               --prerelease
           fi
 
-      - name: Update stable tag
-        if: needs.publish.outputs.is_stable == 'true'
-        run: |
-          git tag -f stable
-          git push origin stable --force
-
   screenshots:
-    needs: release
+    needs: publish-release
     runs-on: macos-latest
     permissions:
       contents: write
@@ -189,35 +115,24 @@ jobs:
 
       - name: Install Godot
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_macos.universal.zip
-          unzip -q Godot_v4.6.1-stable_macos.universal.zip
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_macos.universal.zip
           sudo cp -R Godot.app /Applications/Godot.app
-
-      - name: Import project
-        run: /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
-        timeout-minutes: 3
-
-      - name: Inject screenshot autoload
-        run: |
-          echo '' >> project.godot
-          echo '[autoload]' >> project.godot
-          echo 'ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
 
       - name: Capture screenshots
         run: |
+          /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
+          echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
           /Applications/Godot.app/Contents/MacOS/Godot --path . --quit-after 15 2>&1 || true
           ls -la screenshots/
-        timeout-minutes: 1
+        timeout-minutes: 2
 
       - name: Upload screenshots to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ needs.release.outputs.tag || '' }}"
-          if [ -z "$TAG" ]; then
-            TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
-          fi
+          TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
           if [ -f screenshots/screenshot-main.png ]; then
             gh release upload "$TAG" screenshots/screenshot-main.png screenshots/screenshot-gallery.png --clobber
           fi
