@@ -76,7 +76,6 @@ func _gui_input(event: InputEvent) -> void:
 
 func _apply_drag_cursor() -> void:
 	if _drag_cursor_tex == null:
-		print("[DRAG] cursor tex is null")
 		return
 	@warning_ignore("integer_division")
 	var hotspot := Vector2(
@@ -99,7 +98,9 @@ func _input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			_cancel_drag()
 		elif event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-			_end_drag(event.global_position)
+			var elapsed: int = Time.get_ticks_msec() - _drag_start_time
+			if elapsed >= MIN_DRAG_MS:
+				_end_drag(event.global_position)
 
 
 func _start_drag() -> void:

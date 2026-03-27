@@ -177,11 +177,8 @@ static func make_drag_cursor_tex(
 	icon_tex: Texture2D, card_color: Color,
 ) -> ImageTexture:
 	if icon_tex == null:
-		print("[DRAG] icon_tex is null")
 		return null
 	var src_img := icon_tex.get_image()
-	print("[DRAG] icon_tex type=", icon_tex.get_class(),
-		" get_image=", src_img != null)
 	if src_img == null:
 		src_img = Image.create(
 			DRAG_CURSOR_SIZE, DRAG_CURSOR_SIZE,
@@ -222,8 +219,6 @@ static func set_drag_cursor(
 
 
 static func restore_default_cursor() -> void:
-	print("[DRAG] restore_default_cursor called")
-	print(get_stack())
 	set_default_cursor()
 
 
