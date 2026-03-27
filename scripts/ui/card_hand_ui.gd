@@ -253,3 +253,5 @@ func _on_drag_ended(
 	_any_dragging = false
 	if success:
 		card_dropped.emit(card, target)
+	else:
+		_layout_cards()
