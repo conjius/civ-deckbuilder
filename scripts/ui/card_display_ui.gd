@@ -89,7 +89,11 @@ func _input(event: InputEvent) -> void:
 					_valid_targets,
 					Color(0.3, 0.8, 1.0, 0.8),
 				)
-		elif card_data.card_type != CardData.CardType.RESOURCE:
+			if card_data.card_type == CardData.CardType.RESOURCE:
+				modulate = Color.WHITE
+		elif card_data.card_type == CardData.CardType.RESOURCE:
+			modulate = Color(1.0, 0.3, 0.3, 0.7)
+		else:
 			_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
@@ -150,6 +154,7 @@ func _cancel_drag() -> void:
 
 func _end_drag(mouse_pos: Vector2) -> void:
 	_dragging = false
+	modulate = Color.WHITE
 	_stop_all_pulses()
 	hex_map.clear_highlights()
 	if arrow_indicator:
