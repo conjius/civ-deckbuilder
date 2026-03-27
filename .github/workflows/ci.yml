@@ -211,43 +211,7 @@ jobs:
             git checkout --orphan gh-pages-tmp
             git rm -rf . 2>/dev/null || true
             cp screenshots/screenshot-*.png .
-            cat > index.html << 'HTMLEOF'
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>civ-deckbuilder</title>
-<style>
-*{box-sizing:border-box}
-body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;margin:0}
-h1{margin-bottom:8px}
-.desc{color:#888;margin-bottom:32px}
-a{color:#6ea8fe;text-decoration:none}
-.shots{display:flex;gap:24px;justify-content:center;align-items:center;max-width:1400px}
-.shots img{width:660px;border-radius:8px;border:1px solid #333;cursor:pointer;transition:transform .2s}
-.shots img:hover{transform:scale(1.02)}
-.links{display:flex;gap:32px;margin-top:36px}
-.links a{display:flex;align-items:center;gap:8px;color:#ccc;font-size:15px;transition:color .2s}
-.links a:hover{color:#fff}
-.links svg{width:20px;height:20px;fill:currentColor}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);justify-content:center;align-items:center;cursor:pointer;z-index:10}
-.modal.open{display:flex}
-.modal img{max-width:95%;max-height:95%;border-radius:8px}
-</style></head><body>
-<h1>civ-deckbuilder</h1>
-<p class="desc">Hex-based civilization strategy game with deckbuilding mechanics</p>
-<div class="shots">
-<img src="screenshot-main.png" alt="Gameplay" onclick="openModal(this.src)">
-<img src="screenshot-gallery.png" alt="Gallery" onclick="openModal(this.src)">
-</div>
-<div class="links">
-<a href="https://github.com/conjius/civ-deckbuilder"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Source</a>
-<a href="https://github.com/conjius/civ-deckbuilder/releases/latest"><svg viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 011 12.25v-8.5C1 2.784 1.784 2 2.75 2h5.5a.75.75 0 010 1.5h-5.5a.25.25 0 00-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25v-3.5a.75.75 0 011.5 0v3.5A1.75 1.75 0 0111.25 14h-8.5z"/><path d="M9.768 1.768a.75.75 0 011.06 0l3.404 3.404a.75.75 0 01-1.06 1.06L9.768 2.828a.75.75 0 010-1.06z"/><path d="M14.5 1.75a.75.75 0 00-.75-.75h-3.5a.75.75 0 000 1.5h3.5a.75.75 0 00.75-.75z"/><path d="M13.25 1a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75z"/></svg>Download</a>
-</div>
-<div class="modal" id="modal" onclick="closeModal()"><img id="modalImg" src=""></div>
-<script>
-function openModal(src){document.getElementById('modalImg').src=src;document.getElementById('modal').classList.add('open')}
-function closeModal(){document.getElementById('modal').classList.remove('open')}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()})
-</script>
-</body></html>
-HTMLEOF
+            cp $GITHUB_WORKSPACE/scripts/tools/gh-pages-index.html index.html
             git add screenshot-*.png index.html
             git commit -m "Update screenshots and landing page"
             git push origin gh-pages-tmp:gh-pages --force
