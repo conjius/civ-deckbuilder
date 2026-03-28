@@ -237,40 +237,35 @@ jobs:
           rm -rf "$TMPDIR"
 
   screenshots:
-    needs: tag-release
-    runs-on: [self-hosted, gpu]
+    needs: [tag-release, deploy-web]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
-      - name: capture
-        shell: bash
+      - name: download-web
+        uses: actions/download-artifact@v8
+        with:
+          name: civ-deckbuilder-web
+          path: build/web
+      - name: setup
         run: |
-          set +e
-          GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
-          cp project.godot project.godot.bak
-          echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
-          sed -i '' 's/\[display\]/[display]\nwindow\/size\/initial_position_type=0\nwindow\/size\/initial_position=Vector2i(-4000, -4000)/' project.godot
-          $GODOT --headless --editor --quit 2>/dev/null
+          npm install puppeteer
           mkdir -p screenshots
-          CIV_SCREENSHOTS=1 $GODOT --path . --resolution 1920x1080 2>/dev/null &
-          PID=$!
-          sleep 10
-          kill $PID 2>/dev/null
-          wait $PID 2>/dev/null
-          mv project.godot.bak project.godot
-          SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
-          cp "$SS_DIR"/*.jpg screenshots/ 2>/dev/null
-          ls -la screenshots/
-          exit 0
+      - name: capture
+        run: node scripts/tools/capture_screenshots.mjs build/web screenshots
+        timeout-minutes: 3
       - name: validate
         run: |
           for f in screenshot-main.jpg screenshot-gallery.jpg; do
-            if [ ! -f "screenshots/$f" ] || [ $(stat -f%z "screenshots/$f") -lt 10000 ]; then
-              echo "FAIL: $f missing or blank" && exit 1
+            if [ ! -f "screenshots/$f" ]; then
+              echo "FAIL: $f missing" && exit 1
             fi
-            echo "OK: $f ($(stat -f%z "screenshots/$f") bytes)"
+            SIZE=$(stat -c%s "screenshots/$f")
+            if [ "$SIZE" -lt 10000 ]; then
+              echo "FAIL: $f too small (${SIZE} bytes)" && exit 1
+            fi
+            echo "OK: $f (${SIZE} bytes)"
           done
       - name: upload
         env:
@@ -282,7 +277,6 @@ jobs:
           cp screenshots/screenshot-*.jpg "$TMPDIR/"
           cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
           cd "$TMPDIR"
-          git rm -f screenshot-main.png screenshot-gallery.png 2>/dev/null || true
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add screenshot-main.jpg screenshot-gallery.jpg index.html
