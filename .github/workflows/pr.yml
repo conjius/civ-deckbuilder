@@ -151,7 +151,7 @@ jobs:
           exclude_filter="*.fbx, *.obj"
           export_path="build/web/index.html"
           [preset.0.options]
-          variant/thread_support=false
+          variant/thread_support=true
           html/export_icon=true
           progressive_web_app/enabled=false
           PRESETS
