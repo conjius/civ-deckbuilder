@@ -1,6 +1,6 @@
 extends RefCounted
 
-const MAX_TEXTURE_BYTES := 2 * 1024 * 1024
+const MAX_TEXTURE_BYTES := 512 * 1024
 
 
 func test_mountain_normal_under_limit() -> void:
