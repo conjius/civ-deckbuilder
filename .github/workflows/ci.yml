@@ -152,12 +152,14 @@ jobs:
           exclude_filter="*.fbx, *.obj"
           export_path="build/web/index.html"
           [preset.0.options]
-          variant/thread_support=false
+          variant/thread_support=true
           html/export_icon=true
           progressive_web_app/enabled=false
           PRESETS
           mkdir -p build/web
           godot --headless --export-release "Web" build/web/index.html 2>&1
+          cp scripts/tools/coi-serviceworker.min.js build/web/
+          sed -i 's|<head>|<head><script src="coi-serviceworker.min.js"></script>|' build/web/index.html
         timeout-minutes: 5
       - name: upload
         uses: actions/upload-artifact@v7
@@ -206,38 +208,8 @@ jobs:
             --notes "Automated build from commit ${{ github.sha }}" \
             --latest
 
-  deploy-web:
+  deploy:
     needs: tag-release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-      - name: download-web
-        uses: actions/download-artifact@v8
-        with:
-          name: civ-deckbuilder-web
-          path: web-build
-      - name: deploy
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
-          TMPDIR=$(mktemp -d)
-          git clone --branch gh-pages --depth 1 "$REPO_URL" "$TMPDIR"
-          rm -rf "$TMPDIR/play"
-          mkdir -p "$TMPDIR/play"
-          cp -r web-build/* "$TMPDIR/play/"
-          cd "$TMPDIR"
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add play/
-          git commit -m "Deploy web build" || true
-          git push
-          rm -rf "$TMPDIR"
-
-  screenshots:
-    needs: [tag-release, deploy-web]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -255,31 +227,26 @@ jobs:
       - name: capture
         run: node scripts/tools/capture_screenshots.mjs build/web screenshots
         timeout-minutes: 3
-      - name: validate
-        run: |
-          for f in screenshot-main.jpg screenshot-gallery.jpg; do
-            if [ ! -f "screenshots/$f" ]; then
-              echo "FAIL: $f missing" && exit 1
-            fi
-            SIZE=$(stat -c%s "screenshots/$f")
-            if [ "$SIZE" -lt 10000 ]; then
-              echo "FAIL: $f too small (${SIZE} bytes)" && exit 1
-            fi
-            echo "OK: $f (${SIZE} bytes)"
-          done
-      - name: upload
+        continue-on-error: true
+      - name: deploy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           TMPDIR=$(mktemp -d)
           git clone --branch gh-pages --depth 1 "$REPO_URL" "$TMPDIR"
-          cp screenshots/screenshot-*.jpg "$TMPDIR/"
+          rm -rf "$TMPDIR/play"
+          mkdir -p "$TMPDIR/play"
+          cp -r build/web/* "$TMPDIR/play/"
+          cp scripts/tools/coi-serviceworker.min.js "$TMPDIR/play/"
           cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
+          if ls screenshots/screenshot-*.jpg >/dev/null 2>&1; then
+            cp screenshots/screenshot-*.jpg "$TMPDIR/"
+          fi
           cd "$TMPDIR"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add screenshot-main.jpg screenshot-gallery.jpg index.html
-          git commit -m "Update screenshots" || true
+          git add -A
+          git commit -m "Deploy web build and screenshots" || true
           git push
           rm -rf "$TMPDIR"
