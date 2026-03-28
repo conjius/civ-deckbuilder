@@ -14,8 +14,8 @@ const MIME_TYPES = {
 
 const WEB_DIR = process.argv[2] || "build/web";
 const OUT_DIR = process.argv[3] || "screenshots";
-const LOAD_TIMEOUT = 30000;
-const RENDER_WAIT = 8000;
+const LOAD_TIMEOUT = 60000;
+const RENDER_WAIT = 15000;
 const GALLERY_WAIT = 3000;
 
 function serve(dir, port) {
@@ -65,7 +65,7 @@ async function run() {
 
   console.log("Loading game...");
   await page.goto(`http://localhost:${port}`, {
-    waitUntil: "networkidle0",
+    waitUntil: "load",
     timeout: LOAD_TIMEOUT,
   });
 
