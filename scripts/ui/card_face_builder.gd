@@ -161,17 +161,9 @@ static func _build_range_label(card: CardData) -> Control:
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var r_icon_sz: int = int(
-		UIHelpers.FONT_UNIT_STAT * 1.2 * UIHelpers.ICON_SCALE
-	)
-	var r_path: String = UIHelpers.ENTITY_ICONS.get(
-		"Range", ""
-	) as String
-	var r_num_sz: int = UIHelpers.FONT_STAT_NUM
-	var text := (
-		"[center]Range  [img=%d]%s[/img]"
-		+ "  [font_size=%d]%d[/font_size][/center]"
-	) % [r_icon_sz, r_path, r_num_sz, card.range_value]
+	var text := "[center]" + UIHelpers.icon_value(
+		"Range", str(card.range_value)
+	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
 
@@ -190,9 +182,9 @@ static func _build_attack_footer(
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var text := "[center]" + UIHelpers.icon_text(
+	var text := "[center]" + UIHelpers.icon_value(
 		"Attack", str(card.attack_damage)
-	) + "    " + UIHelpers.icon_text(
+	) + "    " + UIHelpers.icon_value(
 		"Range", str(card.range_value)
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
@@ -213,7 +205,7 @@ static func _build_defense_footer(
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var text := "[center]" + UIHelpers.icon_text(
+	var text := "[center]" + UIHelpers.icon_value(
 		"Defense", "+" + str(card.defense_bonus)
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
@@ -239,7 +231,7 @@ static func _build_resource_footer(
 		icon_name = "Food"
 	else:
 		icon_name = "Materials"
-	var text := "[center]" + UIHelpers.icon_text(
+	var text := "[center]" + UIHelpers.icon_value(
 		icon_name, str(card.resource_value)
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
