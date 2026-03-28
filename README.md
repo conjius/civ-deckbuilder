@@ -1,5 +1,5 @@
 <br><p align="center">
-  <a href="https://conjius.github.io/CivDecks/"><img src="https://conjius.github.io/CivDecks/logo.png?v=3" width="320" alt="CivDecks"></a>
+  <a href="https://conjius.github.io/CivDecks/"><img src="https://conjius.github.io/CivDecks/logo.png?v=3" width="480" alt="CivDecks"></a>
   <p align="center">
   <a href="https://conjius.github.io/CivDecks/play/"><img src="https://img.shields.io/badge/▶_Play_in_Browser-32cd32" alt="Play in Browser"></a>
   &nbsp;
