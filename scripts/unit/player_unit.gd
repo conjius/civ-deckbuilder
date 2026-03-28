@@ -34,27 +34,12 @@ var _is_selected: bool = false
 var _is_targeting_move: bool = false
 var _camera: Camera3D
 
-var _boots_mesh_path: String = (
-	"res://assets/models/boots/boots.res"
-)
-
-
 func _ready() -> void:
 	var old_mesh: Node = get_node_or_null("MeshInstance3D")
 	if old_mesh:
 		old_mesh.queue_free()
-	var mesh_res: Mesh = load(_boots_mesh_path) as Mesh
-	if mesh_res:
-		_model = Node3D.new()
-		var mi := MeshInstance3D.new()
-		mi.mesh = mesh_res
-		mi.scale = Vector3(0.0176, 0.012, 0.0224)
-		mi.rotation.y = PI + PI / 2.0
-		_model.add_child(mi)
-		add_child(_model)
-	else:
-		_model = _build_boot_model()
-		add_child(_model)
+	_model = _build_boot_model()
+	add_child(_model)
 	_apply_color_wash()
 
 
@@ -205,72 +190,376 @@ func _build_boot_model() -> Node3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var brown := Color(0.45, 0.28, 0.15)
-	var sole := Color(0.2, 0.12, 0.08)
-	# Boot sole (flat box)
-	var sw := 0.15
-	var sl := 0.35
-	var sh := 0.05
-	_add_box(st, Vector3(-sw, 0, -sl * 0.4),
-		Vector3(sw, sh, sl * 0.6), sole)
-	# Boot shaft (back upright part)
-	var bw := 0.13
-	var bh := 0.4
-	var bd := 0.15
-	_add_box(st, Vector3(-bw, sh, -bd * 0.3),
-		Vector3(bw, bh, bd * 0.7), brown)
-	# Toe cap (front low part)
-	var tw := 0.14
-	var th := 0.15
-	_add_box(st, Vector3(-tw, sh, -sl * 0.4),
-		Vector3(tw, th, -bd * 0.3), brown.darkened(0.1))
+	var segs := 8
+	var spacing := 0.10
+	# Build two boots side by side
+	for side in [-1.0, 1.0]:
+		var x_off := side * spacing
+		_build_single_boot(
+			st, brown, segs, x_off,
+		)
 	var mi := MeshInstance3D.new()
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true
 	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.mesh = st.commit()
-	mi.scale = Vector3(0.85, 0.85, 0.85)
-	mi.position.y = -0.15
+	mi.scale = Vector3(1.2, 1.2, 1.2)
+	mi.position.y = 0.0
 	root.add_child(mi)
+	root.rotation.y = PI
 	return root
 
 
-static func _add_box(
-	st: SurfaceTool, min_pt: Vector3,
-	max_pt: Vector3, color: Color,
+static func _build_single_boot(
+	st: SurfaceTool, brown: Color,
+	segs: int, x_off: float,
 ) -> void:
-	var corners: Array[Vector3] = [
-		Vector3(min_pt.x, min_pt.y, min_pt.z),
-		Vector3(max_pt.x, min_pt.y, min_pt.z),
-		Vector3(max_pt.x, max_pt.y, min_pt.z),
-		Vector3(min_pt.x, max_pt.y, min_pt.z),
-		Vector3(min_pt.x, min_pt.y, max_pt.z),
-		Vector3(max_pt.x, min_pt.y, max_pt.z),
-		Vector3(max_pt.x, max_pt.y, max_pt.z),
-		Vector3(min_pt.x, max_pt.y, max_pt.z),
-	]
-	var faces: Array[Array] = [
-		[0, 1, 2, 3, Vector3(0, 0, -1)],
-		[5, 4, 7, 6, Vector3(0, 0, 1)],
-		[4, 0, 3, 7, Vector3(-1, 0, 0)],
-		[1, 5, 6, 2, Vector3(1, 0, 0)],
-		[3, 2, 6, 7, Vector3(0, 1, 0)],
-		[4, 5, 1, 0, Vector3(0, -1, 0)],
-	]
-	for face: Array in faces:
-		var i0: int = face[0]
-		var i1: int = face[1]
-		var i2: int = face[2]
-		var i3: int = face[3]
-		var n: Vector3 = face[4]
+	var sole_lift := 0.07
+	var shaft_r_bot := 0.07
+	var shaft_r_top := 0.09
+	var shaft_h := 0.35
+	var shaft_lean := -0.08
+	_add_leaning_cylinder(
+		st, shaft_r_bot, shaft_r_top, shaft_h,
+		Vector3(x_off, sole_lift, 0),
+		Vector3(0, 0, shaft_lean),
+		segs, brown,
+	)
+	var bot_hw := 0.09
+	var bot_hl := 0.176
+	var bot_r := 0.065
+	var top_hw := 0.07
+	var top_hl := 0.152
+	var top_r := 0.05
+	var toe_h := 0.12
+	var toe_front_lift := 0.10
+	_add_rounded_rect_prism_curved(
+		st, bot_hw, bot_hl, top_hw, top_hl,
+		bot_r, top_r, toe_h,
+		Vector3(x_off, -0.02, -bot_hl * 0.5),
+		toe_front_lift, segs, brown.darkened(0.1),
+	)
+	var rim_pos := Vector3(
+		x_off, sole_lift + shaft_h, shaft_lean,
+	)
+	_add_ring(
+		st, shaft_r_top + 0.015, 0.025,
+		rim_pos, segs, brown.lightened(0.15),
+	)
+
+
+static func _add_rounded_box(
+	st: SurfaceTool, hw: float, hl: float,
+	h: float, y: float, segs: int, color: Color,
+) -> void:
+	var pts: Array[Vector2] = []
+	for i in segs:
+		var angle := TAU * float(i) / float(segs)
+		pts.append(Vector2(
+			cos(angle) * hw, sin(angle) * hl,
+		))
+	var center_top := Vector3(0, y + h, 0)
+	var center_bot := Vector3(0, y, 0)
+	for i in segs:
+		var i2 := (i + 1) % segs
+		var p0 := Vector3(pts[i].x, y, pts[i].y)
+		var p1 := Vector3(pts[i2].x, y, pts[i2].y)
+		var p2 := Vector3(pts[i2].x, y + h, pts[i2].y)
+		var p3 := Vector3(pts[i].x, y + h, pts[i].y)
+		var n := (p1 - p0).cross(p3 - p0).normalized()
 		st.set_normal(n)
 		st.set_color(color)
-		st.add_vertex(corners[i0])
-		st.add_vertex(corners[i1])
-		st.add_vertex(corners[i2])
-		st.add_vertex(corners[i0])
-		st.add_vertex(corners[i2])
-		st.add_vertex(corners[i3])
+		st.add_vertex(p0)
+		st.add_vertex(p1)
+		st.add_vertex(p2)
+		st.add_vertex(p0)
+		st.add_vertex(p2)
+		st.add_vertex(p3)
+	for i in segs:
+		var i2 := (i + 1) % segs
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(center_top)
+		st.add_vertex(Vector3(pts[i].x, y + h, pts[i].y))
+		st.add_vertex(Vector3(pts[i2].x, y + h, pts[i2].y))
+
+
+static func _add_tapered_cylinder(
+	st: SurfaceTool, r_bot: float, r_top: float,
+	h: float, origin: Vector3, segs: int,
+	color: Color,
+) -> void:
+	for i in segs:
+		var a0 := TAU * float(i) / float(segs)
+		var a1 := TAU * float(i + 1) / float(segs)
+		var b0 := Vector3(
+			cos(a0) * r_bot + origin.x, origin.y,
+			sin(a0) * r_bot + origin.z,
+		)
+		var b1 := Vector3(
+			cos(a1) * r_bot + origin.x, origin.y,
+			sin(a1) * r_bot + origin.z,
+		)
+		var t0 := Vector3(
+			cos(a0) * r_top + origin.x, origin.y + h,
+			sin(a0) * r_top + origin.z,
+		)
+		var t1 := Vector3(
+			cos(a1) * r_top + origin.x, origin.y + h,
+			sin(a1) * r_top + origin.z,
+		)
+		var n := (b1 - b0).cross(t0 - b0).normalized()
+		st.set_normal(n)
+		st.set_color(color)
+		st.add_vertex(b0)
+		st.add_vertex(b1)
+		st.add_vertex(t1)
+		st.add_vertex(b0)
+		st.add_vertex(t1)
+		st.add_vertex(t0)
+	var top_center := Vector3(origin.x, origin.y + h, origin.z)
+	for i in segs:
+		var a0 := TAU * float(i) / float(segs)
+		var a1 := TAU * float(i + 1) / float(segs)
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(top_center)
+		st.add_vertex(Vector3(
+			cos(a0) * r_top + origin.x, origin.y + h,
+			sin(a0) * r_top + origin.z,
+		))
+		st.add_vertex(Vector3(
+			cos(a1) * r_top + origin.x, origin.y + h,
+			sin(a1) * r_top + origin.z,
+		))
+
+
+static func _add_leaning_cylinder(
+	st: SurfaceTool, r_bot: float, r_top: float,
+	h: float, origin: Vector3, top_offset: Vector3,
+	segs: int, color: Color,
+) -> void:
+	var top_origin := Vector3(
+		origin.x + top_offset.x,
+		origin.y + h,
+		origin.z + top_offset.z,
+	)
+	for i in segs:
+		var a0 := TAU * float(i) / float(segs)
+		var a1 := TAU * float(i + 1) / float(segs)
+		var b0 := Vector3(
+			cos(a0) * r_bot + origin.x, origin.y,
+			sin(a0) * r_bot + origin.z,
+		)
+		var b1 := Vector3(
+			cos(a1) * r_bot + origin.x, origin.y,
+			sin(a1) * r_bot + origin.z,
+		)
+		var t0 := Vector3(
+			cos(a0) * r_top + top_origin.x, top_origin.y,
+			sin(a0) * r_top + top_origin.z,
+		)
+		var t1 := Vector3(
+			cos(a1) * r_top + top_origin.x, top_origin.y,
+			sin(a1) * r_top + top_origin.z,
+		)
+		var n := (b1 - b0).cross(t0 - b0).normalized()
+		st.set_normal(n)
+		st.set_color(color)
+		st.add_vertex(b0)
+		st.add_vertex(b1)
+		st.add_vertex(t1)
+		st.add_vertex(b0)
+		st.add_vertex(t1)
+		st.add_vertex(t0)
+	var top_center := top_origin
+	for i in segs:
+		var a0 := TAU * float(i) / float(segs)
+		var a1 := TAU * float(i + 1) / float(segs)
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(top_center)
+		st.add_vertex(Vector3(
+			cos(a0) * r_top + top_origin.x, top_origin.y,
+			sin(a0) * r_top + top_origin.z,
+		))
+		st.add_vertex(Vector3(
+			cos(a1) * r_top + top_origin.x, top_origin.y,
+			sin(a1) * r_top + top_origin.z,
+		))
+
+
+static func _add_rounded_rect_prism_curved(
+	st: SurfaceTool, bot_hw: float, bot_hl: float,
+	top_hw: float, top_hl: float,
+	bot_r: float, top_r: float, h: float,
+	origin: Vector3, front_lift: float,
+	segs: int, color: Color,
+) -> void:
+	var bot_pts := _rounded_rect_pts(bot_hw, bot_hl, bot_r, segs)
+	var top_pts := _rounded_rect_pts(top_hw, top_hl, top_r, segs)
+	var n_pts := bot_pts.size()
+	var max_z := bot_hl
+	for i in n_pts:
+		var bz: float = bot_pts[i].y
+		var tz: float = top_pts[i].y
+		var min_neg_z := -bot_hl
+		var range_z := max_z - min_neg_z
+		var bt: float = 0.0
+		var tt: float = 0.0
+		if range_z > 0.0:
+			bt = clampf((bz - min_neg_z) / range_z, 0.0, 1.0)
+			tt = clampf((tz - min_neg_z) / range_z, 0.0, 1.0)
+		bot_pts[i] = Vector2(bot_pts[i].x, bot_pts[i].y)
+		top_pts[i] = Vector2(top_pts[i].x, top_pts[i].y)
+		var i2 := (i + 1) % n_pts
+		var bz2: float = bot_pts[i2].y
+		var tz2: float = top_pts[i2].y
+		var bt2: float = 0.0
+		var tt2: float = 0.0
+		if range_z > 0.0:
+			bt2 = clampf((bz2 - min_neg_z) / range_z, 0.0, 1.0)
+			tt2 = clampf((tz2 - min_neg_z) / range_z, 0.0, 1.0)
+		var b0 := Vector3(
+			bot_pts[i].x + origin.x,
+			origin.y + front_lift * bt,
+			bz + origin.z,
+		)
+		var b1 := Vector3(
+			bot_pts[i2].x + origin.x,
+			origin.y + front_lift * bt2,
+			bz2 + origin.z,
+		)
+		var t0 := Vector3(
+			top_pts[i].x + origin.x,
+			origin.y + h + front_lift * tt,
+			tz + origin.z,
+		)
+		var t1 := Vector3(
+			top_pts[i2].x + origin.x,
+			origin.y + h + front_lift * tt2,
+			tz2 + origin.z,
+		)
+		var n := (b1 - b0).cross(t0 - b0).normalized()
+		st.set_normal(n)
+		st.set_color(color)
+		st.add_vertex(b0)
+		st.add_vertex(b1)
+		st.add_vertex(t1)
+		st.add_vertex(b0)
+		st.add_vertex(t1)
+		st.add_vertex(t0)
+	# Top cap
+	var top_center := Vector3(
+		origin.x, origin.y + h + front_lift * 0.5, origin.z,
+	)
+	for i in n_pts:
+		var i2 := (i + 1) % n_pts
+		var tz: float = top_pts[i].y
+		var tz2: float = top_pts[i2].y
+		var min_neg_z := -top_hl
+		var range_z := max_z - min_neg_z
+		var tt: float = 0.0
+		var tt2: float = 0.0
+		if range_z > 0.0:
+			tt = clampf((tz - min_neg_z) / range_z, 0.0, 1.0)
+			tt2 = clampf((tz2 - min_neg_z) / range_z, 0.0, 1.0)
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(top_center)
+		st.add_vertex(Vector3(
+			top_pts[i].x + origin.x,
+			origin.y + h + front_lift * tt,
+			tz + origin.z,
+		))
+		st.add_vertex(Vector3(
+			top_pts[i2].x + origin.x,
+			origin.y + h + front_lift * tt2,
+			tz2 + origin.z,
+		))
+
+
+static func _add_ring(
+	st: SurfaceTool, r: float, h: float,
+	origin: Vector3, segs: int, color: Color,
+) -> void:
+	_add_tapered_cylinder(st, r, r, h, origin, segs, color)
+
+
+static func _rounded_rect_pts(
+	hw: float, hl: float, r: float, segs: int,
+) -> Array[Vector2]:
+	var pts: Array[Vector2] = []
+	var corner_segs := maxi(segs / 4, 2)
+	var corners: Array[Vector2] = [
+		Vector2(hw - r, -(hl - r)),
+		Vector2(hw - r, hl - r),
+		Vector2(-(hw - r), hl - r),
+		Vector2(-(hw - r), -(hl - r)),
+	]
+	for c_idx in 4:
+		var start_angle := -PI * 0.5 + float(c_idx) * PI * 0.5
+		var cx: float = corners[c_idx].x
+		var cy: float = corners[c_idx].y
+		for j in corner_segs:
+			var a := start_angle + float(j) / float(corner_segs) * PI * 0.5
+			pts.append(Vector2(cx + cos(a) * r, cy + sin(a) * r))
+	return pts
+
+
+static func _add_rounded_rect_prism(
+	st: SurfaceTool, bot_hw: float, bot_hl: float,
+	top_hw: float, top_hl: float,
+	bot_r: float, top_r: float, h: float,
+	origin: Vector3, segs: int, color: Color,
+) -> void:
+	var bot_pts := _rounded_rect_pts(bot_hw, bot_hl, bot_r, segs)
+	var top_pts := _rounded_rect_pts(top_hw, top_hl, top_r, segs)
+	var n_pts := bot_pts.size()
+	# Sides
+	for i in n_pts:
+		var i2 := (i + 1) % n_pts
+		var b0 := Vector3(
+			bot_pts[i].x + origin.x, origin.y,
+			bot_pts[i].y + origin.z,
+		)
+		var b1 := Vector3(
+			bot_pts[i2].x + origin.x, origin.y,
+			bot_pts[i2].y + origin.z,
+		)
+		var t0 := Vector3(
+			top_pts[i].x + origin.x, origin.y + h,
+			top_pts[i].y + origin.z,
+		)
+		var t1 := Vector3(
+			top_pts[i2].x + origin.x, origin.y + h,
+			top_pts[i2].y + origin.z,
+		)
+		var n := (b1 - b0).cross(t0 - b0).normalized()
+		st.set_normal(n)
+		st.set_color(color)
+		st.add_vertex(b0)
+		st.add_vertex(b1)
+		st.add_vertex(t1)
+		st.add_vertex(b0)
+		st.add_vertex(t1)
+		st.add_vertex(t0)
+	# Top cap
+	var top_center := Vector3(origin.x, origin.y + h, origin.z)
+	for i in n_pts:
+		var i2 := (i + 1) % n_pts
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(top_center)
+		st.add_vertex(Vector3(
+			top_pts[i].x + origin.x, origin.y + h,
+			top_pts[i].y + origin.z,
+		))
+		st.add_vertex(Vector3(
+			top_pts[i2].x + origin.x, origin.y + h,
+			top_pts[i2].y + origin.z,
+		))
 
 
 func _apply_color_wash() -> void:

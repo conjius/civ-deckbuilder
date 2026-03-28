@@ -41,8 +41,9 @@ func setup(
 	position.y = 0.0
 
 	$HighlightMesh.visible = false
-	$FogOverlay.visible = not is_revealed
+	$FogOverlay.visible = false
 	_create_yield_markers()
+	apply_visibility(MapData.Visibility.UNEXPLORED)
 
 
 func _create_yield_markers() -> void:
@@ -105,10 +106,6 @@ func _add_yield_sprite(
 	bg.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	)
-	bg.visibility_range_end = 30.0
-	bg.visibility_range_fade_mode = (
-		GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-	)
 	add_child(bg)
 
 	# Icon sprite lying flat facing sky
@@ -123,10 +120,6 @@ func _add_yield_sprite(
 	sprite.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	)
-	sprite.visibility_range_end = 30.0
-	sprite.visibility_range_fade_mode = (
-		GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-	)
 	add_child(sprite)
 	_yield_sprites.append(sprite)
 
@@ -136,7 +129,7 @@ func _get_yield_positions(count: int) -> Array[Vector3]:
 	if terrain.terrain_name == "Mountain":
 		y_off = 0.85
 	elif terrain.terrain_name == "Forest":
-		y_off = 0.55
+		y_off = 0.75
 	var spacing := 0.56 if not _has_settlement else 0.72
 	var result: Array[Vector3] = []
 	var start_x := -spacing * (count - 1) * 0.5
@@ -210,6 +203,35 @@ func stop_pulse() -> void:
 func set_fog(value: bool) -> void:
 	is_revealed = not value
 	$FogOverlay.visible = value
+
+
+func apply_visibility(state: MapData.Visibility) -> void:
+	match state:
+		MapData.Visibility.UNEXPLORED:
+			is_revealed = false
+			$MeshInstance3D.visible = false
+			$FogOverlay.visible = false
+			_set_content_visible(false)
+		MapData.Visibility.FOGGED:
+			is_revealed = false
+			$MeshInstance3D.visible = true
+			$FogOverlay.visible = true
+			_set_content_visible(true)
+		MapData.Visibility.VISIBLE:
+			is_revealed = true
+			$MeshInstance3D.visible = true
+			$FogOverlay.visible = false
+			_set_content_visible(true)
+
+
+func _set_content_visible(value: bool) -> void:
+	for sprite in _yield_sprites:
+		sprite.visible = value
+		var idx := sprite.get_index()
+		if idx > 0:
+			var bg := get_child(idx - 1)
+			if bg is MeshInstance3D:
+				bg.visible = value
 
 
 func place_settlement(

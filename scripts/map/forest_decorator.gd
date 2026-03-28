@@ -137,6 +137,8 @@ func build_multimeshes() -> void:
 			)
 			add_child(mmi)
 	_pending.clear()
+	for _i in _tree_meshes.size():
+		_pending.append([])
 
 
 func _recenter_mesh(
