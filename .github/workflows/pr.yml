@@ -101,8 +101,66 @@ jobs:
           name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
           path: build/civ-deckbuilder.zip
 
+  exportweb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v5
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        with:
+          path: ~/.local/share/godot/export_templates
+          key: export-templates-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        with:
+          path: .godot/imported
+          key: import-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
+          restore-keys: import-
+      - name: setup
+        run: |
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          if [ ! -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable ]; then
+            mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          fi
+      - name: export
+        run: |
+          if [ ! -d .godot/imported ]; then
+            godot --headless --editor --quit 2>&1 || true
+          fi
+          cat > export_presets.cfg << 'PRESETS'
+          [preset.0]
+          name="Web"
+          platform="Web"
+          runnable=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter="*.fbx, *.obj"
+          export_path="build/web/index.html"
+          [preset.0.options]
+          variant/thread_support=false
+          html/export_icon=true
+          progressive_web_app/enabled=false
+          PRESETS
+          mkdir -p build/web
+          godot --headless --export-release "Web" build/web/index.html 2>&1
+        timeout-minutes: 5
+
   tag-release:
-    needs: [build-test-lint, exportmacos]
+    needs: [build-test-lint, exportmacos, exportweb]
     runs-on: ubuntu-latest
     permissions:
       contents: write
