@@ -3,7 +3,7 @@ set -e
 
 GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
+SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/CivDecks/screenshots"
 
 cd "$PROJECT_DIR"
 
