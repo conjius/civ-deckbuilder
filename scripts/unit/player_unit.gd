@@ -190,11 +190,11 @@ func _build_boot_model() -> Node3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var brown := Color(0.45, 0.28, 0.15)
-	var segs := 8
-	var spacing := 0.10
+	var segs: int = 8
+	var spacing: float = 0.10
 	# Build two boots side by side
-	for side in [-1.0, 1.0]:
-		var x_off := side * spacing
+	for side: float in [-1.0, 1.0]:
+		var x_off: float = side * spacing
 		_build_single_boot(
 			st, brown, segs, x_off,
 		)
@@ -204,7 +204,7 @@ func _build_boot_model() -> Node3D:
 	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.mesh = st.commit()
-	mi.scale = Vector3(1.2, 1.2, 1.2)
+	mi.scale = Vector3(1.8, 1.8, 1.8)
 	mi.position.y = 0.0
 	root.add_child(mi)
 	root.rotation.y = PI
@@ -215,25 +215,25 @@ static func _build_single_boot(
 	st: SurfaceTool, brown: Color,
 	segs: int, x_off: float,
 ) -> void:
-	var sole_lift := 0.07
-	var shaft_r_bot := 0.07
-	var shaft_r_top := 0.09
-	var shaft_h := 0.35
-	var shaft_lean := -0.08
+	var sole_lift: float = 0.07
+	var shaft_r_bot: float = 0.07
+	var shaft_r_top: float = 0.09
+	var shaft_h: float = 0.35
+	var shaft_lean: float = -0.08
 	_add_leaning_cylinder(
 		st, shaft_r_bot, shaft_r_top, shaft_h,
 		Vector3(x_off, sole_lift, 0),
 		Vector3(0, 0, shaft_lean),
 		segs, brown,
 	)
-	var bot_hw := 0.09
-	var bot_hl := 0.176
-	var bot_r := 0.065
-	var top_hw := 0.07
-	var top_hl := 0.152
-	var top_r := 0.05
-	var toe_h := 0.12
-	var toe_front_lift := 0.10
+	var bot_hw: float = 0.09
+	var bot_hl: float = 0.176
+	var bot_r: float = 0.065
+	var top_hw: float = 0.07
+	var top_hl: float = 0.152
+	var top_r: float = 0.05
+	var toe_h: float = 0.12
+	var toe_front_lift: float = 0.10
 	_add_rounded_rect_prism_curved(
 		st, bot_hw, bot_hl, top_hw, top_hl,
 		bot_r, top_r, toe_h,
