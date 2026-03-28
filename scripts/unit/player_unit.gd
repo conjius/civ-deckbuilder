@@ -193,8 +193,8 @@ func _build_boot_model() -> Node3D:
 	var segs := 8
 	var spacing := 0.10
 	# Build two boots side by side
-	for side in [-1.0, 1.0]:
-		var x_off := side * spacing
+	for side: float in [-1.0, 1.0]:
+		var x_off: float = side * spacing
 		_build_single_boot(
 			st, brown, segs, x_off,
 		)
@@ -204,7 +204,7 @@ func _build_boot_model() -> Node3D:
 	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.mesh = st.commit()
-	mi.scale = Vector3(1.2, 1.2, 1.2)
+	mi.scale = Vector3(1.8, 1.8, 1.8)
 	mi.position.y = 0.0
 	root.add_child(mi)
 	root.rotation.y = PI
