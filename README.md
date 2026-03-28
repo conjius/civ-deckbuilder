@@ -19,7 +19,9 @@ settle - all driven by a single visible deck of action and resource cards.
 
 ## I Just Wanna Play
 
-Download the [latest stable build](https://github.com/conjius/civ-deckbuilder/releases/latest), unzip it, and run on macOS.
+[**Play in your browser**](https://conjius.github.io/civ-deckbuilder/play/) — no download required.
+
+Or download the [latest stable build](https://github.com/conjius/civ-deckbuilder/releases/latest), unzip it, and run on macOS.
 
 ## Build Prerequisites
 
