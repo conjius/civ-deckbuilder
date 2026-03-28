@@ -20,6 +20,8 @@ settle - all driven by a single visible deck of action and resource cards.
 ## I Just Wanna Play
 
 <p align="center">
+  <img src="assets/boot_logo.png" width="120" alt="CivDecks">
+  <br><br>
   <a href="https://conjius.github.io/CivDecks/play/">
     <img src="https://img.shields.io/badge/▶_Play_in_Browser-32cd32?style=for-the-badge" alt="Play in Browser">
   </a>

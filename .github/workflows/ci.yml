@@ -159,7 +159,8 @@ jobs:
           mkdir -p build/web
           godot --headless --export-release "Web" build/web/index.html 2>&1
           cp scripts/tools/coi-serviceworker.min.js build/web/
-          sed -i 's|<head>|<head><script src="coi-serviceworker.min.js"></script>|' build/web/index.html
+          cp assets/boot_logo.png build/web/index.png
+          node scripts/tools/patch_web_loading.mjs build/web/index.html
         timeout-minutes: 5
       - name: upload
         uses: actions/upload-artifact@v7
@@ -240,6 +241,7 @@ jobs:
           cp -r build/web/* "$TMPDIR/play/"
           cp scripts/tools/coi-serviceworker.min.js "$TMPDIR/play/"
           cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
+          cp assets/boot_logo.png "$TMPDIR/logo.png"
           if ls screenshots/screenshot-*.jpg >/dev/null 2>&1; then
             cp screenshots/screenshot-*.jpg "$TMPDIR/"
           fi
