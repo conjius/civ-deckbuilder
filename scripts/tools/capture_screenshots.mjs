@@ -51,8 +51,12 @@ async function run() {
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--use-gl=swiftshader",
+      "--use-gl=angle",
+      "--use-angle=swiftshader-webgl",
       "--enable-webgl",
+      "--enable-webgl2",
+      "--ignore-gpu-blocklist",
+      "--disable-gpu-sandbox",
     ],
   });
 
