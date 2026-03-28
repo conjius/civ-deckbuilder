@@ -2,7 +2,7 @@ class_name ForestDecorator
 extends Node3D
 
 const TREE_SCENE_PATH := (
-	"res://assets/models/trees/Trees collection.fbx"
+	"res://assets/models/trees/trees.res"
 )
 const MIN_TREES := 5
 const MAX_TREES := 10
