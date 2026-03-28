@@ -83,13 +83,13 @@ jobs:
           export_filter="all_resources"
           include_filter=""
           exclude_filter=""
-          export_path="build/civ-deckbuilder.zip"
+          export_path="build/CivDecks.zip"
           [preset.0.options]
-          application/product_name="civ-deckbuilder"
-          application/bundle_identifier="com.civ-deckbuilder.game"
+          application/product_name="CivDecks"
+          application/bundle_identifier="com.CivDecks.game"
           PRESETS
           mkdir -p build
-          godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
+          godot --headless --export-release "macOS" build/CivDecks.zip 2>&1
         timeout-minutes: 3
       - name: version
         id: version
@@ -99,8 +99,8 @@ jobs:
       - name: upload
         uses: actions/upload-artifact@v7
         with:
-          name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
-          path: build/civ-deckbuilder.zip
+          name: CivDecks-${{ steps.version.outputs.tag }}-macOS
+          path: build/CivDecks.zip
 
   exportweb:
     runs-on: ubuntu-latest
@@ -164,7 +164,7 @@ jobs:
       - name: upload
         uses: actions/upload-artifact@v7
         with:
-          name: civ-deckbuilder-web
+          name: CivDecks-web
           path: build/web/
 
   tag-release:
@@ -195,15 +195,15 @@ jobs:
       - name: download-artifact
         uses: actions/download-artifact@v8
         with:
-          name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
+          name: CivDecks-${{ steps.version.outputs.tag }}-macOS
           path: build
       - name: create-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
-          gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+          mv build/CivDecks.zip "build/CivDecks-${TAG}-macOS.zip"
+          gh release create "$TAG" "build/CivDecks-${TAG}-macOS.zip" \
             --title "$TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
             --latest
@@ -218,7 +218,7 @@ jobs:
       - name: download-web
         uses: actions/download-artifact@v8
         with:
-          name: civ-deckbuilder-web
+          name: CivDecks-web
           path: build/web
       - name: setup
         run: |
