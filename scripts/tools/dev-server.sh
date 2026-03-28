@@ -30,7 +30,7 @@ dedicated_server=false
 custom_features=""
 export_filter="all_resources"
 include_filter=""
-exclude_filter=""
+exclude_filter="*.fbx, *.obj"
 export_path="build/web/index.html"
 [preset.0.options]
 variant/thread_support=false

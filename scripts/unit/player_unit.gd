@@ -35,7 +35,7 @@ var _is_targeting_move: bool = false
 var _camera: Camera3D
 
 var _boots_mesh_path: String = (
-	"res://assets/models/boots/boots.obj"
+	"res://assets/models/boots/boots.res"
 )
 
 
