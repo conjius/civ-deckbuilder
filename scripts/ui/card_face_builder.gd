@@ -99,17 +99,40 @@ static func build_face(
 	var desc_sec := _add_section(
 		container, base, 0, y, iw, dh, sections_out
 	)
-	var desc_lbl := _add_label_in(
-		desc_sec, card.description, _font_bold,
-		Color.BLACK,
-		UIHelpers.fit_font_size(
-			card.description, iw - mh * 2, dh - mv * 2,
-			UIHelpers.FONT_BODY, UIHelpers.s(7),
-		),
-	)
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var desc_text := _format_description(card.description)
+	var desc_lbl: Control
+	if desc_text != card.description:
+		var rtl := RichTextLabel.new()
+		rtl.bbcode_enabled = true
+		rtl.fit_content = true
+		rtl.layout_mode = 1
+		rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rtl.add_theme_font_override("normal_font", _font_bold)
+		rtl.add_theme_color_override("default_color", Color.BLACK)
+		rtl.add_theme_font_size_override(
+			"normal_font_size", UIHelpers.fit_font_size(
+				card.description, iw - mh * 2, dh - mv * 2,
+				UIHelpers.FONT_BODY, UIHelpers.s(7),
+			),
+		)
+		rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		UIHelpers.set_bbcode(
+			rtl, "[center]" + desc_text + "[/center]"
+		)
+		desc_sec.add_child(rtl)
+		desc_lbl = rtl
+	else:
+		desc_lbl = _add_label_in(
+			desc_sec, card.description, _font_bold,
+			Color.BLACK,
+			UIHelpers.fit_font_size(
+				card.description, iw - mh * 2, dh - mv * 2,
+				UIHelpers.FONT_BODY, UIHelpers.s(7),
+			),
+		)
+		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
@@ -127,6 +150,24 @@ static func build_face(
 		"footer_section": footer_sec,
 		"footer_label": range_rtl,
 	}
+
+
+static func _format_description(desc: String) -> String:
+	var result := desc
+	var replacements: Array[Array] = [
+		["1 Defense", UIHelpers.icon_value("Defense", "1")],
+		["-1 Defense", UIHelpers.icon_value("Defense", "-1")],
+		["+1 Defense", UIHelpers.icon_value("Defense", "+1")],
+		["1 tile", UIHelpers.icon_value("Tile", "1")],
+		["2 tiles", UIHelpers.icon_value("Tile", "2")],
+		["4 tiles", UIHelpers.icon_value("Tile", "4")],
+		["5-tile", UIHelpers.icon_value("Tile", "5")],
+	]
+	for pair: Array in replacements:
+		var from: String = pair[0] as String
+		var to: String = pair[1] as String
+		result = result.replace(from, to)
+	return result
 
 
 static func _build_range_label(card: CardData) -> Control:
