@@ -36,6 +36,7 @@ var _last_hover_coord: Vector2i = Vector2i(-999, -999)
 
 func _ready() -> void:
 	UIHelpers.set_default_cursor()
+	_setup_starfield()
 	# Wire references
 	card_effects.hex_map = hex_map
 	card_effects.player_unit = player_unit
@@ -107,6 +108,22 @@ func _ready() -> void:
 	)
 
 
+func _setup_starfield() -> void:
+	var env_node: WorldEnvironment = $WorldEnvironment
+	if env_node == null or env_node.environment == null:
+		return
+	var env := env_node.environment
+	var sky := Sky.new()
+	var mat := ShaderMaterial.new()
+	mat.shader = load(
+		"res://assets/shaders/starfield_sky.gdshader"
+	)
+	sky.sky_material = mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_64
+	env.background_mode = Environment.BG_SKY
+	env.sky = sky
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
@@ -167,11 +184,41 @@ func _on_end_turn() -> void:
 	await ai_controller.take_turn()
 	turn_manager.end_turn()
 	card_manager.end_turn()
+	_degrade_fog()
+	_reveal_around(
+		player_unit.current_coord,
+		player_unit.state.sight_range,
+	)
 	_highlight_active_unit()
 	game_ui.set_current_cards(card_manager.deck_manager.cards)
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)
+
+
+func _degrade_fog() -> void:
+	var visible_coords: Array[Vector2i] = []
+	var player_hexes := HexUtil.get_hexes_in_range(
+		player_unit.current_coord,
+		player_unit.state.sight_range,
+	)
+	for coord in player_hexes:
+		visible_coords.append(coord)
+	if ai_unit:
+		var ai_hexes := HexUtil.get_hexes_in_range(
+			ai_unit.current_coord,
+			ai_unit.state.sight_range,
+		)
+		for coord in ai_hexes:
+			visible_coords.append(coord)
+	for coord: Vector2i in hex_map.map_data._visibility:
+		var state: MapData.Visibility = (
+			hex_map.map_data.get_visibility(coord)
+		)
+		if (state == MapData.Visibility.VISIBLE
+			and coord not in visible_coords
+		):
+			hex_map.fog_tile(coord)
 
 
 func _on_turn_started(turn_number: int) -> void:

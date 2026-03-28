@@ -26,7 +26,9 @@ var _mountain_mat: StandardMaterial3D
 var _water_mat: StandardMaterial3D
 var _forest_decorator: ForestDecorator
 var _terrain_batches: Dictionary = {}
+var _terrain_mmi: Dictionary = {}
 var _highlighted_coords: Array[Vector2i] = []
+var _batch_dirty: bool = false
 
 
 func generate_map() -> void:
@@ -93,14 +95,6 @@ func generate_map() -> void:
 		var shape := _get_cached_shape(BASE_HEX_HEIGHT)
 		tile.setup(coord, terrain, mesh, shape, mat)
 		tile.get_node("MeshInstance3D").visible = false
-		var batch_key: String = terrain.resource_path
-		if not _terrain_batches.has(batch_key):
-			_terrain_batches[batch_key] = {
-				"mesh": mesh, "mat": mat, "xforms": [],
-			}
-		_terrain_batches[batch_key]["xforms"].append(
-			Transform3D(Basis.IDENTITY, tile.position)
-		)
 		var highlight_mesh: MeshInstance3D = (
 			tile.get_node("HighlightMesh")
 		)
@@ -111,21 +105,74 @@ func generate_map() -> void:
 		)
 		fog_mesh.mesh = _get_cached_mesh(0.02)
 		fog_mesh.visibility_range_end = 50.0
-		if terrain == _terrain_forest:
-			_forest_decorator.collect_tile(tile)
 		fog_cloud_manager.add_fog(
 			coord, tile.position, terrain.height,
 		)
-	_forest_decorator.build_multimeshes()
-	_build_terrain_multimeshes()
 	fog_cloud_manager.rebuild()
 
 
 func reveal_tile(coord: Vector2i) -> void:
 	var tile: Node3D = tiles.get(coord, null) as Node3D
-	if tile:
-		tile.set_fog(false)
-		fog_cloud_manager.remove_fog(coord)
+	if tile == null:
+		return
+	var prev: MapData.Visibility = map_data.get_visibility(coord)
+	map_data.set_visibility(coord, MapData.Visibility.VISIBLE)
+	tile.apply_visibility(MapData.Visibility.VISIBLE)
+	fog_cloud_manager.remove_fog(coord)
+	if prev == MapData.Visibility.UNEXPLORED:
+		_add_tile_to_batch(tile)
+		if tile.terrain == _terrain_forest:
+			_forest_decorator.collect_tile(tile)
+			_forest_decorator.build_multimeshes()
+		if not _batch_dirty:
+			_batch_dirty = true
+			_rebuild_terrain_deferred.call_deferred()
+
+
+func _add_tile_to_batch(tile: Node3D) -> void:
+	var terrain: TerrainType = tile.terrain
+	var batch_key: String = terrain.resource_path
+	if not _terrain_batches.has(batch_key):
+		var mesh: Mesh
+		var mat: StandardMaterial3D
+		if terrain == _terrain_mountain and _mountain_mesh:
+			mesh = _mountain_mesh
+			mat = _mountain_mat
+		elif terrain == _terrain_water and _water_mat:
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mat = _water_mat
+		else:
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mat = _get_cached_terrain_mat(terrain)
+		_terrain_batches[batch_key] = {
+			"mesh": mesh, "mat": mat, "xforms": [],
+		}
+	_terrain_batches[batch_key]["xforms"].append(
+		Transform3D(Basis.IDENTITY, tile.position)
+	)
+
+
+func _rebuild_terrain_deferred() -> void:
+	_batch_dirty = false
+	for child in get_children():
+		if child is MultiMeshInstance3D and child.name.begins_with("TerrainBatch"):
+			child.queue_free()
+	_build_terrain_multimeshes()
+
+
+func fog_tile(coord: Vector2i) -> void:
+	var tile: Node3D = tiles.get(coord, null) as Node3D
+	if tile == null:
+		return
+	var prev: MapData.Visibility = map_data.get_visibility(coord)
+	if prev == MapData.Visibility.UNEXPLORED:
+		return
+	map_data.set_visibility(coord, MapData.Visibility.FOGGED)
+	tile.apply_visibility(MapData.Visibility.FOGGED)
+	fog_cloud_manager.add_fog(
+		coord, tile.position, tile.terrain.height,
+	)
+	fog_cloud_manager.rebuild()
 
 
 func get_tile(coord: Vector2i) -> Node3D:
@@ -180,7 +227,7 @@ func _pick_terrain(noise_val: float) -> TerrainType:
 		return _terrain_desert
 	if noise_val < 0.15:
 		return _terrain_plains
-	if noise_val < 0.38:
+	if noise_val < 0.32:
 		return _terrain_forest
 	return _terrain_mountain
 
@@ -243,6 +290,8 @@ func _build_terrain_multimeshes() -> void:
 	for key: String in _terrain_batches:
 		var batch: Dictionary = _terrain_batches[key]
 		var xforms: Array = batch["xforms"]
+		if xforms.is_empty():
+			continue
 		var mesh: Mesh = batch["mesh"] as Mesh
 		var mat: StandardMaterial3D = (
 			batch["mat"] as StandardMaterial3D
@@ -256,10 +305,10 @@ func _build_terrain_multimeshes() -> void:
 				i, xforms[i] as Transform3D
 			)
 		var mmi := MultiMeshInstance3D.new()
+		mmi.name = "TerrainBatch_" + key.get_file()
 		mmi.multimesh = mm
 		mmi.material_override = mat
 		add_child(mmi)
-	_terrain_batches.clear()
 
 
 func _setup_mountain_assets() -> void:

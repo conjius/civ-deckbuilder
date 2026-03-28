@@ -1,9 +1,35 @@
 class_name MapData
 extends RefCounted
 
+enum Visibility { UNEXPLORED, FOGGED, VISIBLE }
+
 var _terrain: Dictionary = {}
 var _settlements: Dictionary = {}
 var _enemies: Dictionary = {}
+var _visibility: Dictionary = {}
+
+
+func get_visibility(coord: Vector2i) -> Visibility:
+	return _visibility.get(coord, Visibility.UNEXPLORED) as Visibility
+
+
+func set_visibility(coord: Vector2i, state: Visibility) -> void:
+	_visibility[coord] = state
+
+
+func reveal_tiles(coords: Array[Vector2i]) -> void:
+	for coord in coords:
+		_visibility[coord] = Visibility.VISIBLE
+
+
+func degrade_fog(still_visible: Array[Vector2i]) -> void:
+	var visible_set: Dictionary = {}
+	for coord in still_visible:
+		visible_set[coord] = true
+	for coord: Vector2i in _visibility:
+		var state: Visibility = _visibility[coord] as Visibility
+		if state == Visibility.VISIBLE and not visible_set.has(coord):
+			_visibility[coord] = Visibility.FOGGED
 
 
 func set_terrain(coord: Vector2i, terrain: TerrainType) -> void:
