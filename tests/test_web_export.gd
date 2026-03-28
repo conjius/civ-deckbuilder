@@ -21,6 +21,21 @@ func test_etc2_astc_enabled() -> void:
 	TestAssert.assert_true(enabled)
 
 
+func test_coi_service_worker_exists() -> void:
+	var file := FileAccess.open(
+		"res://scripts/tools/coi-serviceworker.min.js",
+		FileAccess.READ,
+	)
+	TestAssert.assert_not_null(file, "coi-serviceworker.min.js must exist")
+	if file:
+		var content := file.get_as_text()
+		TestAssert.assert_true(
+			content.length() > 100,
+			"coi-serviceworker should not be empty",
+		)
+		file.close()
+
+
 func test_main_scene_set() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load("res://project.godot")

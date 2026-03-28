@@ -33,12 +33,14 @@ include_filter=""
 exclude_filter="*.fbx, *.obj"
 export_path="build/web/index.html"
 [preset.0.options]
-variant/thread_support=false
+variant/thread_support=true
 html/export_icon=true
 progressive_web_app/enabled=false
 PRESETS
 $GODOT --headless --editor --quit 2>/dev/null || true
 $GODOT --headless --export-release "Web" "$BUILD_DIR/index.html" 2>&1
+cp "$PROJECT_DIR/scripts/tools/coi-serviceworker.min.js" "$BUILD_DIR/"
+sed -i '' 's|<head>|<head><script src="coi-serviceworker.min.js"></script>|' "$BUILD_DIR/index.html"
 
 echo ""
 echo "==> Game ready at: http://localhost:8060"
