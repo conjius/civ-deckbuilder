@@ -160,7 +160,7 @@ jobs:
           godot --headless --export-release "Web" build/web/index.html 2>&1
           cp scripts/tools/coi-serviceworker.min.js build/web/
           cp assets/boot_logo.png build/web/index.png
-          sed -i 's|<head>|<head><script src="coi-serviceworker.min.js"></script><style>body{background:#000!important}#status-splash{background:#000!important}#status-splash img{animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}</style>|' build/web/index.html
+          sed -i 's|<head>|<head><script src="coi-serviceworker.min.js"></script><style>body,#status{background:#000!important}#status-splash{animation:pulse 2s ease-in-out infinite!important}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}</style>|' build/web/index.html
         timeout-minutes: 5
       - name: upload
         uses: actions/upload-artifact@v7

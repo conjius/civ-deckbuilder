@@ -41,7 +41,7 @@ $GODOT --headless --editor --quit 2>/dev/null || true
 $GODOT --headless --export-release "Web" "$BUILD_DIR/index.html" 2>&1
 cp "$PROJECT_DIR/scripts/tools/coi-serviceworker.min.js" "$BUILD_DIR/"
 cp "$PROJECT_DIR/assets/boot_logo.png" "$BUILD_DIR/index.png"
-sed -i '' 's|<head>|<head><script src="coi-serviceworker.min.js"></script><style>body{background:\#000!important}\#status-splash{background:\#000!important}\#status-splash img{animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}</style>|' "$BUILD_DIR/index.html"
+sed -i '' 's|<head>|<head><script src="coi-serviceworker.min.js"></script><style>body,\#status{background:\#000!important}\#status-splash{animation:pulse 2s ease-in-out infinite!important}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}</style>|' "$BUILD_DIR/index.html"
 
 echo ""
 echo "==> Game ready at: http://localhost:8060"
