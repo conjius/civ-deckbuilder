@@ -264,7 +264,7 @@ func _build_terrain_multimeshes() -> void:
 
 func _setup_mountain_assets() -> void:
 	var mesh_res: Mesh = load(
-		"res://assets/models/mountain/mountain_hex.obj"
+		"res://assets/models/mountain/mountain_hex.res"
 	) as Mesh
 	if mesh_res == null:
 		return
