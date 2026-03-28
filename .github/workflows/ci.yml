@@ -237,7 +237,7 @@ jobs:
           rm -rf "$TMPDIR"
 
   screenshots:
-    needs: [tag-release, deploy-web]
+    needs: tag-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
