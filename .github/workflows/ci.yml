@@ -102,8 +102,71 @@ jobs:
           name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
           path: build/civ-deckbuilder.zip
 
+  exportweb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v5
+        with:
+          path: /usr/local/bin/godot
+          key: godot-linux-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        with:
+          path: ~/.local/share/godot/export_templates
+          key: export-templates-${{ env.GODOT_VERSION }}
+      - uses: actions/cache@v5
+        with:
+          path: .godot/imported
+          key: import-${{ hashFiles('**/*.tres', '**/*.tscn', '**/*.gd') }}
+          restore-keys: import-
+      - name: setup
+        run: |
+          if [ ! -f /usr/local/bin/godot ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+            chmod +x /usr/local/bin/godot
+          fi
+          if [ ! -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable ]; then
+            mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            unzip -q Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+            mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          fi
+      - name: export
+        run: |
+          if [ ! -d .godot/imported ]; then
+            godot --headless --editor --quit 2>&1 || true
+          fi
+          cat > export_presets.cfg << 'PRESETS'
+          [preset.0]
+          name="Web"
+          platform="Web"
+          runnable=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/web/index.html"
+          [preset.0.options]
+          variant/thread_support=false
+          html/export_icon=true
+          progressive_web_app/enabled=false
+          PRESETS
+          mkdir -p build/web
+          godot --headless --export-release "Web" build/web/index.html 2>&1
+        timeout-minutes: 5
+      - name: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: civ-deckbuilder-web
+          path: build/web/
+
   tag-release:
-    needs: [build-test-lint, exportmacos]
+    needs: [build-test-lint, exportmacos, exportweb]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -142,6 +205,36 @@ jobs:
             --title "$TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
             --latest
+
+  deploy-web:
+    needs: tag-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: download-web
+        uses: actions/download-artifact@v8
+        with:
+          name: civ-deckbuilder-web
+          path: web-build
+      - name: deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          TMPDIR=$(mktemp -d)
+          git clone --branch gh-pages --depth 1 "$REPO_URL" "$TMPDIR"
+          rm -rf "$TMPDIR/play"
+          mkdir -p "$TMPDIR/play"
+          cp -r web-build/* "$TMPDIR/play/"
+          cd "$TMPDIR"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add play/
+          git commit -m "Deploy web build" || true
+          git push
+          rm -rf "$TMPDIR"
 
   screenshots:
     needs: tag-release
