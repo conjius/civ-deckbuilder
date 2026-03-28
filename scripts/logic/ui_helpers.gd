@@ -333,6 +333,19 @@ static func create_circle_panel_style(
 	return style
 
 
+static func icon_value(
+	entity: String, value: String,
+) -> String:
+	var path: String = ENTITY_ICONS.get(entity, "") as String
+	if path == "":
+		return value
+	var icon_sz: int = int(FONT_LABEL * 1.2)
+	var num_sz: int = FONT_STAT_NUM
+	return "[img=%d]%s[/img] [font_size=%d]%s[/font_size]" % [
+		icon_sz, path, num_sz, value,
+	]
+
+
 static func icon_text(
 	entity: String, value: String,
 	align_right: bool = false,
