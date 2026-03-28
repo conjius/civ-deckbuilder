@@ -40,7 +40,8 @@ PRESETS
 $GODOT --headless --editor --quit 2>/dev/null || true
 $GODOT --headless --export-release "Web" "$BUILD_DIR/index.html" 2>&1
 cp "$PROJECT_DIR/scripts/tools/coi-serviceworker.min.js" "$BUILD_DIR/"
-sed -i '' 's|<head>|<head><script src="coi-serviceworker.min.js"></script>|' "$BUILD_DIR/index.html"
+cp "$PROJECT_DIR/assets/boot_logo.png" "$BUILD_DIR/index.png"
+node "$PROJECT_DIR/scripts/tools/patch_web_loading.mjs" "$BUILD_DIR/index.html"
 
 echo ""
 echo "==> Game ready at: http://localhost:8060"
