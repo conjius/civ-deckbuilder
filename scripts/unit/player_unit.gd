@@ -178,16 +178,14 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position - dir, Vector3.UP)
+		_model.rotation.y = atan2(-dir.x, -dir.z)
 
 
 func _face_direction(dir: Vector3) -> void:
 	if not _model:
 		return
 	if dir.length_squared() > 0.001:
-		_model.look_at(
-			_model.global_position - dir, Vector3.UP
-		)
+		_model.rotation.y = atan2(-dir.x, -dir.z)
 
 
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
