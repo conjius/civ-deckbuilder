@@ -31,7 +31,7 @@ img#status-splash, img#status-splash.fullsize--true {
   transition: none;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 60px) !important;
+  transform: translate(-50%, 160px) !important;
   margin: 0 !important; padding: 0 !important;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 18px; }
