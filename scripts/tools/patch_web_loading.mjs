@@ -22,7 +22,7 @@ img#status-splash, img#status-splash.fullsize--true {
   top: 50% !important; left: 50% !important;
   right: auto !important; bottom: auto !important;
   margin: 0 !important; padding: 0 !important;
-  transform: translate(-50%, -60%) !important;
+  transform: translate(-50%, -60%) scale(0.005);
 }
 @keyframes logoFadeIn {
   0% { opacity: 0; transform: translate(-50%, -60%) scale(0.005); }
