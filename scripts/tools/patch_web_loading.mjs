@@ -14,8 +14,14 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
 }
 #status-splash { max-width: none; }
 #status-splash img {
-  width: 477px; height: 143px;
+  width: 477px !important; height: 143px !important;
+  max-width: 477px !important; max-height: 143px !important;
+  object-fit: contain !important;
   image-rendering: auto; opacity: 0; transition: opacity 0.2s;
+}
+#status-splash {
+  display: flex !important; align-items: center !important;
+  justify-content: center !important;
 }
 #status-progress {
   width: 210px; height: 36px; margin-top: 40px;
