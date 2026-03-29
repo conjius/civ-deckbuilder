@@ -161,3 +161,48 @@ func test_single_neighbor_skips_one_side() -> void:
 	)
 	# 1 edge × 2 triangles × 3 verts = 6
 	TestAssert.assert_eq(diff, 6)
+
+
+func test_rounded_hex_ring_point_count() -> void:
+	var pts := HexMeshGenerator.rounded_hex_ring(1.0, 0.18, 6)
+	# 6 corners × (arc_segments + 1) = 6 × 7 = 42
+	TestAssert.assert_eq(pts.size(), 42)
+
+
+func test_rounded_hex_ring_is_closed() -> void:
+	var pts := HexMeshGenerator.rounded_hex_ring(1.0, 0.18, 6)
+	TestAssert.assert_true(
+		pts[0].distance_to(pts[pts.size() - 1]) > 0.01,
+		"first and last point should not be the same",
+	)
+
+
+func test_rounded_hex_ring_no_sharp_corners() -> void:
+	var pts := HexMeshGenerator.rounded_hex_ring(1.0, 0.18, 6)
+	var max_angle := 0.0
+	for i in range(pts.size()):
+		var prev := pts[(i - 1 + pts.size()) % pts.size()]
+		var curr := pts[i]
+		var next := pts[(i + 1) % pts.size()]
+		var d1 := Vector2(curr.x - prev.x, curr.z - prev.z).normalized()
+		var d2 := Vector2(next.x - curr.x, next.z - curr.z).normalized()
+		var angle := absf(acos(clampf(d1.dot(d2), -1.0, 1.0)))
+		if angle > max_angle:
+			max_angle = angle
+	# With rounding, no angle should exceed ~30 degrees
+	TestAssert.assert_true(
+		max_angle < deg_to_rad(35.0),
+		"no sharp corners should exist in rounded hex",
+	)
+
+
+func test_outline_mesh_valid() -> void:
+	var mesh := HexMeshGenerator.create_hex_outline_mesh()
+	TestAssert.assert_true(
+		mesh.get_surface_count() > 0,
+		"outline mesh should have at least one surface",
+	)
+	TestAssert.assert_true(
+		mesh.surface_get_array_len(0) > 0,
+		"outline mesh should have vertices",
+	)

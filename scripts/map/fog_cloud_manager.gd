@@ -31,7 +31,7 @@ func _setup_multimesh() -> void:
 	_cloud_multimesh.multimesh = _multimesh
 	var mat := ShaderMaterial.new()
 	mat.shader = _cloud_shader
-	mat.render_priority = -1
+	mat.render_priority = 1
 	_cloud_multimesh.material_override = mat
 	_cloud_multimesh.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

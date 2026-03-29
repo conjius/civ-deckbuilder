@@ -49,6 +49,11 @@ func _handle_result(
 			for gained_card: CardData in result.gained_cards:
 				deck_manager.add_card(gained_card)
 		CardData.CardType.SETTLE:
+			hex_map.map_data.place_settlement(
+				result.settled_coord,
+				result.settlement_name,
+				ai_unit.avatar_color,
+			)
 			var tile: Node3D = hex_map.get_tile(
 				result.settled_coord
 			)
