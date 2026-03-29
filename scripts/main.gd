@@ -43,7 +43,7 @@ func _ready() -> void:
 	turn_manager.card_manager = card_manager
 
 	# Generate map first so MapData is populated before CardResolver needs it
-	hex_map.generate_map()
+	await hex_map.generate_map()
 	card_effects.card_resolver = CardResolver.new(hex_map.map_data)
 
 	var cam: Camera3D = $CameraRig/CameraPivot/Camera3D
