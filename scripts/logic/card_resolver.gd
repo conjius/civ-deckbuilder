@@ -189,7 +189,7 @@ func _resolve_settle(target: Vector2i) -> CardResult:
 	if not terrain.is_settleable:
 		return result
 	var sname := SettlementNames.get_random_name()
-	_map.place_settlement(target, sname)
+	_map.place_settlement(target, sname, Color.WHITE)
 	result.success = true
 	result.settled_coord = target
 	result.settlement_name = sname

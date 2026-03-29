@@ -1,5 +1,7 @@
 extends Node3D
 
+const CLICK_DRAG_THRESHOLD := 5.0
+
 var ai_controller: AIController
 var ai_unit: Node3D
 
@@ -23,6 +25,9 @@ var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
 var _last_hover_time: int = 0
 var _last_hover_coord: Vector2i = Vector2i(-999, -999)
+var _click_start_pos: Vector2 = Vector2.ZERO
+var _click_pending: bool = false
+var _click_start_time: int = 0
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -94,7 +99,8 @@ func _ready() -> void:
 	# Reveal starting area (fog of war)
 	_reveal_around(start_coord, 2)
 
-	# Highlight active unit hex
+	# Highlight active unit hex and track selection
+	_selected_coord = start_coord
 	_highlight_active_unit()
 
 	# Set up AI player
@@ -124,6 +130,34 @@ func _setup_starfield() -> void:
 	env.sky = sky
 
 
+func _input(event: InputEvent) -> void:
+	# Track click vs drag — _input always fires, even if GUI consumes
+	var mb := event as InputEventMouseButton
+	if mb != null and mb.button_index == MOUSE_BUTTON_LEFT:
+		if mb.pressed:
+			_click_start_pos = mb.position
+			_click_pending = true
+		elif _click_pending:
+			_click_pending = false
+			if game_ui.card_hand._any_dragging:
+				return
+			var dist := mb.position.distance_to(_click_start_pos)
+			if dist <= CLICK_DRAG_THRESHOLD:
+				var vp_h: float = (
+					get_viewport().get_visible_rect().size.y
+				)
+				var hand_top: float = (
+					vp_h - float(UIHelpers.CARD_HEIGHT)
+				)
+				if mb.position.y < hand_top:
+					_handle_click(mb.position)
+	var mm := event as InputEventMouseMotion
+	if mm != null and _click_pending:
+		var dist := mm.position.distance_to(_click_start_pos)
+		if dist > CLICK_DRAG_THRESHOLD:
+			_click_pending = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
@@ -140,6 +174,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		if coord == _last_hover_coord:
 			return
 		_last_hover_coord = coord
+		# Hover highlight on revealed tiles
+		if coord != Vector2i(-999, -999):
+			var vis: MapData.Visibility = (
+				hex_map.map_data.get_visibility(coord)
+			)
+			if vis != MapData.Visibility.UNEXPLORED:
+				hex_map.set_hover_highlight(coord)
+			else:
+				hex_map.clear_hover_highlight()
+		else:
+			hex_map.clear_hover_highlight()
 		if coord != Vector2i(-999, -999):
 			var terrain: TerrainType = hex_map.get_terrain(coord)
 			if terrain:
@@ -159,10 +204,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			game_ui.update_info("")
 
-	# Click to select
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_handle_click(event.position)
 
 
 func _on_card_dropped(card: CardData, target: Vector2i) -> void:
@@ -250,6 +291,9 @@ func _on_gathered(gained_cards: Array[CardData]) -> void:
 
 
 func _on_settled(coord: Vector2i, settlement_name: String) -> void:
+	hex_map.map_data.place_settlement(
+		coord, settlement_name, player_unit.avatar_color,
+	)
 	var tile: Node3D = hex_map.get_tile(coord)
 	if tile:
 		tile.place_settlement(
@@ -265,14 +309,12 @@ func _handle_click(screen_pos: Vector2) -> void:
 		$CameraRig/CameraPivot/Camera3D, screen_pos
 	)
 	if coord == Vector2i(-999, -999):
-		_selected_coord = Vector2i(-999, -999)
-		game_ui.refresh_unit_info()
+		_deselect()
 		return
 
 	var inhabitants := _get_inhabitants(coord)
 	if inhabitants.is_empty():
-		_selected_coord = Vector2i(-999, -999)
-		game_ui.refresh_unit_info()
+		_deselect()
 		return
 
 	if coord == _selected_coord:
@@ -281,7 +323,29 @@ func _handle_click(screen_pos: Vector2) -> void:
 		_selected_coord = coord
 		_selected_index = 0
 
-	_show_inhabitant(inhabitants[_selected_index], coord)
+	_select(inhabitants[_selected_index], coord)
+
+
+func _deselect() -> void:
+	if _selected_coord == Vector2i(-999, -999):
+		return
+	_selected_coord = Vector2i(-999, -999)
+	_selected_index = 0
+	hex_map.clear_blue_highlight(true)
+	player_unit.set_selected(false)
+	game_ui.slide_unit_panel_out()
+
+
+func _select(info: Dictionary, coord: Vector2i) -> void:
+	var was_selected: bool = (
+		_selected_coord != Vector2i(-999, -999)
+	)
+	hex_map.clear_hover_highlight()
+	hex_map.set_blue_highlight(coord)
+	game_ui.slide_unit_panel_in(
+		was_selected,
+		func() -> void: _show_inhabitant(info, coord),
+	)
 
 
 func _get_inhabitants(coord: Vector2i) -> Array[Dictionary]:
@@ -301,14 +365,19 @@ func _get_inhabitants(coord: Vector2i) -> Array[Dictionary]:
 func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
 	var itype: String = info["type"] as String
 	if itype == "unit":
-		player_unit.set_selected(true)
-		game_ui.refresh_unit_info()
+		var unit: Node3D = info["unit"] as Node3D
+		if unit == player_unit:
+			player_unit.set_selected(true)
+		game_ui.show_unit_info(unit)
 	elif itype == "settlement":
 		player_unit.set_selected(false)
 		var sname: String = info["name"] as String
+		var owner_color: Color = (
+			hex_map.map_data.get_settlement_color(coord)
+		)
 		var terrain: TerrainType = hex_map.get_terrain(coord)
 		game_ui.show_settlement_info(
-			sname, player_unit.avatar_color, coord, terrain
+			sname, owner_color, coord, terrain
 		)
 
 
@@ -330,10 +399,9 @@ func _on_action_pressed(action_name: String) -> void:
 
 func _highlight_active_unit() -> void:
 	hex_map.clear_highlights()
-	var coord: Vector2i = player_unit.current_coord
-	var tile: Node3D = hex_map.get_tile(coord)
-	if tile:
-		tile.set_highlighted(true, Color(1.0, 0.85, 0.2, 0.9))
+	if _selected_coord == Vector2i(-999, -999):
+		return
+	hex_map.set_blue_highlight(player_unit.current_coord)
 
 
 func _find_start_coord() -> Vector2i:

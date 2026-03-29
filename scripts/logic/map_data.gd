@@ -58,8 +58,11 @@ func has_settlement(coord: Vector2i) -> bool:
 	return _settlements.has(coord)
 
 
-func place_settlement(coord: Vector2i, sname: String) -> void:
-	_settlements[coord] = sname
+func place_settlement(
+	coord: Vector2i, sname: String,
+	owner_color: Color = Color.WHITE,
+) -> void:
+	_settlements[coord] = {"name": sname, "color": owner_color}
 
 
 func set_enemy_position(coord: Vector2i, present: bool) -> void:
@@ -74,7 +77,17 @@ func has_enemy(coord: Vector2i) -> bool:
 
 
 func get_settlement_name(coord: Vector2i) -> String:
-	return _settlements.get(coord, "") as String
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("name", "") as String
+
+
+func get_settlement_color(coord: Vector2i) -> Color:
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("color", Color.WHITE) as Color
 
 
 func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
