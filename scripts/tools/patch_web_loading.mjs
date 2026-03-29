@@ -10,6 +10,7 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; background: #000; z-index: 10;
+  transition: opacity 0.5s;
 }
 #status-splash { max-width: none; }
 #status-splash img {
@@ -20,9 +21,10 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   width: 300px; height: 4px; margin-top: 40px;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
+  transition: none;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 2px; }
-#status-progress::-webkit-progress-value { background: #d9a633; border-radius: 2px; }
+#status-progress::-webkit-progress-value { background: #d9a633; border-radius: 2px; transition: width 0.3s; }
 #status-progress::-moz-progress-bar { background: #d9a633; border-radius: 2px; }
 #status-notice {
   color: #555; font-family: sans-serif; font-size: 12px;
@@ -32,7 +34,7 @@ canvas { background: #000 !important; }
 </style>`;
 html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
 
-// Fix progress bar to track 0-100% smoothly
+// Download = 0-60%, initialization = 60-95%, first frame = 95-100%
 const oldProgress = `'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -45,22 +47,62 @@ const oldProgress = `'onProgress': function (current, total) {
 
 const newProgress = `'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
-					statusProgress.max = total;
-					statusProgress.value = current;
+					statusProgress.max = 1000;
+					statusProgress.value = Math.floor((current / total) * 600);
 				}
 			},`;
 
 html = html.replace(oldProgress, newProgress);
 
-// Hide the loading screen once the engine starts
-const oldPrint = `'onPrint': function () {`;
-const newPrint = `'onPrint': function () {
-					var status = document.getElementById('status');
-					if (status) { status.style.transition = 'opacity 0.5s'; status.style.opacity = '0'; setTimeout(function() { status.style.display = 'none'; }, 600); }`;
+// Inject a script that animates 60-95% during init and fades on first frame
+const initScript = `<script>
+(function() {
+	var initStarted = false;
+	var initInterval = null;
+	var origStartGame = null;
 
-if (html.includes(oldPrint)) {
-	html = html.replace(oldPrint, newPrint);
-}
+	// Watch for download complete -> start fake progress 60-95%
+	var observer = new MutationObserver(function() {
+		var bar = document.getElementById('status-progress');
+		if (bar && bar.value >= 600 && !initStarted) {
+			initStarted = true;
+			var fakeProgress = 600;
+			initInterval = setInterval(function() {
+				fakeProgress = Math.min(fakeProgress + 3, 950);
+				bar.value = fakeProgress;
+			}, 50);
+		}
+	});
+	observer.observe(document.body, { childList: true, subtree: true, attributes: true });
 
+	// Detect first canvas frame -> complete bar and fade out
+	var checkCanvas = setInterval(function() {
+		var canvas = document.querySelector('canvas');
+		if (canvas && canvas.width > 0 && canvas.height > 0) {
+			try {
+				var ctx = canvas.getContext('2d') || canvas.getContext('webgl') || canvas.getContext('webgl2');
+				if (ctx) {
+					clearInterval(checkCanvas);
+					if (initInterval) clearInterval(initInterval);
+					observer.disconnect();
+					var bar = document.getElementById('status-progress');
+					if (bar) { bar.max = 1000; bar.value = 1000; }
+					setTimeout(function() {
+						var status = document.getElementById('status');
+						if (status) {
+							status.style.opacity = '0';
+							setTimeout(function() { status.style.display = 'none'; }, 600);
+						}
+					}, 300);
+				}
+			} catch(e) {}
+		}
+	}, 100);
+})();
+</script>`;
+
+html = html.replace("</head>", `${initScript}</head>`);
+
+// Remove the onPrint-based fade (replaced by canvas detection above)
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
