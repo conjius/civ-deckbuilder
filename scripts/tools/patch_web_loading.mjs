@@ -13,8 +13,8 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   transition: opacity 0.5s;
 }
 img#status-splash, img#status-splash.fullsize--true {
-  width: 477px !important; height: 143px !important;
-  max-width: 477px !important; max-height: 143px !important;
+  width: 487px !important; height: 153px !important;
+  max-width: 487px !important; max-height: 153px !important;
   object-fit: contain !important;
   image-rendering: auto !important; opacity: 0;
   transition: opacity 0.2s;
