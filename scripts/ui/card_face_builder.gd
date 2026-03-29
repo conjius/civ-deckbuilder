@@ -297,4 +297,5 @@ static func _add_avatar(
 		var inset := sz * (1.0 - sc) * 0.5
 		tex_rect.position = inset
 		tex_rect.size = sz * sc
+		tex_rect.material = UIHelpers.create_icon_shadow_shader()
 		section.add_child(tex_rect)

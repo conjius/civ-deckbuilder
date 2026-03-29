@@ -23,6 +23,7 @@ var _pending_drag_pos: Vector2 = Vector2.ZERO
 var _draw_pile_ui: CardPileUI
 var _discard_pile_ui: CardPileUI
 var _active_picker: YieldPickerUI = null
+var _deck_manager_ref: DeckManager = null
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -79,6 +80,8 @@ func _setup_piles() -> void:
 	add_child(_discard_pile_ui)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
+	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
+	_discard_pile_ui.clicked.connect(_on_discard_pile_clicked)
 
 
 func _layout_piles() -> void:
@@ -226,7 +229,11 @@ func show_settlement_info(
 
 
 
-func _toggle_gallery() -> void:
+func _toggle_gallery(
+	show_draw: bool = false,
+	show_hand: bool = true,
+	show_discard: bool = false,
+) -> void:
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
 	else:
@@ -234,15 +241,47 @@ func _toggle_gallery() -> void:
 			_animate_overlay(true)
 		_slide_hand_out()
 		_slide_ui_out()
-		card_gallery.show_gallery(_current_cards)
+		var dm := _deck_manager_ref
+		if dm:
+			card_gallery.show_gallery(
+				dm.draw_pile, dm.hand, dm.discard_pile,
+				show_draw, show_hand, show_discard,
+			)
+		else:
+			card_gallery.show_gallery(
+				[] as Array[CardData],
+				_current_cards,
+				[] as Array[CardData],
+				false, true, false,
+			)
+		_draw_pile_ui.set_toggled(show_draw)
+		_discard_pile_ui.set_toggled(show_discard)
 		if _active_picker:
 			_active_picker.enter_gallery_mode()
+
+
+func _on_draw_pile_clicked() -> void:
+	if card_gallery.visible:
+		card_gallery.toggle_filter("draw")
+		_draw_pile_ui.set_toggled(card_gallery._show_draw)
+	else:
+		_toggle_gallery(true, false, false)
+
+
+func _on_discard_pile_clicked() -> void:
+	if card_gallery.visible:
+		card_gallery.toggle_filter("discard")
+		_discard_pile_ui.set_toggled(card_gallery._show_discard)
+	else:
+		_toggle_gallery(false, false, true)
 
 
 func _on_gallery_closing() -> void:
 	if not _active_picker:
 		_animate_overlay(false)
 	_slide_ui_in()
+	_draw_pile_ui.set_toggled(false)
+	_discard_pile_ui.set_toggled(false)
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
 
