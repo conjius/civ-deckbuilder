@@ -76,15 +76,19 @@ const initScript = `<script>
 		if (!bar) bar = document.getElementById('status-progress');
 		if (!logo) logo = document.getElementById('status-splash');
 
-		// Smooth lerp toward target (download goes to ~0.6, init ~0.95)
-		var gap = state.target - state.displayed;
-		// Move slowly: 2% of remaining gap per frame, minimum 0.001
-		state.displayed += Math.max(gap * 0.02, 0.001);
-		// During init (after download), creep toward 0.95
-		if (state.target >= 0.99 && state.displayed < 0.95) {
-			state.displayed += 0.002;
+		// Smooth lerp toward target
+		if (state.target > 0) {
+			var gap = state.target - state.displayed;
+			if (gap > 0) {
+				// Move at 1.5% of remaining gap per frame
+				state.displayed += gap * 0.015;
+			}
+			// After download done, slowly creep toward 0.95
+			if (state.target >= 0.99 && state.displayed >= state.target * 0.95) {
+				state.displayed += 0.0008;
+			}
+			state.displayed = Math.min(state.displayed, 0.98);
 		}
-		state.displayed = Math.min(state.displayed, 0.99);
 
 		if (bar) {
 			bar.max = 1000;
@@ -98,26 +102,30 @@ const initScript = `<script>
 	}
 	requestAnimationFrame(tick);
 
-	// Detect canvas ready -> snap to 100% and fade out
+	// Detect game ready -> snap to 100% and fade out
+	// Wait for download to actually start before checking canvas
+	var canvasFrames = 0;
 	var checkCanvas = setInterval(function() {
+		if (state.target < 0.1) return; // download hasn't started
 		var canvas = document.querySelector('canvas');
-		if (canvas && canvas.width > 0 && canvas.height > 0) {
-			try {
-				var ctx = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('2d');
-				if (ctx) {
-					clearInterval(checkCanvas);
-					state.done = true;
-					if (bar) { bar.max = 1000; bar.value = 1000; }
-					if (logo) logo.style.opacity = 1;
-					setTimeout(function() {
-						var status = document.getElementById('status');
-						if (status) {
-							status.style.opacity = '0';
-							setTimeout(function() { status.style.display = 'none'; }, 600);
-						}
-					}, 400);
-				}
-			} catch(e) {}
+		if (canvas && canvas.width > 100 && canvas.height > 100) {
+			canvasFrames++;
+			// Require 10 consecutive checks (~1s) to confirm game is rendering
+			if (canvasFrames >= 10) {
+				clearInterval(checkCanvas);
+				state.done = true;
+				if (bar) { bar.max = 1000; bar.value = 1000; }
+				if (logo) logo.style.opacity = 1;
+				setTimeout(function() {
+					var status = document.getElementById('status');
+					if (status) {
+						status.style.opacity = '0';
+						setTimeout(function() { status.style.display = 'none'; }, 600);
+					}
+				}, 400);
+			}
+		} else {
+			canvasFrames = 0;
 		}
 	}, 100);
 })();
