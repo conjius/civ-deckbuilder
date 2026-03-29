@@ -20,6 +20,9 @@ var _unit_panel_hidden: bool = false
 var _dim_overlay: ColorRect
 var _pending_drag_card: CardData = null
 var _pending_drag_pos: Vector2 = Vector2.ZERO
+var _draw_pile_ui: CardPileUI
+var _discard_pile_ui: CardPileUI
+var _active_picker: YieldPickerUI = null
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -63,7 +66,82 @@ func _ready() -> void:
 	_setup_fps_label()
 	_apply_styles()
 	_apply_sizes()
+	_setup_piles()
 	_capture_positions.call_deferred()
+
+
+func _setup_piles() -> void:
+	_draw_pile_ui = CardPileUI.new()
+	_draw_pile_ui.setup(true)
+	add_child(_draw_pile_ui)
+	_discard_pile_ui = CardPileUI.new()
+	_discard_pile_ui.setup(false)
+	add_child(_discard_pile_ui)
+	_layout_piles()
+	get_viewport().size_changed.connect(_layout_piles)
+
+
+func _layout_piles() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var focused_y: float = vp.y - float(UIHelpers.CARD_HEIGHT)
+	var pile_y: float = focused_y - 100.0
+	var margin := 16.0
+	_draw_pile_ui.position = Vector2(
+		margin, pile_y - _draw_pile_ui.size.y
+	)
+	_discard_pile_ui.position = Vector2(
+		vp.x - _discard_pile_ui.size.x - margin,
+		pile_y - _discard_pile_ui.size.y,
+	)
+	_draw_pile_ui.store_original_pos()
+	_discard_pile_ui.store_original_pos()
+	card_hand.draw_pile_pos = get_draw_pile_center()
+	card_hand.discard_pile_pos = get_discard_pile_center()
+
+
+func update_piles(
+	draw_count: int, discard_count: int,
+) -> void:
+	_draw_pile_ui.update_count(draw_count)
+	_discard_pile_ui.update_count(discard_count)
+
+
+func get_draw_pile_center() -> Vector2:
+	return _draw_pile_ui.position + _draw_pile_ui.size * 0.5
+
+
+func get_discard_pile_center() -> Vector2:
+	return _discard_pile_ui.position + _discard_pile_ui.size * 0.5
+
+
+func animate_deal(
+	cards: Array[CardData],
+	draw_count: int, discard_count: int,
+) -> void:
+	update_piles(draw_count + cards.size(), discard_count)
+	# Move draw pile to center at same height as static piles
+	var vp_w: float = get_viewport().get_visible_rect().size.x
+	var deal_pos := Vector2(
+		vp_w * 0.5 - _draw_pile_ui.size.x * 0.5,
+		_draw_pile_ui._original_pos.y,
+	)
+	var tw_out := _draw_pile_ui.animate_to(deal_pos, 0.2)
+	await tw_out.finished
+	# Cards spawn from the pile's current center
+	card_hand.draw_pile_pos = (
+		_draw_pile_ui.global_position
+		+ _draw_pile_ui.size * 0.5
+	)
+	set_current_cards(cards)
+	card_hand.show_cards(cards, true)
+	# Wait for all cards to finish dealing
+	var deal_time := float(cards.size()) * 0.18 + 0.8
+	await get_tree().create_timer(deal_time).timeout
+	# Update counts and return pile
+	update_piles(draw_count, discard_count)
+	var tw_back := _draw_pile_ui.animate_back(0.2)
+	await tw_back.finished
+	card_hand.draw_pile_pos = get_draw_pile_center()
 
 
 func _capture_positions() -> void:
@@ -156,11 +234,15 @@ func _toggle_gallery() -> void:
 		_slide_hand_out()
 		_slide_ui_out()
 		card_gallery.show_gallery(_current_cards)
+		if _active_picker:
+			_active_picker.enter_gallery_mode()
 
 
 func _on_gallery_closing() -> void:
 	_animate_overlay(false)
 	_slide_ui_in()
+	if _active_picker:
+		_active_picker.exit_gallery_mode()
 
 
 func _slide_ui_out() -> void:

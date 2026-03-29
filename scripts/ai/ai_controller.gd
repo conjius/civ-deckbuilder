@@ -14,10 +14,11 @@ var hex_map: Node3D
 
 func initialize(deck: Array[CardData]) -> void:
 	deck_manager.initialize(deck)
+	deck_manager.draw_hand()
 
 
 func take_turn() -> void:
-	var cards_to_play: Array[CardData] = deck_manager.cards.duplicate()
+	var cards_to_play: Array[CardData] = deck_manager.hand.duplicate()
 	for card in cards_to_play:
 		if card.card_type == CardData.CardType.RESOURCE:
 			continue
@@ -32,22 +33,41 @@ func take_turn() -> void:
 		)
 		if result.success:
 			deck_manager.play_card(card)
-			_handle_result(card, result)
+			_handle_result(card, result, target)
 			if card.card_type == CardData.CardType.MOVE:
 				if ai_unit.is_moving():
 					await ai_unit.movement_finished
 			await get_tree().create_timer(PLAY_DELAY).timeout
 	deck_manager.end_turn()
+	deck_manager.draw_hand()
 	turn_completed.emit()
 
 
 func _handle_result(
 	card: CardData, result: CardResolver.CardResult,
+	target: Vector2i = Vector2i.ZERO,
 ) -> void:
 	match card.card_type:
 		CardData.CardType.GATHER:
-			for gained_card: CardData in result.gained_cards:
-				deck_manager.add_card(gained_card)
+			var terrain: TerrainType = (
+				hex_map.get_terrain(target)
+			)
+			if terrain:
+				var types: Array[CardData.ResourceType] = []
+				if terrain.materials_yield > 0:
+					types.append(
+						CardData.ResourceType.MATERIALS
+					)
+				if terrain.food_yield > 0:
+					types.append(CardData.ResourceType.FOOD)
+				if not types.is_empty():
+					var picked: CardData.ResourceType = (
+						types[randi() % types.size()]
+					)
+					var new_card := (
+						card_resolver.pick_resource_card(picked)
+					)
+					deck_manager.hand.append(new_card)
 		CardData.CardType.SETTLE:
 			hex_map.map_data.place_settlement(
 				result.settled_coord,
