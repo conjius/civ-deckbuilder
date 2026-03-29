@@ -33,7 +33,7 @@ include_filter=""
 exclude_filter="*.fbx, *.obj, *.glb, boots.res, Tcuer.png, Tfbot.png, Tibot.png, Tlbot.png, Trcuer.png, Tsuel.png, Ttbot.png, scout.glb, scout_rogue_texture.png"
 export_path="build/web/index.html"
 [preset.0.options]
-variant/thread_support=true
+variant/thread_support=false
 html/export_icon=true
 progressive_web_app/enabled=false
 PRESETS
