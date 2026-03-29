@@ -101,7 +101,7 @@ const initScript = `<script>
 		var canvas = document.querySelector('canvas');
 		if (canvas && canvas.width > 100 && canvas.height > 100) {
 			canvasFrames++;
-			if (canvasFrames >= 15) {
+			if (canvasFrames >= 2) {
 				clearInterval(checkCanvas);
 				var inner = document.querySelector('.progress-fill-inner');
 				if (inner) {
@@ -116,14 +116,14 @@ const initScript = `<script>
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
 				if (status) {
-					status.style.transition = 'opacity 0.3s';
+					status.style.transition = 'opacity 0.15s';
 					status.style.opacity = '0';
-					setTimeout(function() { status.style.display = 'none'; }, 400);
+					setTimeout(function() { status.style.display = 'none'; }, 200);
 				}
 				if (fillEl) {
-					fillEl.style.transition = 'opacity 0.3s';
+					fillEl.style.transition = 'opacity 0.15s';
 					fillEl.style.opacity = '0';
-					setTimeout(function() { fillEl.style.display = 'none'; }, 400);
+					setTimeout(function() { fillEl.style.display = 'none'; }, 200);
 				}
 			}
 		} else {
