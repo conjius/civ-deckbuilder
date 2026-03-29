@@ -25,7 +25,7 @@ static func create_hex_mesh(
 			edge_pts = [c0, c1] as Array[Vector3]
 
 		# Inner ring points at band boundary (fully opaque)
-		var band_frac := 0.75
+		var band_frac := 0.55
 		var inner_pts: Array[Vector3] = []
 		for j in range(edge_pts.size()):
 			var ep := edge_pts[j]
