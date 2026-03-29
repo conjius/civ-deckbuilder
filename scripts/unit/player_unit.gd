@@ -68,7 +68,7 @@ func is_moving() -> bool:
 func place_at(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.place_at(coord)
 	position = HexUtil.axial_to_world(coord.x, coord.y)
-	position.y = terrain_height + 0.15
+	position.y = terrain_height + 0.08
 
 
 func offset_for_packing(
@@ -87,7 +87,7 @@ func offset_for_packing(
 func move_to(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.move_to(coord)
 	var target := HexUtil.axial_to_world(coord.x, coord.y)
-	target.y = terrain_height + 0.15
+	target.y = terrain_height + 0.08
 	_is_moving = true
 	_face_toward(target)
 	if _move_tween and _move_tween.is_running():
@@ -121,7 +121,16 @@ func move_along_path(
 		var target := HexUtil.axial_to_world(
 			path_coords[i].x, path_coords[i].y
 		)
-		target.y = terrain_heights[i] + 0.15
+		target.y = terrain_heights[i] + 0.08
+		var face_dir := target - HexUtil.axial_to_world(
+			path_coords[i - 1].x, path_coords[i - 1].y
+		)
+		face_dir.y = 0.0
+		if face_dir.length_squared() > 0.001 and _model:
+			var angle := atan2(-face_dir.x, -face_dir.z)
+			_move_tween.tween_property(
+				_model, "rotation:y", angle, 0.15
+			).set_trans(Tween.TRANS_SINE)
 		var prev := path_coords[i - 1]
 		var prev_world := HexUtil.axial_to_world(prev.x, prev.y)
 		var step_distance := prev_world.distance_to(
@@ -169,7 +178,7 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position + dir, Vector3.UP)
+		_model.look_at(global_position - dir, Vector3.UP)
 
 
 func _face_direction(dir: Vector3) -> void:
@@ -177,7 +186,7 @@ func _face_direction(dir: Vector3) -> void:
 		return
 	if dir.length_squared() > 0.001:
 		_model.look_at(
-			_model.global_position + dir, Vector3.UP
+			_model.global_position - dir, Vector3.UP
 		)
 
 
