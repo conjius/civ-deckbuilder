@@ -1,7 +1,7 @@
 extends Node3D
 
 const BASE_HEX_HEIGHT := 0.1
-const TILES_PER_FRAME: int = 100
+const TILES_PER_FRAME: int = 1
 
 @export var map_width: int = 20
 @export var map_height: int = 20
