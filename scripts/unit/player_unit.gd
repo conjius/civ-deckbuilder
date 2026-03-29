@@ -68,7 +68,7 @@ func is_moving() -> bool:
 func place_at(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.place_at(coord)
 	position = HexUtil.axial_to_world(coord.x, coord.y)
-	position.y = terrain_height + 0.05
+	position.y = terrain_height + 0.08
 
 
 func offset_for_packing(
@@ -87,7 +87,7 @@ func offset_for_packing(
 func move_to(coord: Vector2i, terrain_height: float = 0.0) -> void:
 	state.move_to(coord)
 	var target := HexUtil.axial_to_world(coord.x, coord.y)
-	target.y = terrain_height + 0.05
+	target.y = terrain_height + 0.08
 	_is_moving = true
 	_face_toward(target)
 	if _move_tween and _move_tween.is_running():
