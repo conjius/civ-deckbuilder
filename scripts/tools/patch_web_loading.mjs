@@ -15,12 +15,17 @@ img#status-splash, img#status-splash.fullsize--true {
   width: 950px !important; height: auto !important;
   max-width: 950px !important; max-height: none !important;
   object-fit: contain !important;
-  image-rendering: auto !important; opacity: 0;
+  image-rendering: auto !important;
+  animation: logoFadeIn 10s ease-out forwards !important;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   right: auto !important; bottom: auto !important;
   margin: 0 !important; padding: 0 !important;
   transform: translate(-50%, -60%) !important;
+}
+@keyframes logoFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 #status-progress {
   width: 300px !important; height: 12px !important;
@@ -30,16 +35,33 @@ img#status-splash, img#status-splash.fullsize--true {
   top: 50% !important; left: 50% !important;
   transform: translate(-50%, 210px) !important;
   margin: 0 !important; padding: 0 !important;
+  overflow: hidden;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 6px; }
 #status-progress::-webkit-progress-value { background: #e8c055; border-radius: 6px; }
 #status-progress::-moz-progress-bar { background: #e8c055; border-radius: 6px; }
 #status-notice { display: none !important; }
 canvas { background: #000 !important; }
+.progress-fill {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, 210px);
+  width: 300px; height: 12px;
+  border-radius: 6px; overflow: hidden;
+  z-index: 11; pointer-events: none;
+}
+.progress-fill-inner {
+  width: 0%; height: 100%;
+  background: #e8c055; border-radius: 6px;
+  animation: fillBar 10s ease-out forwards;
+}
+@keyframes fillBar {
+  0% { width: 0%; }
+  100% { width: 98%; }
+}
 </style>`;
 html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
 
-// Disable the default progress handler — our script handles everything
+// Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -50,75 +72,58 @@ const oldProgress = `'onProgress': function (current, total) {
 				}
 			},`;
 
-const newProgress = `'onProgress': function (current, total) {
-				if (window.__civdecksProgress && current > 0 && total > 0) {
-					window.__civdecksProgress.target = current / total;
-				}
-			},`;
+const newProgress = `'onProgress': function () {},`;
 
 html = html.replace(oldProgress, newProgress);
 
+// Hide the native progress element and add our CSS-animated one
+// Also detect game ready to fade out
 const initScript = `<script>
 (function() {
-	var state = {
-		target: 0,
-		displayed: 0,
-		done: false
-	};
-	window.__civdecksProgress = state;
-
-	var bar = null;
-	var logo = null;
-
-	function tick() {
-		if (state.done) return;
-
-		if (!bar) bar = document.getElementById('status-progress');
-		if (!logo) logo = document.getElementById('status-splash');
-
-		// Smooth lerp toward target
-		if (state.target > 0) {
-			var gap = state.target - state.displayed;
-			if (gap > 0.01) {
-				// Move at 0.8% of remaining gap per frame (slow, smooth)
-				state.displayed += gap * 0.008;
-			}
-			// Always creep forward so bar never looks stuck
-			state.displayed += 0.0015;
-			state.displayed = Math.min(state.displayed, 0.98);
-		}
-
+	// Hide native progress bar, use CSS animated one instead
+	var ready = setInterval(function() {
+		var bar = document.getElementById('status-progress');
 		if (bar) {
-			bar.max = 1000;
-			bar.value = Math.floor(state.displayed * 1000);
+			bar.style.display = 'none';
+			clearInterval(ready);
 		}
-		if (logo) {
-			logo.style.opacity = state.displayed;
-		}
+	}, 10);
 
-		requestAnimationFrame(tick);
-	}
-	requestAnimationFrame(tick);
+	// Add CSS-animated progress bar
+	var fill = document.createElement('div');
+	fill.className = 'progress-fill';
+	fill.innerHTML = '<div class="progress-fill-inner"></div>';
+	document.body.appendChild(fill);
 
 	// Detect game ready -> snap to 100% and fade out
-	// Wait for download to actually start before checking canvas
 	var canvasFrames = 0;
 	var checkCanvas = setInterval(function() {
-		if (state.target < 0.1) return; // download hasn't started
 		var canvas = document.querySelector('canvas');
 		if (canvas && canvas.width > 100 && canvas.height > 100) {
 			canvasFrames++;
-			// Require 10 consecutive checks (~1s) to confirm game is rendering
-			if (canvasFrames >= 10) {
+			if (canvasFrames >= 5) {
 				clearInterval(checkCanvas);
-				state.done = true;
-				if (bar) { bar.max = 1000; bar.value = 1000; }
-				if (logo) logo.style.opacity = 1;
+				var inner = document.querySelector('.progress-fill-inner');
+				if (inner) {
+					inner.style.animation = 'none';
+					inner.style.width = '100%';
+				}
+				var logo = document.getElementById('status-splash');
+				if (logo) {
+					logo.style.animation = 'none';
+					logo.style.opacity = '1';
+				}
 				setTimeout(function() {
 					var status = document.getElementById('status');
+					var fillEl = document.querySelector('.progress-fill');
 					if (status) {
 						status.style.opacity = '0';
 						setTimeout(function() { status.style.display = 'none'; }, 600);
+					}
+					if (fillEl) {
+						fillEl.style.opacity = '0';
+						fillEl.style.transition = 'opacity 0.5s';
+						setTimeout(function() { fillEl.style.display = 'none'; }, 600);
 					}
 				}, 400);
 			}
