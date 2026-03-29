@@ -5,7 +5,7 @@
   &nbsp;
   <a href="https://github.com/conjius/CivDecks/releases/latest"><img src="https://img.shields.io/badge/_Download_for_macOS-2d6ea3" alt=" Download for macOS"></a>
 </p>
-<br></p>
+</p>
 A hex-based civilization strategy game with deckbuilding mechanics, built in Godot 4.6.
 Explore a procedurally generated world, play cards to move, scout, gather resources, and
 settle - all driven by a single visible deck of action and resource cards.
