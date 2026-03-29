@@ -24,22 +24,56 @@ static func create_hex_mesh(
 		else:
 			edge_pts = [c0, c1] as Array[Vector3]
 
-		# Top face — fan from center with edge fade alpha
-		for j in range(edge_pts.size() - 1):
-			var p0 := edge_pts[j]
-			var p1 := edge_pts[j + 1]
-			var a0 := _edge_alpha(p0, hex_radius)
-			var a1 := _edge_alpha(p1, hex_radius)
+		# Inner ring points at band boundary (fully opaque)
+		var band_frac := 0.75
+		var inner_pts: Array[Vector3] = []
+		for j in range(edge_pts.size()):
+			var ep := edge_pts[j]
+			inner_pts.append(Vector3(
+				ep.x * band_frac, 0.0, ep.z * band_frac
+			))
+
+		# Inner triangles: center → inner ring (fully opaque)
+		for j in range(inner_pts.size() - 1):
+			var r0 := inner_pts[j]
+			var r1 := inner_pts[j + 1]
 			st.set_normal(Vector3.UP)
 			st.set_color(Color(1, 1, 1, 1))
 			st.set_uv(Vector2(0.5, 0.5))
 			st.add_vertex(center)
+			st.set_uv(_hex_uv(r0))
+			st.add_vertex(Vector3(r0.x, top_y, r0.z))
+			st.set_uv(_hex_uv(r1))
+			st.add_vertex(Vector3(r1.x, top_y, r1.z))
+
+		# Outer band: inner ring → wavy edge (opaque to transparent)
+		for j in range(edge_pts.size() - 1):
+			var r0 := inner_pts[j]
+			var r1 := inner_pts[j + 1]
+			var e0 := edge_pts[j]
+			var e1 := edge_pts[j + 1]
+			var a0 := _edge_alpha(e0, hex_radius)
+			var a1 := _edge_alpha(e1, hex_radius)
+			st.set_normal(Vector3.UP)
+			st.set_color(Color(1, 1, 1, 1))
+			st.set_uv(_hex_uv(r0))
+			st.add_vertex(Vector3(r0.x, top_y, r0.z))
 			st.set_color(Color(1, 1, 1, a0))
-			st.set_uv(_hex_uv(p0))
-			st.add_vertex(Vector3(p0.x, top_y, p0.z))
+			st.set_uv(_hex_uv(e0))
+			st.add_vertex(Vector3(e0.x, top_y, e0.z))
 			st.set_color(Color(1, 1, 1, a1))
-			st.set_uv(_hex_uv(p1))
-			st.add_vertex(Vector3(p1.x, top_y, p1.z))
+			st.set_uv(_hex_uv(e1))
+			st.add_vertex(Vector3(e1.x, top_y, e1.z))
+			st.set_normal(Vector3.UP)
+			st.set_color(Color(1, 1, 1, 1))
+			st.set_uv(_hex_uv(r0))
+			st.add_vertex(Vector3(r0.x, top_y, r0.z))
+			st.set_color(Color(1, 1, 1, a1))
+			st.set_uv(_hex_uv(e1))
+			st.add_vertex(Vector3(e1.x, top_y, e1.z))
+			st.set_color(Color(1, 1, 1, 1))
+			st.set_uv(_hex_uv(r1))
+			st.add_vertex(Vector3(r1.x, top_y, r1.z))
 
 		# Side faces
 		for j in range(edge_pts.size() - 1):
