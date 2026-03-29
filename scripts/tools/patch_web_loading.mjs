@@ -79,14 +79,12 @@ const initScript = `<script>
 		// Smooth lerp toward target
 		if (state.target > 0) {
 			var gap = state.target - state.displayed;
-			if (gap > 0) {
-				// Move at 1.5% of remaining gap per frame
-				state.displayed += gap * 0.015;
+			if (gap > 0.01) {
+				// Move at 0.8% of remaining gap per frame (slow, smooth)
+				state.displayed += gap * 0.008;
 			}
-			// After download done, slowly creep toward 0.95
-			if (state.target >= 0.99 && state.displayed >= state.target * 0.95) {
-				state.displayed += 0.0008;
-			}
+			// Always creep forward so bar never looks stuck
+			state.displayed += 0.0015;
 			state.displayed = Math.min(state.displayed, 0.98);
 		}
 
