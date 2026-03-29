@@ -71,7 +71,11 @@ func generate_map() -> void:
 			tile.position = HexUtil.axial_to_world(
 				coord.x, coord.y
 			)
-			tile.position.y = -0.05
+			var y_jitter := fmod(
+				absf(float(coord.x) * 0.7129 + float(coord.y) * 0.3917),
+				0.003,
+			)
+			tile.position.y = -0.05 + y_jitter
 			tiles[coord] = tile
 
 	# Place water clumps over existing terrain
