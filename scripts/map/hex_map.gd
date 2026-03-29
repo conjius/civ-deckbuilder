@@ -1,6 +1,7 @@
 extends Node3D
 
 const BASE_HEX_HEIGHT := 0.1
+const TILES_PER_FRAME: int = 100
 
 @export var map_width: int = 20
 @export var map_height: int = 20
@@ -52,6 +53,7 @@ func generate_map() -> void:
 	detail.frequency = 0.15
 
 	# Pass 1: assign terrain via noise + create tile nodes
+	var count := 0
 	for q in range(map_width):
 		for r in range(map_height):
 			@warning_ignore("integer_division")
@@ -73,11 +75,15 @@ func generate_map() -> void:
 			)
 			tile.position.y = 0.0
 			tiles[coord] = tile
+			count += 1
+			if count % TILES_PER_FRAME == 0:
+				await get_tree().process_frame
 
 	# Place water clumps over existing terrain
 	_place_water_clumps()
 
 	# Pass 2: set up visuals from final terrain
+	count = 0
 	for coord: Vector2i in tiles:
 		var tile: Node3D = tiles[coord] as Node3D
 		var terrain: TerrainType = map_data.get_terrain(coord)
@@ -108,6 +114,9 @@ func generate_map() -> void:
 		fog_cloud_manager.add_fog(
 			coord, tile.position, terrain.height,
 		)
+		count += 1
+		if count % TILES_PER_FRAME == 0:
+			await get_tree().process_frame
 	fog_cloud_manager.rebuild()
 
 
