@@ -2,7 +2,7 @@ extends Node3D
 
 signal movement_finished
 
-@export var move_speed: float = 2.7
+@export var move_speed: float = 5.4
 
 var state: PlayerState = PlayerState.new()
 var avatar_color: Color = Color(0.9, 0.2, 0.2, 1)
@@ -30,6 +30,8 @@ var _is_moving: bool = false
 var _move_tween: Tween = null
 var _model: Node3D
 var _last_facing: Vector3 = Vector3(0, 0, -1)
+var _current_angle: float = 0.0
+var _target_angle: float = 0.0
 var _is_selected: bool = false
 var _is_targeting_move: bool = false
 var _is_dragging_card: bool = false
@@ -121,7 +123,7 @@ func move_along_path(
 		var target := HexUtil.axial_to_world(
 			path_coords[i].x, path_coords[i].y
 		)
-		target.y = terrain_heights[i] + 0.08
+		target.y = terrain_heights[i] + 0.2
 		var face_dir := target - HexUtil.axial_to_world(
 			path_coords[i - 1].x, path_coords[i - 1].y
 		)
@@ -151,16 +153,24 @@ func set_dragging_card(value: bool) -> void:
 		_face_direction(_last_facing)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if (_is_targeting_move or _is_dragging_card) and not _is_moving and _camera and _model:
 		var mouse_pos := get_viewport().get_mouse_position()
 		var ground := _screen_to_ground(mouse_pos)
 		if ground != Vector3.ZERO:
 			_face_toward_instant(ground)
+	if _model and not _is_moving:
+		_current_angle = lerp_angle(
+			_current_angle, _target_angle, 4.0 * delta
+		)
+		_model.rotation.y = _current_angle
 
 
 func _on_move_finished() -> void:
 	_is_moving = false
+	if _model:
+		_current_angle = _model.rotation.y
+		_target_angle = _current_angle
 	movement_finished.emit()
 
 
@@ -169,7 +179,11 @@ func _face_toward(target: Vector3) -> void:
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
 		_last_facing = dir.normalized()
-		_face_direction(_last_facing)
+		var angle := atan2(-dir.x, -dir.z)
+		_target_angle = angle
+		_current_angle = angle
+		if _model:
+			_model.rotation.y = angle
 
 
 func _face_toward_instant(target: Vector3) -> void:
@@ -178,16 +192,14 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position - dir, Vector3.UP)
+		_target_angle = atan2(-dir.x, -dir.z)
 
 
 func _face_direction(dir: Vector3) -> void:
 	if not _model:
 		return
 	if dir.length_squared() > 0.001:
-		_model.look_at(
-			_model.global_position - dir, Vector3.UP
-		)
+		_target_angle = atan2(-dir.x, -dir.z)
 
 
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
@@ -223,7 +235,6 @@ func _build_boot_model() -> Node3D:
 	mi.scale = Vector3(1.26, 1.26, 1.26)
 	mi.position.y = 0.0
 	root.add_child(mi)
-	root.rotation.y = PI
 	return root
 
 

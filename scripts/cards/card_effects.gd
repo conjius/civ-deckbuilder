@@ -1,7 +1,10 @@
 extends Node
 
 signal effect_completed
-signal gathered(cards: Array[CardData])
+signal gather_choice_needed(
+	coord: Vector2i,
+	types: Array[CardData.ResourceType],
+)
 signal settled(coord: Vector2i, settlement_name: String)
 signal attacked(target: Vector2i, damage: int)
 signal defended(bonus: int)
@@ -47,7 +50,21 @@ func execute_card(
 			for coord in result.revealed_tiles:
 				hex_map.reveal_tile(coord)
 		CardData.CardType.GATHER:
-			gathered.emit(result.gained_cards)
+			if unit == player_unit:
+				var types: Array[CardData.ResourceType] = []
+				var terrain: TerrainType = (
+					hex_map.get_terrain(target_coord)
+				)
+				if terrain:
+					if terrain.materials_yield > 0:
+						types.append(
+							CardData.ResourceType.MATERIALS
+						)
+					if terrain.food_yield > 0:
+						types.append(
+							CardData.ResourceType.FOOD
+						)
+				gather_choice_needed.emit(target_coord, types)
 		CardData.CardType.SETTLE:
 			settled.emit(
 				result.settled_coord,
