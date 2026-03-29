@@ -199,7 +199,9 @@ static func get_wavy_edge_points(
 		if i == 0 or i == subdivisions:
 			offsets.append(0.0)
 		else:
-			offsets.append(rng.randf_range(-amplitude, amplitude))
+			offsets.append(rng.randf_range(
+				-amplitude * 0.3, amplitude
+			))
 	# Smooth passes — average with neighbors
 	for _pass in range(3):
 		var smoothed: Array[float] = []
