@@ -100,8 +100,20 @@ const initScript = `<script>
 	var checkCanvas = setInterval(function() {
 		var canvas = document.querySelector('canvas');
 		if (canvas && canvas.width > 100 && canvas.height > 100) {
+			// Check if canvas has actual rendered content (not just blank)
+			try {
+				var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+				if (!gl) { return; }
+				var pixel = new Uint8Array(4);
+				gl.readPixels(
+					Math.floor(canvas.width / 2), Math.floor(canvas.height / 2),
+					1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel
+				);
+				// Skip if pixel is black/empty (game not rendering yet)
+				if (pixel[0] === 0 && pixel[1] === 0 && pixel[2] === 0) { return; }
+			} catch(e) { return; }
 			canvasFrames++;
-			if (canvasFrames >= 2) {
+			if (canvasFrames >= 3) {
 				clearInterval(checkCanvas);
 				var inner = document.querySelector('.progress-fill-inner');
 				if (inner) {
