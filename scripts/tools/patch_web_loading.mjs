@@ -13,15 +13,18 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   transition: opacity 0.5s;
 }
 #status-splash { max-width: none; }
-#status-splash img {
+img#status-splash {
   width: 477px !important; height: 143px !important;
   max-width: 477px !important; max-height: 143px !important;
   object-fit: contain !important;
-  image-rendering: auto; opacity: 0; transition: opacity 0.2s;
+  image-rendering: auto !important; opacity: 0;
+  transition: opacity 0.2s;
+  position: absolute !important;
+  top: 50% !important; left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
-#status-splash {
-  display: flex !important; align-items: center !important;
-  justify-content: center !important;
+img#status-splash.fullsize--true {
+  width: 477px !important; height: 143px !important;
 }
 #status-progress {
   width: 210px; height: 36px; margin-top: 40px;
@@ -56,7 +59,7 @@ const newProgress = `'onProgress': function (current, total) {
 					statusProgress.max = 1000;
 					var v = Math.floor((current / total) * 600);
 					statusProgress.value = v;
-					var logo = document.querySelector('#status-splash img');
+					var logo = document.getElementById('status-splash');
 					if (logo) logo.style.opacity = v / 1000;
 				}
 			},`;
@@ -76,7 +79,7 @@ const initScript = `<script>
 		if (bar && bar.value >= 600 && !initStarted) {
 			initStarted = true;
 			var fakeProgress = 600;
-			var logo = document.querySelector('#status-splash img');
+			var logo = document.getElementById('status-splash');
 			initInterval = setInterval(function() {
 				fakeProgress = Math.min(fakeProgress + 3, 950);
 				bar.value = fakeProgress;
@@ -98,7 +101,7 @@ const initScript = `<script>
 					observer.disconnect();
 					var bar = document.getElementById('status-progress');
 					if (bar) { bar.max = 1000; bar.value = 1000; }
-					var logo = document.querySelector('#status-splash img');
+					var logo = document.getElementById('status-splash');
 					if (logo) logo.style.opacity = 1;
 					setTimeout(function() {
 						var status = document.getElementById('status');
