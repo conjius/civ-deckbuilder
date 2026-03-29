@@ -294,6 +294,8 @@ func _unfocus_card(card: Control) -> void:
 func _on_drag_started(_card: CardData) -> void:
 	_any_dragging = true
 	_focused_card = null
+	if active_unit and active_unit.has_method("set_dragging_card"):
+		active_unit.set_dragging_card(true)
 
 
 func _on_drag_ended(
@@ -301,6 +303,8 @@ func _on_drag_ended(
 	drop_pos: Vector2,
 ) -> void:
 	_any_dragging = false
+	if active_unit and active_unit.has_method("set_dragging_card"):
+		active_unit.set_dragging_card(false)
 	if success:
 		card_dropped.emit(card, target)
 		return

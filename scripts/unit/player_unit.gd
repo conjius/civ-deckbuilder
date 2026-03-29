@@ -32,6 +32,7 @@ var _model: Node3D
 var _last_facing: Vector3 = Vector3(0, 0, -1)
 var _is_selected: bool = false
 var _is_targeting_move: bool = false
+var _is_dragging_card: bool = false
 var _camera: Camera3D
 
 func _ready() -> void:
@@ -135,8 +136,14 @@ func move_along_path(
 	_move_tween.finished.connect(_on_move_finished)
 
 
+func set_dragging_card(value: bool) -> void:
+	_is_dragging_card = value
+	if not value and not _is_targeting_move:
+		_face_direction(_last_facing)
+
+
 func _process(_delta: float) -> void:
-	if _is_targeting_move and not _is_moving and _camera and _model:
+	if (_is_targeting_move or _is_dragging_card) and not _is_moving and _camera and _model:
 		var mouse_pos := get_viewport().get_mouse_position()
 		var ground := _screen_to_ground(mouse_pos)
 		if ground != Vector3.ZERO:
@@ -162,7 +169,7 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position - dir, Vector3.UP)
+		_model.look_at(global_position + dir, Vector3.UP)
 
 
 func _face_direction(dir: Vector3) -> void:
@@ -170,7 +177,7 @@ func _face_direction(dir: Vector3) -> void:
 		return
 	if dir.length_squared() > 0.001:
 		_model.look_at(
-			_model.global_position - dir, Vector3.UP
+			_model.global_position + dir, Vector3.UP
 		)
 
 
@@ -204,7 +211,7 @@ func _build_boot_model() -> Node3D:
 	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.mesh = st.commit()
-	mi.scale = Vector3(1.8, 1.8, 1.8)
+	mi.scale = Vector3(1.26, 1.26, 1.26)
 	mi.position.y = 0.0
 	root.add_child(mi)
 	root.rotation.y = PI
