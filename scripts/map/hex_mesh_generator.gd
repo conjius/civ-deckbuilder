@@ -70,15 +70,34 @@ static func create_hex_mesh(
 
 
 static func _edge_alpha(
-	point: Vector3, hex_radius: float,
+	point: Vector3, _hex_radius: float,
 ) -> float:
-	var dist := Vector2(point.x, point.z).length()
-	var fade_start := hex_radius * 0.75
-	if dist <= fade_start:
+	# Distance to nearest hex edge (not center)
+	var p := Vector2(point.x, point.z)
+	var min_dist := INF
+	for i in range(6):
+		var c0 := HexUtil.hex_corner_offset(i)
+		var c1 := HexUtil.hex_corner_offset((i + 1) % 6)
+		var a := Vector2(c0.x, c0.z)
+		var b := Vector2(c1.x, c1.z)
+		var d := _point_to_segment_dist(p, a, b)
+		if d < min_dist:
+			min_dist = d
+	# Band: fade over the last 0.2 units from the edge inward
+	var band_width := 0.2
+	if min_dist >= band_width:
 		return 1.0
-	return clampf(
-		1.0 - (dist - fade_start) / (hex_radius * 0.35), 0.0, 1.0
-	)
+	return clampf(min_dist / band_width, 0.0, 1.0)
+
+
+static func _point_to_segment_dist(
+	p: Vector2, a: Vector2, b: Vector2,
+) -> float:
+	var ab := b - a
+	var ap := p - a
+	var t := clampf(ap.dot(ab) / ab.dot(ab), 0.0, 1.0)
+	var closest := a + ab * t
+	return p.distance_to(closest)
 
 
 static func create_hex_collision_shape(
@@ -128,28 +147,44 @@ static func create_hex_outline_mesh(
 static func get_wavy_edge_points(
 	c0: Vector3, c1: Vector3,
 	coord: Vector2i, edge_idx: int,
-	subdivisions: int = 10,
+	subdivisions: int = 12,
 	amplitude: float = 0.25,
 ) -> Array[Vector3]:
 	var pts: Array[Vector3] = []
 	var edge_dir := (c1 - c0).normalized()
 	var perp := Vector3(-edge_dir.z, 0.0, edge_dir.x)
-	# Per-tile per-edge unique seed
 	var seed_val := int(absf(
 		float(coord.x) * 7919.0 + float(coord.y) * 4513.0
 		+ float(edge_idx) * 3571.0 + 1234.0
 	))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
+	# Generate raw offsets
+	var offsets: Array[float] = []
+	for i in range(subdivisions + 1):
+		if i == 0 or i == subdivisions:
+			offsets.append(0.0)
+		else:
+			offsets.append(rng.randf_range(-amplitude, amplitude))
+	# Smooth passes — average with neighbors
+	for _pass in range(3):
+		var smoothed: Array[float] = []
+		for i in range(offsets.size()):
+			if i == 0 or i == offsets.size() - 1:
+				smoothed.append(0.0)
+			else:
+				smoothed.append(
+					offsets[i - 1] * 0.25
+					+ offsets[i] * 0.5
+					+ offsets[i + 1] * 0.25
+				)
+		offsets = smoothed
+	# Build points
 	var raw: Array[Vector3] = []
 	for i in range(subdivisions + 1):
 		var t := float(i) / float(subdivisions)
 		var base := c0.lerp(c1, t)
-		if i == 0 or i == subdivisions:
-			raw.append(base)
-		else:
-			var offset := rng.randf_range(-amplitude, amplitude)
-			raw.append(base + perp * offset)
+		raw.append(base + perp * offsets[i])
 	pts.assign(raw)
 	return pts
 

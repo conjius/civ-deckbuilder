@@ -7,7 +7,7 @@ func test_wavy_edge_points_count() -> void:
 	var pts := HexMeshGenerator.get_wavy_edge_points(
 		c0, c1, Vector2i(0, 0), 0
 	)
-	TestAssert.assert_eq(pts.size(), 11)
+	TestAssert.assert_eq(pts.size(), 13)
 
 
 func test_wavy_edge_endpoints_match_corners() -> void:
