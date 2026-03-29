@@ -139,10 +139,10 @@ func _add_tile_to_batch(tile: Node3D) -> void:
 			mesh = _mountain_mesh
 			mat = _mountain_mat
 		elif terrain == _terrain_water and _water_mat:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
 			mat = _water_mat
 		else:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
 			mat = _get_cached_terrain_mat(terrain)
 		_terrain_batches[batch_key] = {
 			"mesh": mesh, "mat": mat, "xforms": [],
