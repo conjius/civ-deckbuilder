@@ -40,6 +40,9 @@ func setup(
 	position = HexUtil.axial_to_world(coord.x, coord.y)
 	position.y = 0.0
 
+	var rot_idx: int = hash(Vector2i(coord.x, coord.y)) % 6
+	$MeshInstance3D.rotation.y = deg_to_rad(60.0 * rot_idx)
+
 	$HighlightMesh.visible = false
 	$FogOverlay.visible = false
 	_create_yield_markers()
@@ -77,8 +80,8 @@ static func _ensure_yield_shared() -> void:
 		_yield_bg_mesh = CylinderMesh.new()
 		_yield_bg_mesh.top_radius = 0.156
 		_yield_bg_mesh.bottom_radius = 0.156
-		_yield_bg_mesh.height = 0.01
-		_yield_bg_mesh.radial_segments = 8
+		_yield_bg_mesh.height = 0.04
+		_yield_bg_mesh.radial_segments = 24
 	if _parchment_tex == null:
 		_parchment_tex = load(
 			"res://assets/textures/ui/parchment_256_grayscale.png"
@@ -114,7 +117,7 @@ func _add_yield_sprite(
 	sprite.pixel_size = 0.0004
 	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	sprite.double_sided = true
-	sprite.position = Vector3(pos.x, pos.y + 0.01, pos.z)
+	sprite.position = Vector3(pos.x, pos.y + 0.03, pos.z)
 	sprite.rotation_degrees = Vector3(-90, 0, 0)
 	sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	sprite.cast_shadow = (

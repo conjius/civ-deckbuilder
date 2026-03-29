@@ -238,7 +238,7 @@ func _place_water_clumps() -> void:
 	var all_coords: Array[Vector2i] = []
 	for coord: Vector2i in tiles:
 		all_coords.append(coord)
-	var water_budget: int = int(all_coords.size() * 0.15)
+	var water_budget: int = int(all_coords.size() * 0.22)
 	var placed := 0
 	var water_set: Dictionary = {}
 	while placed < water_budget:
@@ -347,6 +347,8 @@ func _setup_water_assets() -> void:
 		_water_mat.normal_enabled = true
 		_water_mat.normal_texture = water_normal
 		_water_mat.normal_scale = 0.5
+	_water_mat.vertex_color_use_as_albedo = true
+	_water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_water_mat.roughness = 0.1
 	_water_mat.metallic = 0.2
 	_water_mat.metallic_specular = 0.8
@@ -361,15 +363,32 @@ func _get_cached_terrain_mat(
 		mat.albedo_color = terrain.color
 		if terrain.texture:
 			mat.albedo_texture = terrain.texture
+		mat.vertex_color_use_as_albedo = true
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		_terrain_mat_cache[key] = mat
 	return _terrain_mat_cache[key] as StandardMaterial3D
+
+
+func _get_neighbor_mask(coord: Vector2i) -> int:
+	var mask: int = 0
+	for dir_idx in range(6):
+		var neighbor: Vector2i = (
+			coord + HexUtil.DIRECTIONS[dir_idx]
+		)
+		if tiles.has(neighbor):
+			var edge_idx: int = (6 - dir_idx) % 6
+			mask |= (1 << edge_idx)
+	return mask
 
 
 func _get_cached_mesh(
 	height: float, coord: Vector2i = Vector2i(-999, -999),
 ) -> ArrayMesh:
 	if coord != Vector2i(-999, -999):
-		return HexMeshGenerator.create_hex_mesh(height, coord, true)
+		var mask: int = _get_neighbor_mask(coord)
+		return HexMeshGenerator.create_hex_mesh(
+			height, coord, true, mask,
+		)
 	if not _mesh_cache.has(height):
 		_mesh_cache[height] = HexMeshGenerator.create_hex_mesh(
 			height, Vector2i.ZERO, false,
