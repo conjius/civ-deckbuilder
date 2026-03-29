@@ -47,7 +47,7 @@ func _load_resource_pools() -> void:
 			_material_cards.append(card)
 
 
-func _pick_resource_card(
+func pick_resource_card(
 	res_type: CardData.ResourceType,
 ) -> CardData:
 	var pool: Array[CardData]
@@ -238,10 +238,10 @@ func _resolve_gather(target: Vector2i) -> CardResult:
 	result.success = true
 	for _i in terrain.materials_yield:
 		result.gained_cards.append(
-			_pick_resource_card(CardData.ResourceType.MATERIALS)
+			pick_resource_card(CardData.ResourceType.MATERIALS)
 		)
 	for _i in terrain.food_yield:
 		result.gained_cards.append(
-			_pick_resource_card(CardData.ResourceType.FOOD)
+			pick_resource_card(CardData.ResourceType.FOOD)
 		)
 	return result

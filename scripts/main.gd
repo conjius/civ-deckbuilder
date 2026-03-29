@@ -66,7 +66,9 @@ func _ready() -> void:
 	turn_manager.turn_started.connect(_on_turn_started)
 	turn_manager.phase_changed.connect(_on_phase_changed)
 	player_unit.movement_finished.connect(_on_unit_moved)
-	card_effects.gathered.connect(_on_gathered)
+	card_effects.gather_choice_needed.connect(
+		_on_gather_choice_needed
+	)
 	card_effects.settled.connect(_on_settled)
 
 	# Build the starter deck
@@ -108,10 +110,7 @@ func _ready() -> void:
 
 	# Start the game
 	turn_manager.start_game()
-	game_ui.set_current_cards(card_manager.deck_manager.cards)
-	game_ui.card_hand.show_cards(
-		card_manager.deck_manager.cards
-	)
+	_refresh_cards_ui(false)
 
 
 func _setup_starfield() -> void:
@@ -215,6 +214,10 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 					card.defense_cost
 				)
 			card_manager.play_card(card)
+			game_ui.update_piles(
+				card_manager.deck_manager.draw_pile_count(),
+				card_manager.deck_manager.discard_pile_count(),
+			)
 			_highlight_active_unit()
 			game_ui.refresh_unit_info()
 
@@ -222,19 +225,30 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 func _on_end_turn() -> void:
 	hex_map.clear_highlights()
 	game_ui.set_end_turn_enabled(false)
+	# Animate discard, then continue turn
+	card_manager.discard_hand()
+	game_ui.card_hand.discard_all(func() -> void:
+		game_ui.update_piles(
+			card_manager.deck_manager.draw_pile_count(),
+			card_manager.deck_manager.discard_pile_count(),
+		)
+		_finish_end_turn()
+	)
+
+
+func _finish_end_turn() -> void:
+	# Opponent's turn
 	await ai_controller.take_turn()
 	turn_manager.end_turn()
-	card_manager.end_turn()
 	_degrade_fog()
 	_reveal_around(
 		player_unit.current_coord,
 		player_unit.state.sight_range,
 	)
 	_highlight_active_unit()
-	game_ui.set_current_cards(card_manager.deck_manager.cards)
-	game_ui.card_hand.show_cards(
-		card_manager.deck_manager.cards
-	)
+	# Draw new hand
+	card_manager.draw_new_hand()
+	_refresh_cards_ui()
 
 
 func _degrade_fog() -> void:
@@ -281,12 +295,39 @@ func _on_unit_moved() -> void:
 	_highlight_active_unit()
 
 
-func _on_gathered(gained_cards: Array[CardData]) -> void:
-	for card: CardData in gained_cards:
-		card_manager.deck_manager.add_card(card)
-	game_ui.set_current_cards(card_manager.deck_manager.cards)
-	game_ui.card_hand.show_cards(
-		card_manager.deck_manager.cards
+func _on_gather_choice_needed(
+	_coord: Vector2i,
+	types: Array[CardData.ResourceType],
+) -> void:
+	if types.is_empty():
+		return
+	if types.size() == 1:
+		_complete_gather(types[0])
+		return
+	game_ui.card_hand.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var picker := YieldPickerUI.new()
+	game_ui.add_child(picker)
+	game_ui._active_picker = picker
+	picker.show_choices(types)
+	var res_type: CardData.ResourceType = await picker.resource_chosen
+	if game_ui.card_gallery.visible:
+		game_ui.card_gallery.hide_gallery()
+		await get_tree().create_timer(0.35).timeout
+	picker.hide_choices()
+	await get_tree().create_timer(0.35).timeout
+	game_ui._active_picker = null
+	picker.queue_free()
+	game_ui.card_hand.mouse_filter = Control.MOUSE_FILTER_STOP
+	_complete_gather(res_type)
+
+
+func _complete_gather(res_type: CardData.ResourceType) -> void:
+	var resolver: CardResolver = card_effects.card_resolver
+	var card: CardData = resolver.pick_resource_card(res_type)
+	card_manager.deck_manager.hand.append(card)
+	game_ui.set_current_cards(card_manager.deck_manager.hand)
+	game_ui.card_hand.add_cards_to_hand(
+		[card] as Array[CardData]
 	)
 
 
@@ -392,6 +433,21 @@ func _update_packing() -> void:
 		and (terrain.materials_yield > 0 or terrain.food_yield > 0)
 	)
 	player_unit.offset_for_packing(has_building, has_yields)
+
+
+func _refresh_cards_ui(animate: bool = true) -> void:
+	var dm: DeckManager = card_manager.deck_manager
+	if animate:
+		game_ui.animate_deal(
+			dm.hand, dm.draw_pile_count(),
+			dm.discard_pile_count(),
+		)
+	else:
+		game_ui.set_current_cards(dm.hand)
+		game_ui.card_hand.show_cards(dm.hand, false)
+		game_ui.update_piles(
+			dm.draw_pile_count(), dm.discard_pile_count(),
+		)
 
 
 func _on_action_pressed(action_name: String) -> void:
