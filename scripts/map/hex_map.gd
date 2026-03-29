@@ -32,7 +32,6 @@ var _batch_dirty: bool = false
 
 
 func generate_map() -> void:
-	var t0 := Time.get_ticks_msec()
 	_outline_mesh = HexMeshGenerator.create_hex_outline_mesh(0.08)
 	_setup_mountain_assets()
 	_setup_water_assets()
@@ -52,8 +51,6 @@ func generate_map() -> void:
 	detail.noise_type = FastNoiseLite.TYPE_CELLULAR
 	detail.frequency = 0.15
 
-	print("[MAP] setup: %dms" % (Time.get_ticks_msec() - t0))
-	var t1 := Time.get_ticks_msec()
 	# Pass 1: assign terrain via noise + create tile nodes
 	for q in range(map_width):
 		for r in range(map_height):
@@ -76,8 +73,6 @@ func generate_map() -> void:
 			)
 			tile.position.y = 0.0
 			tiles[coord] = tile
-	print("[MAP] pass1: %dms" % (Time.get_ticks_msec() - t1))
-	var t2 := Time.get_ticks_msec()
 	# Place water clumps over existing terrain
 	_place_water_clumps()
 
@@ -112,9 +107,7 @@ func generate_map() -> void:
 		fog_cloud_manager.add_fog(
 			coord, tile.position, terrain.height,
 		)
-	print("[MAP] pass2: %dms" % (Time.get_ticks_msec() - t2))
 	fog_cloud_manager.rebuild()
-	print("[MAP] total: %dms" % (Time.get_ticks_msec() - t0))
 
 
 func reveal_tile(coord: Vector2i) -> void:
