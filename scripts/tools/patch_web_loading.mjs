@@ -27,12 +27,12 @@ img#status-splash {
   to { opacity: 1; transform: scale(0.85); }
 }
 #status-progress {
-  width: 600px !important; height: 6px !important;
+  width: 400px !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 200px) !important;
+  transform: translate(-50%, 150px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
@@ -43,8 +43,8 @@ img#status-splash {
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, 200px);
-  width: 600px; height: 6px;
+  transform: translate(-50%, 150px);
+  width: 400px; height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
