@@ -18,14 +18,14 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   image-rendering: auto; opacity: 0; transition: opacity 0.2s;
 }
 #status-progress {
-  width: 210px; height: 12px; margin-top: 40px;
+  width: 210px; height: 36px; margin-top: 40px;
   appearance: none; -webkit-appearance: none;
-  border: none; background: #1a1a1a; border-radius: 2px;
+  border: none; background: #1a1a1a; border-radius: 18px;
   transition: none;
 }
-#status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 2px; }
-#status-progress::-webkit-progress-value { background: #d9a633; border-radius: 2px; transition: width 0.3s; }
-#status-progress::-moz-progress-bar { background: #d9a633; border-radius: 2px; }
+#status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 18px; }
+#status-progress::-webkit-progress-value { background: #d9a633; border-radius: 18px; transition: width 0.3s; }
+#status-progress::-moz-progress-bar { background: #d9a633; border-radius: 18px; }
 #status-notice {
   color: #555; font-family: sans-serif; font-size: 12px;
   margin-top: 16px; letter-spacing: 1px;
