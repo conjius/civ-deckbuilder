@@ -151,5 +151,8 @@ html = html.replace("</head>", `${initScript}</head>`);
 // Inject progress bar div directly into body
 html = html.replace("<body>", `<body><div class="progress-fill"><div class="progress-fill-inner"></div></div>`);
 
+// Remove fullsize class so Godot doesn't force 100% width/height
+html = html.replace('fullsize--true', 'fullsize--false');
+
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
