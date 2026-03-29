@@ -139,10 +139,10 @@ func _add_tile_to_batch(tile: Node3D) -> void:
 			mesh = _mountain_mesh
 			mat = _mountain_mat
 		elif terrain == _terrain_water and _water_mat:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
 			mat = _water_mat
 		else:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
 			mat = _get_cached_terrain_mat(terrain)
 		_terrain_batches[batch_key] = {
 			"mesh": mesh, "mat": mat, "xforms": [],
@@ -376,8 +376,6 @@ func _get_neighbor_mask(coord: Vector2i) -> int:
 			coord + HexUtil.DIRECTIONS[dir_idx]
 		)
 		if tiles.has(neighbor):
-			# Edge i faces direction (6 - i) % 6, so invert:
-			# direction dir_idx corresponds to edge (6 - dir_idx) % 6
 			var edge_idx: int = (6 - dir_idx) % 6
 			mask |= (1 << edge_idx)
 	return mask
