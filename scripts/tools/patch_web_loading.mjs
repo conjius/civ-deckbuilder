@@ -20,7 +20,7 @@ img#status-splash {
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
   margin: auto !important; padding: 0 !important;
   opacity: 0;
-  animation: logoFadeIn 16s linear both !important;
+  animation: logoFadeIn 16s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
 @keyframes logoFadeIn {
   from { opacity: 0; transform: scale(0.42); }
