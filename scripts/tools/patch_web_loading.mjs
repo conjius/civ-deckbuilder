@@ -11,7 +11,7 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   justify-content: center; background: #000; z-index: 10;
   transition: opacity 0.5s;
 }
-img#status-splash, img#status-splash.fullsize--true {
+img#status-splash {
   width: 950px !important; height: auto !important;
   max-width: 950px !important; max-height: none !important;
   object-fit: contain !important;
@@ -20,12 +20,11 @@ img#status-splash, img#status-splash.fullsize--true {
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
   margin: auto !important; padding: 0 !important;
   opacity: 0;
-  animation: logoFadeIn 16s linear forwards !important;
-  will-change: transform, opacity;
+  animation: logoFadeIn 16s linear both !important;
 }
 @keyframes logoFadeIn {
-  0% { opacity: 0; transform: scale(0.005); }
-  100% { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.01); }
+  to { opacity: 1; transform: scale(1); }
 }
 #status-progress {
   width: 300px !important; height: 12px !important;
