@@ -36,6 +36,8 @@ jobs:
 
   export:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -172,7 +174,7 @@ jobs:
             --latest
 
   deploy:
-    needs: tag-release
+    needs: [build-test-lint, export]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -181,7 +183,7 @@ jobs:
       - name: download-web
         uses: actions/download-artifact@v8
         with:
-          name: CivDecks-${{ needs.tag-release.outputs.tag }}-web
+          name: CivDecks-${{ needs.export.outputs.tag }}-web
           path: build/web
       - name: setup
         run: |
