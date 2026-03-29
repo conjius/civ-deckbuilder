@@ -1,6 +1,6 @@
 extends Node3D
 
-const BASE_HEX_HEIGHT := 0.1
+const BASE_HEX_HEIGHT := 1.0
 
 @export var map_width: int = 20
 @export var map_height: int = 20
@@ -71,7 +71,7 @@ func generate_map() -> void:
 			tile.position = HexUtil.axial_to_world(
 				coord.x, coord.y
 			)
-			tile.position.y = 0.0
+			tile.position.y = -0.45
 			tiles[coord] = tile
 
 	# Place water clumps over existing terrain
