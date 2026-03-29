@@ -3,40 +3,14 @@ import { readFileSync, writeFileSync } from "fs";
 const file = process.argv[2];
 let html = readFileSync(file, "utf8");
 
+// Hide the entire Godot HTML loading screen — just black until custom loads
 const css = `<style>
-body, #status { background: #000 !important; }
-#status-splash { animation: pulse 2s ease-in-out infinite !important; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-#status-progress { transition: none !important; }
+body { background: #000 !important; margin: 0; }
+#status, #status-splash, #status-progress, #status-notice,
+#status-splash img { display: none !important; }
+canvas { background: #000 !important; }
 </style>`;
 html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
-
-const oldProgress = `'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},`;
-
-const newProgress = `'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.max = total * 2;
-					statusProgress.value = current;
-					if (current >= total) {
-						statusProgress.removeAttribute('value');
-						statusProgress.removeAttribute('max');
-						document.getElementById('status-notice').textContent = 'Initializing...';
-					}
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},`;
-
-html = html.replace(oldProgress, newProgress);
 
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
