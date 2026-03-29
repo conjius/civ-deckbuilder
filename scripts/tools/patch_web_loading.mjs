@@ -14,7 +14,7 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
 }
 #status-splash { max-width: none; }
 #status-splash img {
-  width: auto; height: auto; max-width: 40vw; max-height: 20vh;
+  width: 477px; height: 143px;
   image-rendering: auto; opacity: 0; transition: opacity 0.2s;
 }
 #status-progress {
