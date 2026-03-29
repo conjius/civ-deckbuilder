@@ -26,7 +26,7 @@ settle - all driven by a single visible deck of action and resource cards.
 ## Build Prerequisites (macOS-only)
 
 - [**Godot 4.6.1**](https://godotengine.org/download)
-- [**Python 3.12+**](https://www.python.org/downloads/release/python-3143/) with **pip**
+- [**Python 3.12+**](https://www.python.org/downloads/release/python-31210/) with **pip**
 - **macOS** (primary development platform)
 - **gdtoolkit** for linting - `pip install gdtoolkit`
 
