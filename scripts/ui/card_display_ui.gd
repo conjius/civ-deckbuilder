@@ -160,19 +160,22 @@ func _start_drag() -> void:
 		_valid_targets = card_effects.get_valid_targets(
 			card_data, active_unit.current_coord
 		)
-		if card_data.card_type == CardData.CardType.SETTLE:
-			if _valid_targets.is_empty():
-				_apply_blocked_settle()
-			else:
-				var settle_color := Color(0.2, 1.0, 0.4, 1.0)
-				for coord in _valid_targets:
-					var tile: Node3D = hex_map.get_tile(coord)
-					if tile:
-						tile.pulse_highlight(settle_color)
+		if _valid_targets.is_empty():
+			_apply_blocked()
+		elif card_data.card_type == CardData.CardType.SETTLE:
+			var settle_color := Color(0.2, 1.0, 0.4, 1.0)
+			for coord in _valid_targets:
+				var tile: Node3D = hex_map.get_tile(coord)
+				if tile:
+					tile.pulse_highlight(settle_color)
 		else:
-			hex_map.highlight_tiles(
-				_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
+			var card_color := Color(
+				card_data.card_color.r,
+				card_data.card_color.g,
+				card_data.card_color.b,
+				0.4,
 			)
+			hex_map.highlight_tiles(_valid_targets, card_color)
 	if card_data.card_type == CardData.CardType.MOVE:
 		if active_unit and active_unit.has_method("set_targeting_move"):
 			active_unit.set_targeting_move(true)
@@ -185,6 +188,7 @@ func _cancel_drag() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_stop_all_pulses()
 	hex_map.clear_highlights()
+	hex_map.clear_hover_highlight()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
 	_valid_targets.clear()
@@ -198,6 +202,7 @@ func _end_drag(mouse_pos: Vector2) -> void:
 	modulate = Color.WHITE
 	_stop_all_pulses()
 	hex_map.clear_highlights()
+	hex_map.clear_hover_highlight()
 	if arrow_indicator:
 		arrow_indicator.hide_arrow()
 	var target := _raycast_hex(mouse_pos)
@@ -231,19 +236,41 @@ func _animate_to_discard(
 func _update_hover(mouse_pos: Vector2) -> void:
 	if not hex_map or not camera:
 		return
+	hex_map.clear_hover_highlight()
 	hex_map.clear_highlights()
-	hex_map.highlight_tiles(
-		_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
-	)
+	var red := Color(1.0, 0.2, 0.2, 0.4)
+	if _is_blocked:
+		# Re-apply red on unit hex while blocked
+		if active_unit:
+			var unit_coord: Vector2i = active_unit.current_coord
+			var tile: Node3D = hex_map.get_tile(unit_coord)
+			if tile:
+				tile.set_highlighted(true, red)
+	else:
+		var card_color := Color(
+			card_data.card_color.r,
+			card_data.card_color.g,
+			card_data.card_color.b,
+			0.4,
+		)
+		hex_map.highlight_tiles(_valid_targets, card_color)
 	var from_pos := Vector3.ZERO
 	if active_unit:
 		from_pos = active_unit.global_position
 	var hovered := _raycast_hex(mouse_pos)
-	if hovered != Vector2i(-999, -999) and _is_valid_target(hovered):
-		hex_map.highlight_tiles(
-			[hovered] as Array[Vector2i],
-			Color(1.0, 1.0, 0.3, 1.0),
-		)
+	if hovered != Vector2i(-999, -999):
+		if _is_blocked:
+			hex_map.set_hover_highlight(hovered)
+			var tile: Node3D = hex_map.get_tile(hovered)
+			if tile:
+				tile.set_highlighted(true, red)
+		elif _is_valid_target(hovered):
+			hex_map.highlight_tiles(
+				[hovered] as Array[Vector2i],
+				hex_map.BLUE_HIGHLIGHT,
+			)
+		else:
+			hex_map.set_hover_highlight(hovered)
 	if arrow_indicator and camera:
 		var to_pos := _screen_to_ground(mouse_pos)
 		var snapped := (
@@ -282,14 +309,16 @@ func _is_valid_target(coord: Vector2i) -> bool:
 	return coord in _valid_targets
 
 
-func _apply_blocked_settle() -> void:
+func _apply_blocked() -> void:
 	_is_blocked = true
 	modulate = Color(1.0, 0.3, 0.3, 0.6)
+	var red := Color(1.0, 0.2, 0.2, 0.4)
 	if active_unit:
 		var coord: Vector2i = active_unit.current_coord
+		hex_map.set_blue_highlight(coord)
 		var tile: Node3D = hex_map.get_tile(coord)
 		if tile:
-			tile.pulse_highlight(Color(1.0, 0.2, 0.2, 1.0))
+			tile.set_highlighted(true, red)
 
 
 func _restore_card_visuals() -> void:

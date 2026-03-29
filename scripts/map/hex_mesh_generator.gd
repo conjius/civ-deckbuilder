@@ -124,31 +124,109 @@ static func create_hex_collision_shape(
 	return shape
 
 
+static func rounded_hex_ring(
+	scale: float = 1.0,
+	corner_radius: float = 0.1,
+	arc_segments: int = 4,
+) -> Array[Vector3]:
+	var pts: Array[Vector3] = []
+	var half_interior := deg_to_rad(60.0)
+	var pullback := corner_radius / tan(half_interior)
+	var center_offset := corner_radius / sin(half_interior)
+	for i in range(6):
+		var c := HexUtil.hex_corner_offset(i) * scale
+		var c_prev := HexUtil.hex_corner_offset((i + 5) % 6) * scale
+		var c_next := HexUtil.hex_corner_offset((i + 1) % 6) * scale
+		var to_prev := (c_prev - c).normalized()
+		var to_next := (c_next - c).normalized()
+		var bisector := -Vector3(c.x, 0.0, c.z).normalized()
+		var arc_center := c + bisector * center_offset
+		var arc_start := c + to_prev * pullback
+		var start_a := atan2(
+			arc_start.z - arc_center.z,
+			arc_start.x - arc_center.x,
+		)
+		var arc_end := c + to_next * pullback
+		var end_a := atan2(
+			arc_end.z - arc_center.z,
+			arc_end.x - arc_center.x,
+		)
+		var diff := end_a - start_a
+		if diff > PI:
+			diff -= TAU
+		if diff < -PI:
+			diff += TAU
+		for j in range(arc_segments + 1):
+			var t := float(j) / float(arc_segments)
+			var a := start_a + diff * t
+			pts.append(Vector3(
+				arc_center.x + corner_radius * cos(a),
+				0.0,
+				arc_center.z + corner_radius * sin(a),
+			))
+	return pts
+
+
+static func _offset_ring(
+	base: Array[Vector3], offset: float,
+) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	for pt in base:
+		var dir := Vector3(pt.x, 0.0, pt.z).normalized()
+		result.append(Vector3(
+			pt.x + dir.x * offset, 0.0, pt.z + dir.z * offset,
+		))
+	return result
+
+
+static func _build_ring_strip(
+	st: SurfaceTool,
+	outer: Array[Vector3],
+	inner: Array[Vector3],
+	outer_alpha: float,
+	inner_alpha: float,
+) -> void:
+	var n: int = outer.size()
+	for i in range(n):
+		var j: int = (i + 1) % n
+		st.set_normal(Vector3.UP)
+		st.set_color(Color(1, 1, 1, inner_alpha))
+		st.add_vertex(inner[i])
+		st.set_color(Color(1, 1, 1, outer_alpha))
+		st.add_vertex(outer[i])
+		st.add_vertex(outer[j])
+		st.set_normal(Vector3.UP)
+		st.set_color(Color(1, 1, 1, inner_alpha))
+		st.add_vertex(inner[i])
+		st.set_color(Color(1, 1, 1, outer_alpha))
+		st.add_vertex(outer[j])
+		st.set_color(Color(1, 1, 1, inner_alpha))
+		st.add_vertex(inner[j])
+
+
 static func create_hex_outline_mesh(
-	thickness: float = 0.08,
+	thickness: float = 0.15,
 ) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	var y := 0.0
-	for i in range(6):
-		var c0 := HexUtil.hex_corner_offset(i)
-		var c1 := HexUtil.hex_corner_offset((i + 1) % 6)
+	var glow_width := 0.15
+	var corner_r := 0.18
+	var base := rounded_hex_ring(1.0, corner_r, 6)
+	var inner := _offset_ring(base, -thickness)
+	var inner_mid := _offset_ring(base, -(thickness + glow_width * 0.3))
+	var inner_glow := _offset_ring(base, -(thickness + glow_width))
+	var outer_mid := _offset_ring(base, glow_width * 0.3)
+	var outer_glow := _offset_ring(base, glow_width)
 
-		var dir0 := c0.normalized()
-		var dir1 := c1.normalized()
-		var inner0 := c0 - dir0 * thickness
-		var inner1 := c1 - dir1 * thickness
-
-		st.set_normal(Vector3.UP)
-		st.add_vertex(Vector3(inner0.x, y, inner0.z))
-		st.add_vertex(Vector3(c0.x, y, c0.z))
-		st.add_vertex(Vector3(c1.x, y, c1.z))
-
-		st.set_normal(Vector3.UP)
-		st.add_vertex(Vector3(inner0.x, y, inner0.z))
-		st.add_vertex(Vector3(c1.x, y, c1.z))
-		st.add_vertex(Vector3(inner1.x, y, inner1.z))
+	# Solid outline band: inner → base
+	_build_ring_strip(st, base, inner, 1.0, 1.0)
+	# Inner glow: fast decay via two bands
+	_build_ring_strip(st, inner, inner_mid, 0.8, 0.15)
+	_build_ring_strip(st, inner_mid, inner_glow, 0.15, 0.0)
+	# Outer glow: fast decay via two bands
+	_build_ring_strip(st, outer_mid, base, 0.15, 0.8)
+	_build_ring_strip(st, outer_glow, outer_mid, 0.0, 0.15)
 
 	return st.commit()
 

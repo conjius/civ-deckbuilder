@@ -165,20 +165,28 @@ func _ensure_highlight_mat() -> void:
 		return
 	_highlight_mat = StandardMaterial3D.new()
 	_highlight_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_highlight_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	_highlight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_highlight_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_highlight_mat.albedo_color = Color(1.0, 0.9, 0.2, 0.9)
+	_highlight_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	_highlight_mat.render_priority = 1
+	_highlight_mat.vertex_color_use_as_albedo = true
+	_highlight_mat.albedo_color = Color(1.0, 0.9, 0.2, 0.4)
 	_highlight_mat.emission_enabled = true
 	_highlight_mat.emission = Color(1.0, 0.9, 0.2)
-	_highlight_mat.emission_energy_multiplier = 2.5
+	_highlight_mat.emission_energy_multiplier = 1.0
 	$HighlightMesh.material_override = _highlight_mat
+	$HighlightMesh.position.y = 0.2
 
 
-func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> void:
+func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.4)) -> void:
+	_ensure_highlight_mat()
 	$HighlightMesh.visible = value
+	if _pulse_tween:
+		_pulse_tween.kill()
+		_pulse_tween = null
 	if value:
-		_ensure_highlight_mat()
-		_highlight_mat.albedo_color = color
+		_highlight_mat.albedo_color = Color(color.r, color.g, color.b, 0.4)
 		_highlight_mat.emission = Color(color.r, color.g, color.b)
 
 
@@ -195,12 +203,29 @@ func pulse_highlight(color: Color) -> void:
 	).set_trans(Tween.TRANS_SINE)
 
 
+func animate_highlight_off() -> void:
+	_ensure_highlight_mat()
+	if _pulse_tween:
+		_pulse_tween.kill()
+		_pulse_tween = null
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(
+		_highlight_mat, "albedo_color:a", 0.0, 0.15,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_property(
+		_highlight_mat, "emission_energy_multiplier", 0.0, 0.15,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.finished.connect(func() -> void:
+		$HighlightMesh.visible = false
+	)
+
+
 func stop_pulse() -> void:
 	if _pulse_tween:
 		_pulse_tween.kill()
 		_pulse_tween = null
-	if _highlight_mat:
-		_highlight_mat.emission_energy_multiplier = 2.5
+	set_highlighted(false)
 
 
 func set_fog(value: bool) -> void:
@@ -218,7 +243,7 @@ func apply_visibility(state: MapData.Visibility) -> void:
 		MapData.Visibility.FOGGED:
 			is_revealed = false
 			$MeshInstance3D.visible = true
-			$FogOverlay.visible = true
+			$FogOverlay.visible = false
 			_set_content_visible(true)
 		MapData.Visibility.VISIBLE:
 			is_revealed = true
@@ -255,6 +280,8 @@ func place_settlement(
 	label.font_size = UIHelpers.SETTLEMENT_FONT_SIZE
 	label.pixel_size = 0.01
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.render_priority = 2
 	label.position = Vector3(0, label_y, 0)
 	label.modulate = player_color
 	label.outline_modulate = Color(0.15, 0.1, 0.05)

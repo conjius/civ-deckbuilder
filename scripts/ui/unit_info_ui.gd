@@ -31,7 +31,9 @@ func _ready() -> void:
 		+ "uniform vec4 tint_color : source_color = vec4(1.0);\n"
 		+ "void fragment() {\n"
 		+ "    vec4 tex = texture(TEXTURE, UV);\n"
-		+ "    COLOR = vec4(tint_color.rgb, tex.a);\n"
+		+ "    float lum = dot(tex.rgb, vec3(0.3, 0.6, 0.1));\n"
+		+ "    vec3 tinted = tint_color.rgb * (0.7 + lum * 0.3);\n"
+		+ "    COLOR = vec4(tinted, tex.a);\n"
 		+ "}\n"
 	)
 	_color_shader = ShaderMaterial.new()
@@ -84,9 +86,7 @@ func _ready() -> void:
 
 func update_unit(unit: Node3D) -> void:
 	if unit == null:
-		visible = false
 		return
-	visible = true
 	avatar_rect.texture = _explorer_icon
 	_color_shader.set_shader_parameter(
 		"tint_color", unit.avatar_color
@@ -112,7 +112,6 @@ func update_settlement(
 	settlement_name: String, player_color: Color,
 	_coord: Vector2i, terrain: TerrainType,
 ) -> void:
-	visible = true
 	avatar_rect.texture = _settle_icon
 	_color_shader.set_shader_parameter(
 		"tint_color", player_color

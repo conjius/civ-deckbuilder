@@ -72,7 +72,9 @@ func test_ranged_attack_hits_at_range_2() -> void:
 
 
 func test_attack_targets_include_settlement() -> void:
-	_map.place_settlement(Vector2i(1, 0), "Enemy Camp")
+	_map.place_settlement(
+		Vector2i(1, 0), "Enemy Camp", Color.RED
+	)
 	var resolver := CardResolver.new(_map)
 	var targets := resolver.get_valid_targets(
 		_melee, Vector2i(0, 0)

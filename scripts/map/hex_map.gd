@@ -1,6 +1,7 @@
 extends Node3D
 
 const BASE_HEX_HEIGHT := 0.2
+const BLUE_HIGHLIGHT := Color(0.15, 0.35, 0.8, 0.4)
 
 @export var map_width: int = 20
 @export var map_height: int = 20
@@ -28,6 +29,8 @@ var _forest_decorator: ForestDecorator
 var _terrain_batches: Dictionary = {}
 var _terrain_mmi: Dictionary = {}
 var _highlighted_coords: Array[Vector2i] = []
+var _blue_coord: Vector2i = Vector2i(-999, -999)
+var _hover_coord: Vector2i = Vector2i(-999, -999)
 var _batch_dirty: bool = false
 
 
@@ -139,10 +142,10 @@ func _add_tile_to_batch(tile: Node3D) -> void:
 			mesh = _mountain_mesh
 			mat = _mountain_mat
 		elif terrain == _terrain_water and _water_mat:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
 			mat = _water_mat
 		else:
-			mesh = _get_cached_mesh(BASE_HEX_HEIGHT, coord)
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
 			mat = _get_cached_terrain_mat(terrain)
 		_terrain_batches[batch_key] = {
 			"mesh": mesh, "mat": mat, "xforms": [],
@@ -201,10 +204,59 @@ func highlight_tiles(
 
 func clear_highlights() -> void:
 	for coord in _highlighted_coords:
+		if coord == _blue_coord:
+			continue
 		var tile: Node3D = get_tile(coord)
 		if tile:
 			tile.set_highlighted(false)
 	_highlighted_coords.clear()
+	# Re-apply blue if it was in the list
+	if _blue_coord != Vector2i(-999, -999):
+		var blue_tile: Node3D = get_tile(_blue_coord)
+		if blue_tile:
+			blue_tile.set_highlighted(true, BLUE_HIGHLIGHT)
+
+
+func set_blue_highlight(coord: Vector2i) -> void:
+	clear_blue_highlight()
+	_blue_coord = coord
+	var tile: Node3D = get_tile(coord)
+	if tile:
+		tile.set_highlighted(true, BLUE_HIGHLIGHT)
+
+
+func clear_blue_highlight(animated: bool = false) -> void:
+	if _blue_coord == Vector2i(-999, -999):
+		return
+	var tile: Node3D = get_tile(_blue_coord)
+	if tile:
+		if animated:
+			tile.animate_highlight_off()
+		else:
+			tile.set_highlighted(false)
+	_blue_coord = Vector2i(-999, -999)
+
+
+func set_hover_highlight(coord: Vector2i) -> void:
+	if coord == _hover_coord:
+		return
+	clear_hover_highlight()
+	if coord == _blue_coord:
+		return
+	_hover_coord = coord
+	var tile: Node3D = get_tile(coord)
+	if tile:
+		tile.set_highlighted(true, BLUE_HIGHLIGHT)
+
+
+func clear_hover_highlight() -> void:
+	if _hover_coord == Vector2i(-999, -999):
+		return
+	if _hover_coord != _blue_coord:
+		var tile: Node3D = get_tile(_hover_coord)
+		if tile:
+			tile.set_highlighted(false)
+	_hover_coord = Vector2i(-999, -999)
 
 
 func raycast_to_hex(camera: Camera3D, mouse_pos: Vector2) -> Vector2i:
