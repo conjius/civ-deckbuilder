@@ -71,11 +71,7 @@ func generate_map() -> void:
 			tile.position = HexUtil.axial_to_world(
 				coord.x, coord.y
 			)
-			var y_jitter := fmod(
-				absf(float(coord.x) * 0.7129 + float(coord.y) * 0.3917),
-				0.01,
-			)
-			tile.position.y = -0.05 + y_jitter
+			tile.position.y = -0.05
 			tiles[coord] = tile
 
 	# Place water clumps over existing terrain
@@ -365,6 +361,8 @@ func _get_cached_terrain_mat(
 		mat.albedo_color = terrain.color
 		if terrain.texture:
 			mat.albedo_texture = terrain.texture
+		mat.vertex_color_use_as_albedo = true
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		_terrain_mat_cache[key] = mat
 	return _terrain_mat_cache[key] as StandardMaterial3D
 
