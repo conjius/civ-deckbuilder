@@ -127,7 +127,7 @@ func move_along_path(
 		)
 		face_dir.y = 0.0
 		if face_dir.length_squared() > 0.001 and _model:
-			var angle := atan2(face_dir.x, face_dir.z)
+			var angle := atan2(-face_dir.x, -face_dir.z)
 			_move_tween.tween_property(
 				_model, "rotation:y", angle, 0.15
 			).set_trans(Tween.TRANS_SINE)
@@ -178,7 +178,7 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position + dir, Vector3.UP)
+		_model.look_at(global_position - dir, Vector3.UP)
 
 
 func _face_direction(dir: Vector3) -> void:
@@ -186,7 +186,7 @@ func _face_direction(dir: Vector3) -> void:
 		return
 	if dir.length_squared() > 0.001:
 		_model.look_at(
-			_model.global_position + dir, Vector3.UP
+			_model.global_position - dir, Vector3.UP
 		)
 
 
