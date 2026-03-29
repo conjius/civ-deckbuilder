@@ -318,6 +318,8 @@ func _handle_click(screen_pos: Vector2) -> void:
 		return
 
 	if coord == _selected_coord:
+		if inhabitants.size() <= 1:
+			return
 		_selected_index = (_selected_index + 1) % inhabitants.size()
 	else:
 		_selected_coord = coord
