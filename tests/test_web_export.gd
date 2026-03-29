@@ -36,6 +36,20 @@ func test_coi_service_worker_exists() -> void:
 		file.close()
 
 
+func test_web_export_uses_nothreads() -> void:
+	var file := FileAccess.open(
+		"res://scripts/tools/dev-server.sh", FileAccess.READ
+	)
+	TestAssert.assert_not_null(file, "dev-server.sh must exist")
+	if file:
+		var content := file.get_as_text()
+		TestAssert.assert_true(
+			content.contains("thread_support=false"),
+			"web export must use nothreads",
+		)
+		file.close()
+
+
 func test_main_scene_set() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load("res://project.godot")
