@@ -1,10 +1,29 @@
 class_name HexMeshGenerator
 
+const BAND_WIDTH := 0.35
+const EDGE_STRETCH := 1.15
+
+
+static func compute_inner_ring(
+	edge_pts: Array[Vector3],
+) -> Array[Vector3]:
+	var inner: Array[Vector3] = []
+	for j in range(edge_pts.size()):
+		var ep := edge_pts[j]
+		var dir := Vector3(ep.x, 0.0, ep.z).normalized()
+		inner.append(Vector3(
+			ep.x - dir.x * BAND_WIDTH,
+			0.0,
+			ep.z - dir.z * BAND_WIDTH,
+		))
+	return inner
+
 
 static func create_hex_mesh(
 	height: float = 0.1,
 	coord: Vector2i = Vector2i.ZERO,
 	wavy: bool = true,
+	neighbor_mask: int = 0,
 ) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -12,11 +31,12 @@ static func create_hex_mesh(
 	var top_y := height * 0.5
 	var bot_y := -height * 0.5
 	var center := Vector3(0.0, top_y, 0.0)
-	var hex_radius := HexUtil.HEX_SIZE
+	var zoom_hash: int = absi(hash(Vector3i(coord.x, coord.y, 7)) % 100)
+	var uv_zoom := 0.75 + float(zoom_hash) / 100.0 * 0.2
 
 	for i in range(6):
-		var c0 := HexUtil.hex_corner_offset(i)
-		var c1 := HexUtil.hex_corner_offset((i + 1) % 6)
+		var c0 := HexUtil.hex_corner_offset(i) * EDGE_STRETCH
+		var c1 := HexUtil.hex_corner_offset((i + 1) % 6) * EDGE_STRETCH
 
 		var edge_pts: Array[Vector3]
 		if wavy:
@@ -24,14 +44,7 @@ static func create_hex_mesh(
 		else:
 			edge_pts = [c0, c1] as Array[Vector3]
 
-		# Inner ring points at band boundary (fully opaque)
-		var band_frac := 0.55
-		var inner_pts: Array[Vector3] = []
-		for j in range(edge_pts.size()):
-			var ep := edge_pts[j]
-			inner_pts.append(Vector3(
-				ep.x * band_frac, 0.0, ep.z * band_frac
-			))
+		var inner_pts := compute_inner_ring(edge_pts)
 
 		# Inner triangles: center → inner ring (fully opaque)
 		for j in range(inner_pts.size() - 1):
@@ -41,41 +54,41 @@ static func create_hex_mesh(
 			st.set_color(Color(1, 1, 1, 1))
 			st.set_uv(Vector2(0.5, 0.5))
 			st.add_vertex(center)
-			st.set_uv(_hex_uv(r0))
+			st.set_uv(_hex_uv(r0, uv_zoom))
 			st.add_vertex(Vector3(r0.x, top_y, r0.z))
-			st.set_uv(_hex_uv(r1))
+			st.set_uv(_hex_uv(r1, uv_zoom))
 			st.add_vertex(Vector3(r1.x, top_y, r1.z))
 
-		# Outer band: inner ring → wavy edge (opaque to transparent)
+		# Outer band: inner ring (opaque) → wavy edge (transparent)
 		for j in range(edge_pts.size() - 1):
 			var r0 := inner_pts[j]
 			var r1 := inner_pts[j + 1]
 			var e0 := edge_pts[j]
 			var e1 := edge_pts[j + 1]
-			var a0 := _edge_alpha(e0, hex_radius)
-			var a1 := _edge_alpha(e1, hex_radius)
 			st.set_normal(Vector3.UP)
 			st.set_color(Color(1, 1, 1, 1))
-			st.set_uv(_hex_uv(r0))
+			st.set_uv(_hex_uv(r0, uv_zoom))
 			st.add_vertex(Vector3(r0.x, top_y, r0.z))
-			st.set_color(Color(1, 1, 1, a0))
-			st.set_uv(_hex_uv(e0))
+			st.set_color(Color(1, 1, 1, 0))
+			st.set_uv(_hex_uv(e0, uv_zoom))
 			st.add_vertex(Vector3(e0.x, top_y, e0.z))
-			st.set_color(Color(1, 1, 1, a1))
-			st.set_uv(_hex_uv(e1))
+			st.set_color(Color(1, 1, 1, 0))
+			st.set_uv(_hex_uv(e1, uv_zoom))
 			st.add_vertex(Vector3(e1.x, top_y, e1.z))
 			st.set_normal(Vector3.UP)
 			st.set_color(Color(1, 1, 1, 1))
-			st.set_uv(_hex_uv(r0))
+			st.set_uv(_hex_uv(r0, uv_zoom))
 			st.add_vertex(Vector3(r0.x, top_y, r0.z))
-			st.set_color(Color(1, 1, 1, a1))
-			st.set_uv(_hex_uv(e1))
+			st.set_color(Color(1, 1, 1, 0))
+			st.set_uv(_hex_uv(e1, uv_zoom))
 			st.add_vertex(Vector3(e1.x, top_y, e1.z))
 			st.set_color(Color(1, 1, 1, 1))
-			st.set_uv(_hex_uv(r1))
+			st.set_uv(_hex_uv(r1, uv_zoom))
 			st.add_vertex(Vector3(r1.x, top_y, r1.z))
 
-		# Side faces
+		# Side faces (skip if neighbor exists on this edge)
+		if neighbor_mask & (1 << i):
+			continue
 		for j in range(edge_pts.size() - 1):
 			var p0 := edge_pts[j]
 			var p1 := edge_pts[j + 1]
@@ -83,55 +96,17 @@ static func create_hex_mesh(
 				(p0.x + p1.x) * 0.5, 0.0,
 				(p0.z + p1.z) * 0.5,
 			).normalized()
-			var a0 := _edge_alpha(p0, hex_radius)
-			var a1 := _edge_alpha(p1, hex_radius)
 			st.set_normal(sn)
-			st.set_color(Color(1, 1, 1, a0))
+			st.set_color(Color(1, 1, 1, 0))
 			st.add_vertex(Vector3(p0.x, top_y, p0.z))
-			st.set_color(Color(1, 1, 1, a0 * 0.5))
 			st.add_vertex(Vector3(p0.x, bot_y, p0.z))
-			st.set_color(Color(1, 1, 1, a1 * 0.5))
 			st.add_vertex(Vector3(p1.x, bot_y, p1.z))
 			st.set_normal(sn)
-			st.set_color(Color(1, 1, 1, a0))
 			st.add_vertex(Vector3(p0.x, top_y, p0.z))
-			st.set_color(Color(1, 1, 1, a1 * 0.5))
 			st.add_vertex(Vector3(p1.x, bot_y, p1.z))
-			st.set_color(Color(1, 1, 1, a1))
 			st.add_vertex(Vector3(p1.x, top_y, p1.z))
 
 	return st.commit()
-
-
-static func _edge_alpha(
-	point: Vector3, _hex_radius: float,
-) -> float:
-	# Distance to nearest hex edge (not center)
-	var p := Vector2(point.x, point.z)
-	var min_dist := INF
-	for i in range(6):
-		var c0 := HexUtil.hex_corner_offset(i)
-		var c1 := HexUtil.hex_corner_offset((i + 1) % 6)
-		var a := Vector2(c0.x, c0.z)
-		var b := Vector2(c1.x, c1.z)
-		var d := _point_to_segment_dist(p, a, b)
-		if d < min_dist:
-			min_dist = d
-	# Band: fade over the last 0.2 units from the edge inward
-	var band_width := 0.2
-	if min_dist >= band_width:
-		return 1.0
-	return clampf(min_dist / band_width, 0.0, 1.0)
-
-
-static func _point_to_segment_dist(
-	p: Vector2, a: Vector2, b: Vector2,
-) -> float:
-	var ab := b - a
-	var ap := p - a
-	var t := clampf(ap.dot(ab) / ab.dot(ab), 0.0, 1.0)
-	var closest := a + ab * t
-	return p.distance_to(closest)
 
 
 static func create_hex_collision_shape(
@@ -182,15 +157,14 @@ static func get_wavy_edge_points(
 	c0: Vector3, c1: Vector3,
 	coord: Vector2i, edge_idx: int,
 	subdivisions: int = 12,
-	amplitude: float = 0.25,
+	amplitude: float = 0.4,
 ) -> Array[Vector3]:
 	var pts: Array[Vector3] = []
 	var edge_dir := (c1 - c0).normalized()
 	var perp := Vector3(-edge_dir.z, 0.0, edge_dir.x)
-	var seed_val := int(absf(
-		float(coord.x) * 7919.0 + float(coord.y) * 4513.0
-		+ float(edge_idx) * 3571.0 + 1234.0
-	))
+	var seed_val: int = hash(
+		Vector3i(coord.x, coord.y, edge_idx)
+	)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
 	# Generate raw offsets
@@ -200,7 +174,7 @@ static func get_wavy_edge_points(
 			offsets.append(0.0)
 		else:
 			offsets.append(rng.randf_range(
-				-amplitude, amplitude * 0.3
+				-amplitude, -amplitude * 0.2
 			))
 	# Smooth passes — average with neighbors
 	for _pass in range(3):
@@ -225,7 +199,7 @@ static func get_wavy_edge_points(
 	return pts
 
 
-static func _hex_uv(corner: Vector3) -> Vector2:
-	var u := 0.5 + corner.x / (2.0 * HexUtil.HEX_SIZE)
-	var v := 0.5 + corner.z / (2.0 * HexUtil.HEX_SIZE)
+static func _hex_uv(corner: Vector3, uv_zoom: float = 1.0) -> Vector2:
+	var u := 0.5 + corner.x / (2.0 * HexUtil.HEX_SIZE) * uv_zoom
+	var v := 0.5 + corner.z / (2.0 * HexUtil.HEX_SIZE) * uv_zoom
 	return Vector2(u, v)

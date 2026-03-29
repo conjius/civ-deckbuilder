@@ -79,18 +79,85 @@ func test_wavy_edge_not_straight() -> void:
 	)
 
 
-func test_edge_alpha_center_is_opaque() -> void:
-	var alpha := HexMeshGenerator._edge_alpha(
-		Vector3.ZERO, HexUtil.HEX_SIZE
+func test_inner_ring_constant_distance_from_edge() -> void:
+	var c0 := HexUtil.hex_corner_offset(0)
+	var c1 := HexUtil.hex_corner_offset(1)
+	var edge_pts := HexMeshGenerator.get_wavy_edge_points(
+		c0, c1, Vector2i(0, 0), 0
 	)
-	TestAssert.assert_eq(alpha, 1.0)
+	var inner_pts := HexMeshGenerator.compute_inner_ring(
+		edge_pts
+	)
+	var expected := HexMeshGenerator.BAND_WIDTH
+	for i in range(inner_pts.size()):
+		var dist := inner_pts[i].distance_to(edge_pts[i])
+		TestAssert.assert_true(
+			absf(dist - expected) < 0.001,
+			"inner point should be BAND_WIDTH from edge point",
+		)
 
 
-func test_edge_alpha_edge_is_transparent() -> void:
-	var corner := HexUtil.hex_corner_offset(0)
-	var alpha := HexMeshGenerator._edge_alpha(
-		corner, HexUtil.HEX_SIZE
+func test_inner_ring_points_toward_center() -> void:
+	var c0 := HexUtil.hex_corner_offset(0)
+	var c1 := HexUtil.hex_corner_offset(1)
+	var edge_pts: Array[Vector3] = [c0, c1] as Array[Vector3]
+	var inner_pts := HexMeshGenerator.compute_inner_ring(
+		edge_pts
 	)
+	for i in range(inner_pts.size()):
+		var inner_dist := Vector2(
+			inner_pts[i].x, inner_pts[i].z
+		).length()
+		var edge_dist := Vector2(
+			edge_pts[i].x, edge_pts[i].z
+		).length()
+		TestAssert.assert_true(
+			inner_dist < edge_dist,
+			"inner point should be closer to center than edge",
+		)
+
+
+func test_no_neighbors_has_side_faces() -> void:
+	var mesh_none := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0
+	)
+	var mesh_all := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0b111111
+	)
+	var verts_none: int = mesh_none.surface_get_array_len(0)
+	var verts_all: int = mesh_all.surface_get_array_len(0)
 	TestAssert.assert_true(
-		alpha < 0.5, "corner should be faded"
+		verts_none > verts_all,
+		"mesh with no neighbors should have more verts than all-neighbors",
 	)
+
+
+func test_all_neighbors_skips_all_side_faces() -> void:
+	var mesh_no_sides := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0b111111
+	)
+	var mesh_no_neighbors := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0
+	)
+	# Each edge has 2 triangles (6 verts) for side faces, 6 edges total
+	# = 36 side verts for non-wavy mesh (1 subdivision per edge)
+	var diff: int = (
+		mesh_no_neighbors.surface_get_array_len(0)
+		- mesh_no_sides.surface_get_array_len(0)
+	)
+	TestAssert.assert_eq(diff, 36)
+
+
+func test_single_neighbor_skips_one_side() -> void:
+	var mesh_none := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0
+	)
+	var mesh_one := HexMeshGenerator.create_hex_mesh(
+		0.1, Vector2i.ZERO, false, 0b000001
+	)
+	var diff: int = (
+		mesh_none.surface_get_array_len(0)
+		- mesh_one.surface_get_array_len(0)
+	)
+	# 1 edge × 2 triangles × 3 verts = 6
+	TestAssert.assert_eq(diff, 6)
