@@ -230,7 +230,8 @@ func _toggle_gallery() -> void:
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
 	else:
-		_animate_overlay(true)
+		if not _active_picker:
+			_animate_overlay(true)
 		_slide_hand_out()
 		_slide_ui_out()
 		card_gallery.show_gallery(_current_cards)
@@ -239,7 +240,8 @@ func _toggle_gallery() -> void:
 
 
 func _on_gallery_closing() -> void:
-	_animate_overlay(false)
+	if not _active_picker:
+		_animate_overlay(false)
 	_slide_ui_in()
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
