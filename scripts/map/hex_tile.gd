@@ -284,8 +284,8 @@ func place_settlement(
 	label.render_priority = 2
 	label.position = Vector3(0, label_y, 0)
 	label.modulate = player_color
-	label.outline_modulate = Color(0.15, 0.1, 0.05)
-	label.outline_size = UIHelpers.SETTLEMENT_OUTLINE
+	label.outline_modulate = Color(0, 0, 0, 0.7)
+	label.outline_size = int(UIHelpers.SETTLEMENT_OUTLINE * 1.5)
 	add_child(label)
 
 

@@ -42,6 +42,7 @@ func _ready() -> void:
 	_icon.size = Vector2(icon_sz, icon_sz)
 	_icon.pivot_offset = Vector2(icon_sz * 0.5, icon_sz * 0.5)
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_icon.material = UIHelpers.create_icon_shadow_shader()
 	add_child(_icon)
 
 	_label = Label.new()
