@@ -9,6 +9,8 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: Control
 var deck_manager: DeckManager
+var draw_pile_pos: Vector2 = Vector2.ZERO
+var discard_pile_pos: Vector2 = Vector2.ZERO
 
 var _card_display_scene: PackedScene = preload(
 	"res://scenes/ui/card_display.tscn"
@@ -16,19 +18,169 @@ var _card_display_scene: PackedScene = preload(
 var _focused_card: Control = null
 var _any_dragging: bool = false
 var _removing: bool = false
+var _discarding_all: bool = false
 
 
 func _ready() -> void:
 	resized.connect(_layout_cards)
 
 
-func show_cards(cards: Array[CardData]) -> void:
+func show_cards(cards: Array[CardData], animate_draw: bool = true) -> void:
 	_focused_card = null
-	for child in get_children():
+	var old := get_children().duplicate()
+	for child in old:
+		remove_child(child)
 		child.queue_free()
 	for card in cards:
-		_add_card_display(card)
-	_layout_cards.call_deferred()
+		_add_card_display(card, animate_draw)
+	if animate_draw:
+		_do_draw_anim.call_deferred()
+	else:
+		_layout_cards.call_deferred()
+
+
+func discard_all(on_done: Callable = Callable()) -> void:
+	_focused_card = null
+	var cards := _get_card_children()
+	if cards.is_empty():
+		if on_done.is_valid():
+			on_done.call()
+		return
+	_discarding_all = true
+	var last_delay := float(cards.size() - 1) * 0.05
+	for i in range(cards.size()):
+		var card: Control = cards[i]
+		var gpos: Vector2 = card.global_position
+		remove_child(card)
+		var parent: Node = self
+		while parent and not parent is CanvasLayer:
+			parent = parent.get_parent()
+		if parent:
+			parent.add_child(card)
+		else:
+			get_tree().root.add_child(card)
+		card.global_position = gpos
+		var delay := float(i) * 0.05
+		var tw := card.create_tween()
+		tw.tween_interval(delay)
+		tw.set_parallel(true)
+		var half_pile := Vector2(
+			float(UIHelpers.CARD_WIDTH) * 0.25,
+			float(UIHelpers.CARD_HEIGHT) * 0.25,
+		)
+		var disc_target := discard_pile_pos - half_pile
+		tw.tween_property(
+			card, "global_position", disc_target, 0.2,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_IN
+		).set_delay(delay)
+		tw.tween_property(
+			card, "scale", Vector2(0.5, 0.5), 0.2,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_IN
+		).set_delay(delay)
+		tw.finished.connect(func() -> void:
+			card.queue_free()
+		)
+	var total_time := last_delay + 0.25
+	get_tree().create_timer(total_time).timeout.connect(
+		func() -> void:
+			_discarding_all = false
+			if on_done.is_valid():
+				on_done.call()
+	)
+
+
+func add_cards_to_hand(new_cards: Array[CardData]) -> void:
+	for card in new_cards:
+		_add_card_display(card, false)
+		var cards := _get_card_children()
+		var ctrl: Control = cards[cards.size() - 1]
+		ctrl.scale = Vector2(0.0, 0.0)
+		ctrl.modulate.a = 0.0
+		var tw := ctrl.create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(
+			ctrl, "scale", UIHelpers.HAND_DEFAULT_SCALE, 0.3,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(
+			ctrl, "modulate:a", 1.0, 0.2,
+		)
+	_layout_cards()
+
+
+func _do_draw_anim() -> void:
+	_layout_cards(false)
+	var cards := _get_card_children()
+	var local_draw := draw_pile_pos - global_position
+	for i in range(cards.size()):
+		var card: Control = cards[i]
+		var target_pos := card.position
+		var target_scale := card.scale
+		var target_rot := card.rotation
+		card.position = local_draw - card.size * 0.25
+		card.scale = Vector2(0.5, 0.5)
+		card.rotation = 0.0
+		card.set_face_up(false)
+		card.modulate.a = 0.0
+		card.z_index = 100 + i
+		var delay := float(i) * 0.18
+		var dur := 0.7
+		var flip_time := delay + dur * 0.35
+		var flip_dur := 0.15
+		# Position + rotation + Y scale
+		var tw := card.create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(
+			card, "modulate:a", 1.0, 0.05,
+		).set_delay(delay)
+		tw.tween_property(
+			card, "position", target_pos, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		tw.tween_property(
+			card, "scale:y", target_scale.y, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		tw.tween_property(
+			card, "rotation", target_rot, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		tw.tween_callback(func() -> void:
+			card.z_index = 0
+		).set_delay(delay + dur)
+		# X scale: grow from 0.5 to mid, squeeze to 0, flip, stretch back
+		var mid_sx: float = lerpf(0.5, target_scale.x, 0.35)
+		var flip_tw := card.create_tween()
+		flip_tw.tween_property(
+			card, "scale:x", mid_sx, flip_time - delay,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		flip_tw.tween_property(
+			card, "scale:x", 0.0, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_IN
+		)
+		flip_tw.tween_callback(func() -> void:
+			card.set_face_up(true)
+		)
+		flip_tw.tween_property(
+			card, "scale:x", target_scale.x, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_OUT
+		)
+		# Settle remaining x scale
+		var remaining := dur - (flip_time - delay) - flip_dur * 2
+		if remaining > 0.0:
+			flip_tw.tween_property(
+				card, "scale:x", target_scale.x, remaining,
+			).set_trans(Tween.TRANS_CUBIC).set_ease(
+				Tween.EASE_OUT
+			)
 
 
 func show_cards_with_drag(
@@ -71,22 +223,57 @@ func show_cards_with_drag(
 
 
 func remove_card(card: CardData) -> void:
-	_removing = true
 	for child in get_children():
-		if child.card_data == card:
-			if child == _focused_card:
+		var ctrl := child as Control
+		if ctrl == null:
+			continue
+		if ctrl.card_data == card:
+			if ctrl == _focused_card:
 				_focused_card = null
-			child.queue_free()
+			var gpos: Vector2 = ctrl.global_position
+			remove_child(ctrl)
+			# Add to parent CanvasLayer so it stays visible
+			var parent: Node = self
+			while parent and not parent is CanvasLayer:
+				parent = parent.get_parent()
+			if parent:
+				parent.add_child(ctrl)
+			else:
+				get_tree().root.add_child(ctrl)
+			ctrl.global_position = gpos
+			_animate_to_discard_pile(ctrl)
 			break
-	_removing = false
 	_layout_cards.call_deferred()
 
 
-func _add_card_display(card: CardData) -> void:
+
+func _animate_to_discard_pile(card: Control) -> void:
+	var half_pile := Vector2(
+		float(UIHelpers.CARD_WIDTH) * 0.25,
+		float(UIHelpers.CARD_HEIGHT) * 0.25,
+	)
+	var target := discard_pile_pos - half_pile
+	card.z_index = 50
+	var tw := card.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(
+		card, "global_position", target, 0.25,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(
+		card, "scale", Vector2(0.5, 0.5), 0.25,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.finished.connect(func() -> void:
+		card.queue_free()
+	)
+
+
+func _add_card_display(
+	card: CardData, face_down: bool = false,
+) -> void:
 	var display: Control = _card_display_scene.instantiate()
 	add_child(display)
 	display.setup(card)
-	display.set_face_up(true)
+	display.set_face_up(not face_down)
 	display.hex_map = hex_map
 	display.camera = camera
 	display.card_effects = card_effects
@@ -371,7 +558,7 @@ func _reorder_children_to_match() -> void:
 		if child.has_method("setup"):
 			card_map[child.card_data] = child
 	var idx := 0
-	for card: CardData in deck_manager.cards:
+	for card: CardData in deck_manager.hand:
 		var ctrl: Control = card_map.get(card) as Control
 		if ctrl:
 			move_child(ctrl, idx)

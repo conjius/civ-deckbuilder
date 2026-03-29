@@ -1,45 +1,67 @@
 class_name DeckManager
 extends RefCounted
 
-var cards: Array[CardData] = []
-var used_this_turn: Array[CardData] = []
+const HAND_SIZE := 7
+
+var draw_pile: Array[CardData] = []
+var hand: Array[CardData] = []
+var discard_pile: Array[CardData] = []
 
 
 func initialize(deck: Array[CardData]) -> void:
-	cards = deck.duplicate()
-	used_this_turn.clear()
+	draw_pile = deck.duplicate()
+	draw_pile.shuffle()
+	hand.clear()
+	discard_pile.clear()
+
+
+func draw_hand() -> void:
+	for _i in range(HAND_SIZE):
+		if draw_pile.is_empty() and discard_pile.is_empty():
+			break
+		if draw_pile.is_empty():
+			_reshuffle_discard()
+		hand.append(draw_pile.pop_back())
 
 
 func play_card(card: CardData) -> bool:
-	var idx := cards.find(card)
+	var idx := hand.find(card)
 	if idx == -1:
 		return false
-	cards.remove_at(idx)
-	used_this_turn.append(card)
+	hand.remove_at(idx)
+	discard_pile.append(card)
 	return true
 
 
 func end_turn() -> void:
-	cards.append_array(used_this_turn)
-	used_this_turn.clear()
+	discard_pile.append_array(hand)
+	hand.clear()
 
 
 func reorder_card(card: CardData, new_index: int) -> void:
-	var old_idx := cards.find(card)
+	var old_idx := hand.find(card)
 	if old_idx == -1:
 		return
-	cards.remove_at(old_idx)
-	new_index = clampi(new_index, 0, cards.size())
-	cards.insert(new_index, card)
+	hand.remove_at(old_idx)
+	new_index = clampi(new_index, 0, hand.size())
+	hand.insert(new_index, card)
 
 
 func add_card(card: CardData) -> void:
-	cards.append(card)
+	discard_pile.append(card)
+
+
+func draw_pile_count() -> int:
+	return draw_pile.size()
+
+
+func discard_pile_count() -> int:
+	return discard_pile.size()
 
 
 func count_resources() -> Dictionary:
 	var totals := {"food": 0, "materials": 0}
-	for pile: Array[CardData] in [cards, used_this_turn]:
+	for pile: Array[CardData] in [draw_pile, hand, discard_pile]:
 		for card: CardData in pile:
 			if card.card_type != CardData.CardType.RESOURCE:
 				continue
@@ -49,3 +71,9 @@ func count_resources() -> Dictionary:
 				CardData.ResourceType.MATERIALS:
 					totals["materials"] += card.resource_value
 	return totals
+
+
+func _reshuffle_discard() -> void:
+	draw_pile.append_array(discard_pile)
+	discard_pile.clear()
+	draw_pile.shuffle()

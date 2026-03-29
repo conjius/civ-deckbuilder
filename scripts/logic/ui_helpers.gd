@@ -486,6 +486,77 @@ static func create_card_back() -> Control:
 	return ctrl
 
 
+static func create_card_back_light() -> Control:
+	var w := float(CARD_WIDTH)
+	var h := float(CARD_HEIGHT)
+	var r := float(CARD_CORNER_RADIUS)
+	var ptex: Texture2D = _make_parchment_tex()
+	var ctrl := Control.new()
+	ctrl.custom_minimum_size = Vector2(w, h)
+	ctrl.size = Vector2(w, h)
+	ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ctrl.draw.connect(func() -> void:
+		var b := float(CARD_BORDER)
+		var cr := maxf(r - b, 0.0)
+		var iw := w - b * 2.0
+		var ih := h - b * 2.0
+		var tint := Color(0.85, 0.75, 0.6, 1.0)
+		var zoom := 1.3
+		var pts: PackedVector2Array = _rounded_rect_points(
+			b, b, iw, ih, cr
+		)
+		if ptex:
+			var uvs := PackedVector2Array()
+			for pt: Vector2 in pts:
+				uvs.append(Vector2(
+					(0.5 - 0.5 / zoom) + (pt.x / w) / zoom,
+					(0.5 - 0.5 / zoom) + (pt.y / h) / zoom,
+				))
+			var colors := PackedColorArray()
+			colors.append(tint)
+			ctrl.draw_polygon(pts, colors, uvs, ptex)
+		else:
+			ctrl.draw_colored_polygon(pts, tint)
+		var border_style := StyleBoxFlat.new()
+		border_style.bg_color = Color.TRANSPARENT
+		border_style.border_color = Color(0.65, 0.5, 0.25)
+		border_style.set_border_width_all(CARD_BORDER)
+		border_style.set_corner_radius_all(CARD_CORNER_RADIUS)
+		border_style.draw(
+			ctrl.get_canvas_item(),
+			Rect2(Vector2.ZERO, Vector2(w, h))
+		)
+		var m := sf(10.0)
+		var mr := maxf(r - m, sf(2.0))
+		_draw_rounded_border(
+			ctrl, m, m, w - m * 2.0, h - m * 2.0, mr,
+			Color(0.7, 0.58, 0.38), sf(0.7)
+		)
+		var n := sf(18.0)
+		var ir := maxf(r - n, sf(2.0))
+		_draw_rounded_border(
+			ctrl, n, n, w - n * 2.0, h - n * 2.0, ir,
+			Color(0.6, 0.48, 0.28), sf(0.45)
+		)
+		var cx := w * 0.5
+		var cy := h * 0.5
+		_draw_circle_outline(
+			ctrl, cx, cy, sf(25.0),
+			Color(0.72, 0.6, 0.35), sf(0.9)
+		)
+		_draw_circle_outline(
+			ctrl, cx, cy, sf(15.0),
+			Color(0.7, 0.58, 0.38), sf(0.7)
+		)
+		ctrl.draw_circle(
+			Vector2(cx, cy), sf(5.0),
+			Color(0.72, 0.6, 0.35)
+		)
+	)
+	ctrl.queue_redraw()
+	return ctrl
+
+
 static func _rounded_rect_points(
 	x: float, y: float, w: float, h: float,
 	r: float, segments: int = 16,
