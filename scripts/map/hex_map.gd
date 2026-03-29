@@ -73,7 +73,7 @@ func generate_map() -> void:
 			)
 			var y_jitter := fmod(
 				absf(float(coord.x) * 0.7129 + float(coord.y) * 0.3917),
-				0.003,
+				0.01,
 			)
 			tile.position.y = -0.05 + y_jitter
 			tiles[coord] = tile

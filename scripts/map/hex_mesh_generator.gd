@@ -99,8 +99,8 @@ static func create_hex_outline_mesh(thickness: float = 0.08) -> ArrayMesh:
 static func get_wavy_edge_points(
 	c0: Vector3, c1: Vector3,
 	_coord: Vector2i, _edge_idx: int,
-	subdivisions: int = 8,
-	amplitude: float = 0.06,
+	subdivisions: int = 4,
+	amplitude: float = 0.15,
 ) -> Array[Vector3]:
 	var pts: Array[Vector3] = []
 	# Sort corners so both tiles sharing this edge get same seed
@@ -112,11 +112,11 @@ static func get_wavy_edge_points(
 	# Direction along edge and perpendicular
 	var edge_dir := (p1 - p0).normalized()
 	var perp := Vector3(-edge_dir.z, 0.0, edge_dir.x)
-	# Seed from corner positions for determinism
-	var seed_val := int(
-		absf(p0.x * 7919.0 + p0.z * 4513.0
-		+ p1.x * 3571.0 + p1.z * 6271.0)
-	)
+	# Seed from sorted corner positions only (shared between neighbors)
+	var seed_val := int(absf(
+		p0.x * 7919.0 + p0.z * 4513.0
+		+ p1.x * 3571.0 + p1.z * 6271.0
+	))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
 	var raw: Array[Vector3] = []
