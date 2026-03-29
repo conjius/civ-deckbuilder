@@ -143,8 +143,8 @@ jobs:
       - name: tag
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          git tag "$TAG"
-          git push origin "$TAG"
+          git tag -f "$TAG"
+          git push origin "$TAG" --force
       - name: download-artifact
         uses: actions/download-artifact@v8
         with:

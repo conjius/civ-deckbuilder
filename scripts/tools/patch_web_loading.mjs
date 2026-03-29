@@ -23,16 +23,16 @@ img#status-splash {
   animation: logoFadeIn 16s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
 @keyframes logoFadeIn {
-  from { opacity: 0; transform: scale(0.42); }
-  to { opacity: 1; transform: scale(0.53); }
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(0.85); }
 }
 #status-progress {
-  width: 300px !important; height: 3px !important;
+  width: 400px !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 100px) !important;
+  transform: translate(-50%, 150px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
@@ -43,8 +43,8 @@ img#status-splash {
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, 100px);
-  width: 300px; height: 3px;
+  transform: translate(-50%, 150px);
+  width: 400px; height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
@@ -123,7 +123,7 @@ const initScript = `<script>
 				if (logo) {
 					logo.style.animation = 'none';
 					logo.style.opacity = '1';
-					logo.style.transform = 'scale(0.53)';
+					logo.style.transform = 'scale(0.85)';
 				}
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
