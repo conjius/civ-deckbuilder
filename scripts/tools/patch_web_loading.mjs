@@ -25,7 +25,7 @@ img#status-splash, img#status-splash.fullsize--true {
   transform: translate(-50%, -60%) !important;
 }
 #status-progress {
-  width: 210px; height: 12px;
+  width: 110px; height: 12px;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 6px;
   transition: none;
