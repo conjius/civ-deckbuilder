@@ -254,6 +254,8 @@ func _toggle_gallery(
 				[] as Array[CardData],
 				false, true, false,
 			)
+		_draw_pile_ui.set_gallery_mode(true)
+		_discard_pile_ui.set_gallery_mode(true)
 		_draw_pile_ui.set_toggled(show_draw)
 		_discard_pile_ui.set_toggled(show_discard)
 		if _active_picker:
@@ -280,8 +282,8 @@ func _on_gallery_closing() -> void:
 	if not _active_picker:
 		_animate_overlay(false)
 	_slide_ui_in()
-	_draw_pile_ui.set_toggled(false)
-	_discard_pile_ui.set_toggled(false)
+	_draw_pile_ui.set_gallery_mode(false)
+	_discard_pile_ui.set_gallery_mode(false)
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
 

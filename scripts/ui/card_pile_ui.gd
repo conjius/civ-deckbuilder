@@ -16,6 +16,7 @@ var _pile_height: int
 var _original_pos: Vector2 = Vector2.ZERO
 var _toggled_on: bool = false
 var _hovered: bool = false
+var _in_gallery: bool = false
 var _glow_mat: ShaderMaterial
 var _sv: SubViewport
 var _draw_ctrl: Control
@@ -24,8 +25,12 @@ var _target_angles: Array[float] = [0.0]
 var _anim_tween: Tween
 var _anim_progress: float = 1.0
 var _start_angles: Array[float] = [0.0]
-var _brightness: float = 0.7
-var _gray_strength: float = 1.0
+var _brightness: float = 1.0
+var _gray_strength: float = 0.0
+var _start_brightness: float = 1.0
+var _start_gray: float = 0.0
+var _target_brightness: float = 1.0
+var _target_gray: float = 0.0
 
 
 func setup(face_down: bool) -> void:
@@ -86,8 +91,8 @@ func setup(face_down: bool) -> void:
 	mouse_entered.connect(_on_hover_enter)
 	mouse_exited.connect(_on_hover_exit)
 
-	_brightness = 1.0 if _toggled_on else 0.7
-	_gray_strength = 0.0 if _toggled_on else 1.0
+	_brightness = 1.0
+	_gray_strength = 0.0
 	if _toggled_on:
 		_card_angles.clear()
 		var start_a := -FAN_SPREAD * 0.5
@@ -113,6 +118,48 @@ func set_toggled(value: bool) -> void:
 	_toggled_on = value
 	_rebuild_visual()
 	_update_glow()
+
+
+func set_gallery_mode(active: bool) -> void:
+	if _in_gallery == active:
+		return
+	_in_gallery = active
+	if active:
+		_rebuild_visual()
+	else:
+		# Leaving gallery: animate to full brightness, no gray
+		_toggled_on = false
+		_start_angles = _card_angles.duplicate()
+		_target_angles.clear()
+		for i in _start_angles.size():
+			_target_angles.append(0.0)
+		var anim_count: int = _start_angles.size()
+		_card_angles.resize(anim_count)
+		if _anim_tween and _anim_tween.is_running():
+			_anim_tween.kill()
+		_anim_progress = 0.0
+		_anim_tween = create_tween()
+		_anim_tween.tween_method(
+			func(t: float) -> void:
+				for i in _card_angles.size():
+					var from: float = (
+						_start_angles[i]
+						if i < _start_angles.size() else 0.0
+					)
+					_card_angles[i] = lerpf(from, 0.0, t)
+				_brightness = lerpf(_brightness, 1.0, t)
+				_gray_strength = lerpf(_gray_strength, 0.0, t)
+				_draw_ctrl.queue_redraw(),
+			0.0, 1.0, 0.25,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_IN_OUT
+		)
+		_anim_tween.tween_callback(func() -> void:
+			_card_angles = [0.0] as Array[float]
+			_brightness = 1.0
+			_gray_strength = 0.0
+			_draw_ctrl.queue_redraw()
+		)
 
 
 func _on_hover_enter() -> void:
@@ -166,6 +213,11 @@ func _rebuild_visual() -> void:
 	_card_angles.resize(anim_count)
 	if not _draw_ctrl.draw.is_connected(_draw_cards):
 		_draw_ctrl.draw.connect(_draw_cards)
+	var should_dim := _in_gallery and not _toggled_on
+	_start_brightness = _brightness
+	_start_gray = _gray_strength
+	_target_brightness = 0.7 if should_dim else 1.0
+	_target_gray = 1.0 if should_dim else 0.0
 	if _anim_tween and _anim_tween.is_running():
 		_anim_tween.kill()
 	_anim_progress = 0.0
@@ -188,12 +240,8 @@ func _set_anim_progress(t: float) -> void:
 			else 0.0
 		)
 		_card_angles[i] = lerpf(from, to, t)
-	var target_bright := 1.0 if _toggled_on else 0.7
-	var start_bright := 0.7 if _toggled_on else 1.0
-	_brightness = lerpf(start_bright, target_bright, t)
-	var target_gray := 0.0 if _toggled_on else 1.0
-	var start_gray := 1.0 if _toggled_on else 0.0
-	_gray_strength = lerpf(start_gray, target_gray, t)
+	_brightness = lerpf(_start_brightness, _target_brightness, t)
+	_gray_strength = lerpf(_start_gray, _target_gray, t)
 	_draw_ctrl.queue_redraw()
 
 
