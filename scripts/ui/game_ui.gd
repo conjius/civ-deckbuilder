@@ -3,6 +3,7 @@ extends CanvasLayer
 signal end_turn_pressed
 signal card_dropped(card: CardData, target: Vector2i)
 signal action_pressed(action_name: String)
+signal gallery_closed
 
 var hex_map: Node3D
 var camera: Camera3D
@@ -125,6 +126,9 @@ func animate_deal(
 	cards: Array[CardData],
 	draw_count: int, discard_count: int,
 ) -> void:
+	if card_gallery.visible:
+		card_gallery.hide_gallery()
+		await card_gallery.closed
 	update_piles(draw_count + cards.size(), discard_count)
 	# Move draw pile to center at same height as static piles
 	var vp_w: float = get_viewport().get_visible_rect().size.x
@@ -446,6 +450,7 @@ func _on_gallery_card_drag(
 func _on_gallery_closed() -> void:
 	if not _pending_drag_card:
 		_slide_hand_in()
+	gallery_closed.emit()
 
 
 func _animate_overlay(show: bool) -> void:

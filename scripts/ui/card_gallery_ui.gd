@@ -77,6 +77,14 @@ func show_gallery(
 	visible = true
 	_hand_btn.visible = true
 	_update_hand_visual()
+	# Fly hand button in from below
+	var vp_h: float = get_viewport().get_visible_rect().size.y
+	var final_y: float = _hand_btn.position.y
+	_hand_btn.position.y = vp_h + _hand_btn.size.y
+	var hand_tw := _hand_btn.create_tween()
+	hand_tw.tween_property(
+		_hand_btn, "position:y", final_y, ANIM_DURATION,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_animating = true
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	_container.position.y = vp_h
@@ -93,8 +101,19 @@ func show_gallery(
 func hide_gallery() -> void:
 	_animating = true
 	closing.emit()
-	_hand_btn.visible = false
 	_hand_btn.set_gallery_mode(false)
+	# Fly hand button out below
+	var fly_out_y: float = (
+		get_viewport().get_visible_rect().size.y
+		+ _hand_btn.size.y
+	)
+	var hand_tw := _hand_btn.create_tween()
+	hand_tw.tween_property(
+		_hand_btn, "position:y", fly_out_y, ANIM_DURATION,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	hand_tw.tween_callback(func() -> void:
+		_hand_btn.visible = false
+	)
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var past_middle: bool = _scroll_offset > _max_scroll * 0.5
 	var target_y: float
