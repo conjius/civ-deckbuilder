@@ -10,6 +10,7 @@ extends Node3D
 @export var tilt_max: float = 90.0
 @export var tilt_speed: float = 8.0
 @export var orbit_speed: float = 2.6
+@export var input_enabled: bool = true
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
@@ -30,6 +31,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
+	if not input_enabled:
+		_apply_smooth(delta)
+		return
 	if Input.is_action_pressed("pan_up"):
 		input_dir.y -= 1.0
 	if Input.is_action_pressed("pan_down"):
@@ -70,6 +74,8 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not input_enabled:
+		return
 	if event is InputEventMouseButton:
 		var shift: bool = event.shift_pressed
 		var cmd: bool = event.meta_pressed
