@@ -203,10 +203,8 @@ func _build_all_cards() -> void:
 
 func _layout_visible_cards() -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	var pile_inset: float = (
-		float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
-	)
-	var area_w: float = vp_size.x - pile_inset * 2.0
+	var side_margin: float = 40.0
+	var area_w: float = vp_size.x - side_margin * 2.0
 	_position_hand_btn(vp_size)
 	var cw: float = (
 		(area_w - PADDING * 2 - COL_GAP * (COLS - 1))
@@ -231,7 +229,7 @@ func _layout_visible_cards() -> void:
 		node.visible = show
 		if show:
 			var x: float = (
-				pile_inset + PADDING + col * (cw + COL_GAP)
+				side_margin + PADDING + col * (cw + COL_GAP)
 			)
 			var y: float = PADDING + row * (ch + ROW_GAP)
 			node.scale = Vector2(card_scale, card_scale)

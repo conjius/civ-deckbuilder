@@ -254,6 +254,7 @@ func _toggle_gallery(
 			_animate_overlay(true)
 		_slide_hand_out()
 		_slide_ui_out()
+		_slide_end_turn_out()
 		var dm := _deck_manager_ref
 		if dm:
 			card_gallery.show_gallery(
@@ -271,6 +272,7 @@ func _toggle_gallery(
 		_discard_pile_ui.set_gallery_mode(true)
 		_draw_pile_ui.set_toggled(show_draw)
 		_discard_pile_ui.set_toggled(show_discard)
+		_animate_piles_to_gallery()
 		if _active_picker:
 			_active_picker.enter_gallery_mode()
 
@@ -295,8 +297,55 @@ func _on_gallery_closing() -> void:
 	if not _active_picker:
 		_animate_overlay(false)
 	_slide_ui_in()
+	_slide_end_turn_in()
 	_draw_pile_ui.set_gallery_mode(false)
 	_discard_pile_ui.set_gallery_mode(false)
+	_animate_piles_back()
+
+
+func _animate_piles_to_gallery() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var spacing := 20.0
+	var pw := _draw_pile_ui.size.x
+	var total_w := pw * 3.0 + spacing * 2.0
+	var start_x := (vp.x - total_w) * 0.5
+	var target_y := vp.y - _draw_pile_ui.size.y - 20.0
+	_draw_pile_ui.animate_to(
+		Vector2(start_x + pw * 0.5, target_y + _draw_pile_ui.size.y * 0.5),
+		0.3,
+	)
+	_discard_pile_ui.animate_to(
+		Vector2(
+			start_x + pw * 2.0 + spacing * 2.0 + pw * 0.5,
+			target_y + _discard_pile_ui.size.y * 0.5,
+		), 0.3,
+	)
+
+
+func _animate_piles_back() -> void:
+	_draw_pile_ui.animate_back(0.3)
+	_discard_pile_ui.animate_back(0.3)
+
+
+func _slide_end_turn_out() -> void:
+	if end_turn_button == null:
+		return
+	var vp_w := get_viewport().get_visible_rect().size.x
+	var tw := create_tween()
+	tw.tween_property(
+		end_turn_button, "position:x",
+		vp_w + 50.0, 0.2,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+
+
+func _slide_end_turn_in() -> void:
+	if end_turn_button == null:
+		return
+	var tw := create_tween()
+	tw.tween_property(
+		end_turn_button, "position:x",
+		_btn_original_x, 0.2,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
 

@@ -108,6 +108,7 @@ func setup(face_down: bool) -> void:
 	else:
 		_card_angles = [0.0] as Array[float]
 	_draw_ctrl.draw.connect(_draw_cards)
+	_update_label_color()
 	_draw_ctrl.queue_redraw()
 
 
