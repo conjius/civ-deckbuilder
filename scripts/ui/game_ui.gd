@@ -145,7 +145,7 @@ func _layout_piles() -> void:
 	)
 	# Top cards: match visual card left edge to pile visual card left edge
 	var vcl: float = float(DarkCardUI.GLOW_PAD) + float(DarkCardUI.EXTRA_W) * 0.5
-	var card_y: float = 50.0
+	var card_y: float = 20.0
 	end_turn_button.position = Vector2(
 		discard_screen_left - vcl, card_y
 	)
@@ -284,17 +284,13 @@ func set_end_turn_enabled(enabled: bool) -> void:
 
 
 func refresh_unit_info() -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_unit(active_unit)
 	if _unit_card and active_unit:
 		_unit_card.show_unit(active_unit)
 
 
 func show_unit_info(unit: Node3D) -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_unit(unit)
+	if _unit_card:
+		_unit_card.show_unit(unit)
 
 
 func show_settlement_info(
@@ -418,17 +414,10 @@ func _animate_piles_back() -> void:
 func _slide_ui_out() -> void:
 	if _btn_original_x < 0:
 		_btn_original_x = end_turn_button.position.x
-	_ensure_unit_original_x()
 	var tw_btn := end_turn_button.create_tween()
 	tw_btn.tween_property(
 		end_turn_button, "position:x",
 		_btn_original_x + end_turn_button.size.x + 50,
-		0.35,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	var tw_unit := unit_info.create_tween()
-	tw_unit.tween_property(
-		unit_info, "position:x",
-		_unit_original_x - unit_info.size.x - 50,
 		0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	if _tile_info_card:
@@ -448,69 +437,20 @@ func _slide_ui_in() -> void:
 		_tile_info_card.slide_in_from_left()
 	if _unit_card:
 		_unit_card.slide_in_from_gallery()
-	var tw_unit := unit_info.create_tween()
-	tw_unit.tween_property(
-		unit_info, "position:x",
-		_unit_original_x,
-		0.35,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func slide_unit_panel_out() -> void:
-	_unit_panel_hidden = true
-	_ensure_unit_original_x()
-	var tw := unit_info.create_tween()
-	tw.tween_property(
-		unit_info, "position:x",
-		_unit_original_x - unit_info.size.x - 50,
-		0.175,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tw.finished.connect(func() -> void:
-		if _unit_panel_hidden:
-			unit_info.visible = false
-	)
+	if _unit_card:
+		_unit_card.hide_unit()
 
 
 func slide_unit_panel_in(
-	swap: bool = false, update_fn: Callable = Callable(),
+	_swap: bool = false, update_fn: Callable = Callable(),
 ) -> void:
-	_unit_panel_hidden = false
-	_ensure_unit_original_x()
-	var off_x: float = _unit_original_x - unit_info.size.x - 50
-	if swap and unit_info.visible:
-		var tw := unit_info.create_tween()
-		tw.tween_property(
-			unit_info, "position:x", off_x, 0.1,
-		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tw.finished.connect(func() -> void:
-			if update_fn.is_valid():
-				update_fn.call()
-			_slide_unit_in_from_left(off_x)
-		)
-	else:
-		if update_fn.is_valid():
-			update_fn.call()
-		_slide_unit_in_from_left(off_x)
-
-
-func _slide_unit_in_from_left(off_x: float) -> void:
-	unit_info.visible = true
-	var tw := unit_info.create_tween()
-	tw.tween_property(
-		unit_info, "position:x",
-		off_x,
-		0.0,
-	)
-	tw.tween_property(
-		unit_info, "position:x",
-		_unit_original_x,
-		0.175,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
-
-func _ensure_unit_original_x() -> void:
-	if _unit_original_x < 0:
-		_unit_original_x = unit_info.position.x
+	if update_fn.is_valid():
+		update_fn.call()
+	if _unit_card and active_unit:
+		_unit_card.show_unit(active_unit)
 
 
 func _on_gallery_card_drag(
