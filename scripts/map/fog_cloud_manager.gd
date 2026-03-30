@@ -18,32 +18,25 @@ func _setup_multimesh() -> void:
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
 	var shader := Shader.new()
-	shader.code = (
-		"shader_type spatial;\n"
-		+ "render_mode blend_mix, depth_draw_alpha_prepass,"
-		+ " cull_back, unshaded;\n"
-		+ "uniform vec4 cloud_color : source_color"
-		+ " = vec4(0.6, 0.6, 0.65, 0.5);\n"
-		+ "float hash(vec2 p) {\n"
-		+ "  return fract(sin(dot(p, vec2(127.1, 311.7)))"
-		+ " * 43758.5453);\n"
-		+ "}\n"
-		+ "void vertex() {\n"
-		+ "  vec3 o = MODEL_MATRIX[3].xyz;\n"
-		+ "  float ph = hash(o.xz) * 6.2832;\n"
-		+ "  float ds = 0.03 + hash(o.xz+vec2(1.0)) * 0.05;\n"
-		+ "  float bs = 0.3 + hash(o.xz+vec2(2.0)) * 0.5;\n"
-		+ "  float ba = 0.1 + hash(o.xz+vec2(3.0)) * 0.2;\n"
-		+ "  VERTEX *= 1.0 + ba * sin(TIME * bs + ph);\n"
-		+ "  VERTEX.x += sin(TIME * ds + ph) * 0.5;\n"
-		+ "  VERTEX.z += cos(TIME * ds * 0.7 + ph * 1.3)"
-		+ " * 0.5;\n"
-		+ "}\n"
-		+ "void fragment() {\n"
-		+ "  ALBEDO = cloud_color.rgb;\n"
-		+ "  ALPHA = cloud_color.a;\n"
-		+ "}\n"
-	)
+	shader.code = """shader_type spatial;
+render_mode blend_mix, depth_draw_alpha_prepass, cull_back, unshaded;
+
+void vertex() {
+	vec3 o = MODEL_MATRIX[3].xyz;
+	float ph = fract(sin(dot(o.xz, vec2(127.1, 311.7))) * 43758.5) * 6.28;
+	float bs = 0.3 + fract(sin(dot(o.xz + vec2(2.0), vec2(127.1, 311.7))) * 43758.5) * 0.5;
+	float ba = 0.1 + fract(sin(dot(o.xz + vec2(3.0), vec2(127.1, 311.7))) * 43758.5) * 0.2;
+	float ds = 0.03 + fract(sin(dot(o.xz + vec2(1.0), vec2(127.1, 311.7))) * 43758.5) * 0.05;
+	VERTEX *= 1.0 + ba * sin(TIME * bs + ph);
+	VERTEX.x += sin(TIME * ds + ph) * 0.5;
+	VERTEX.z += cos(TIME * ds * 0.7 + ph * 1.3) * 0.5;
+}
+
+void fragment() {
+	ALBEDO = vec3(0.6, 0.6, 0.65);
+	ALPHA = 0.5;
+}
+"""
 	var mat := ShaderMaterial.new()
 	mat.shader = shader
 	mat.render_priority = 1
