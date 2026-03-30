@@ -390,7 +390,7 @@ func _animate_piles_to_gallery() -> void:
 	var ph := _draw_pile_ui.size.y
 	var total_w := pw * 3.0 + spacing * 2.0
 	var start_x := (vp.x - total_w) * 0.5
-	var target_y := card_gallery._gallery_bottom_y
+	var target_y := card_gallery._gallery_bottom_y + 20.0
 	var gp := float(CardPileUI.glow_pad)
 	# animate_to subtracts GLOW_PAD, so add it back
 	_draw_pile_ui.animate_to(
