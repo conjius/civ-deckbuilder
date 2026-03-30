@@ -14,7 +14,7 @@ func _ready() -> void:
 	var icon_sz: float = UIHelpers.sf(20.0)
 	_unit_icon = TextureRect.new()
 	_unit_icon.texture = load(
-		"res://assets/icons/explorer_unit.svg"
+		"res://assets/icons/boot_move_white_on_transparent.png"
 	) as Texture2D
 	_unit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -26,7 +26,7 @@ func _ready() -> void:
 	_unit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content_clip.add_child(_unit_icon)
 
-	var top_offset: float = icon_sz + 8.0
+	var top_offset: float = icon_sz + 2.0
 	_lines_container = VBoxContainer.new()
 	_lines_container.position = Vector2(4, top_offset)
 	_lines_container.size = Vector2(
