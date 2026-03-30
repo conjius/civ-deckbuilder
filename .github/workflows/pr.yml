@@ -114,8 +114,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          PR_NUM="${{ github.event.pull_request.number }}"
-          echo "tag=v0.3.${PATCH}-pr${PR_NUM}" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
       - name: upload-macos
         uses: actions/upload-artifact@v7
         with:
@@ -140,8 +139,7 @@ jobs:
         id: version
         run: |
           PATCH=$(($(git rev-list --count HEAD) - 378))
-          PR_NUM="${{ github.event.pull_request.number }}"
-          echo "tag=v0.3.${PATCH}-pr${PR_NUM}" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
       - name: tag
         run: |
           TAG="${{ steps.version.outputs.tag }}"
