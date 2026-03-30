@@ -20,7 +20,7 @@ img#status-splash {
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
   margin: auto !important; padding: 0 !important;
   opacity: 0;
-  animation: logoFadeIn 16s cubic-bezier(0.4, 0, 1, 1) both !important;
+  animation: logoFadeIn 14s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
 @keyframes logoFadeIn {
   from { opacity: 0; transform: scale(0.7); }
@@ -54,7 +54,7 @@ canvas { background: #000 !important; }
   background: #e8c055; border-radius: 2px;
   transform-origin: left center;
   transform: scaleX(0);
-  animation: fillBar 16s linear forwards;
+  animation: fillBar 14s linear forwards;
   will-change: transform;
 }
 @keyframes fillBar {
