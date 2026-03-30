@@ -275,8 +275,11 @@ func update_turn(turn_number: int) -> void:
 func update_tile_info(
 	terrain_name: String, yields: Array[String],
 ) -> void:
-	if _tile_info_card and _tile_info_card.has_method("update_info"):
-		_tile_info_card.update_info(terrain_name, yields)
+	if _tile_info_card:
+		if _tile_info_card.has_method("update_info"):
+			_tile_info_card.update_info(terrain_name, yields)
+		else:
+			print("[WARN] tile_info_card missing update_info")
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
