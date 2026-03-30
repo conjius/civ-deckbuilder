@@ -3,6 +3,7 @@ extends CanvasLayer
 signal end_turn_pressed
 signal card_dropped(card: CardData, target: Vector2i)
 signal action_pressed(action_name: String)
+signal gallery_closed
 
 var hex_map: Node3D
 var camera: Camera3D
@@ -48,6 +49,7 @@ func _ready() -> void:
 	card_gallery.visible = false
 	card_gallery.closing.connect(_on_gallery_closing)
 	card_gallery.closed.connect(_on_gallery_closed)
+	card_gallery.filter_changed.connect(_sync_pile_toggles)
 	card_gallery.card_drag_requested.connect(
 		_on_gallery_card_drag
 	)
@@ -74,9 +76,11 @@ func _ready() -> void:
 func _setup_piles() -> void:
 	_draw_pile_ui = CardPileUI.new()
 	_draw_pile_ui.setup(true)
+	_draw_pile_ui.set_title("Draw")
 	add_child(_draw_pile_ui)
 	_discard_pile_ui = CardPileUI.new()
 	_discard_pile_ui.setup(false)
+	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
@@ -88,12 +92,13 @@ func _layout_piles() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var focused_y: float = vp.y - float(UIHelpers.CARD_HEIGHT)
 	var pile_y: float = focused_y - 100.0
-	var margin := 16.0
+	var gap_w: float = float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
 	_draw_pile_ui.position = Vector2(
-		margin, pile_y - _draw_pile_ui.size.y
+		(gap_w - _draw_pile_ui.size.x) * 0.5,
+		pile_y - _draw_pile_ui.size.y,
 	)
 	_discard_pile_ui.position = Vector2(
-		vp.x - _discard_pile_ui.size.x - margin,
+		vp.x - gap_w + (gap_w - _discard_pile_ui.size.x) * 0.5,
 		pile_y - _discard_pile_ui.size.y,
 	)
 	_draw_pile_ui.store_original_pos()
@@ -104,9 +109,12 @@ func _layout_piles() -> void:
 
 func update_piles(
 	draw_count: int, discard_count: int,
+	hand_count: int = -1,
 ) -> void:
 	_draw_pile_ui.update_count(draw_count)
 	_discard_pile_ui.update_count(discard_count)
+	if hand_count >= 0:
+		card_gallery.update_hand_count(hand_count)
 
 
 func get_draw_pile_center() -> Vector2:
@@ -121,6 +129,9 @@ func animate_deal(
 	cards: Array[CardData],
 	draw_count: int, discard_count: int,
 ) -> void:
+	if card_gallery.visible:
+		card_gallery.hide_gallery()
+		await card_gallery.closed
 	update_piles(draw_count + cards.size(), discard_count)
 	# Move draw pile to center at same height as static piles
 	var vp_w: float = get_viewport().get_visible_rect().size.x
@@ -152,6 +163,15 @@ func _capture_positions() -> void:
 		_unit_original_x = unit_info.position.x
 	if _btn_original_x < 0:
 		_btn_original_x = end_turn_button.position.x
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if (event.keycode == KEY_TAB
+			or event.keycode == KEY_SPACE
+		):
+			_toggle_gallery(false, true, false)
+			get_viewport().set_input_as_handled()
 
 
 func _process(_delta: float) -> void:
@@ -236,6 +256,11 @@ func _toggle_gallery(
 ) -> void:
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
+		var rig := camera.get_parent().get_parent()
+		if "input_enabled" in rig:
+			rig.input_enabled = true
+		if hex_map and hex_map.has_method("restore_highlights"):
+			hex_map.restore_highlights()
 	else:
 		if not _active_picker:
 			_animate_overlay(true)
@@ -254,16 +279,30 @@ func _toggle_gallery(
 				[] as Array[CardData],
 				false, true, false,
 			)
+		var rig := camera.get_parent().get_parent()
+		if "input_enabled" in rig:
+			rig.input_enabled = false
+		if hex_map:
+			hex_map.clear_highlights()
+		_draw_pile_ui.set_gallery_mode(true)
+		_discard_pile_ui.set_gallery_mode(true)
 		_draw_pile_ui.set_toggled(show_draw)
 		_discard_pile_ui.set_toggled(show_discard)
+		_animate_piles_to_gallery()
 		if _active_picker:
 			_active_picker.enter_gallery_mode()
+
+
+func _sync_pile_toggles() -> void:
+	_draw_pile_ui.set_toggled(card_gallery._show_draw)
+	_discard_pile_ui.set_toggled(card_gallery._show_discard)
+	card_gallery.update_hand_toggle()
 
 
 func _on_draw_pile_clicked() -> void:
 	if card_gallery.visible:
 		card_gallery.toggle_filter("draw")
-		_draw_pile_ui.set_toggled(card_gallery._show_draw)
+		_sync_pile_toggles()
 	else:
 		_toggle_gallery(true, false, false)
 
@@ -271,7 +310,7 @@ func _on_draw_pile_clicked() -> void:
 func _on_discard_pile_clicked() -> void:
 	if card_gallery.visible:
 		card_gallery.toggle_filter("discard")
-		_discard_pile_ui.set_toggled(card_gallery._show_discard)
+		_sync_pile_toggles()
 	else:
 		_toggle_gallery(false, false, true)
 
@@ -280,8 +319,38 @@ func _on_gallery_closing() -> void:
 	if not _active_picker:
 		_animate_overlay(false)
 	_slide_ui_in()
-	_draw_pile_ui.set_toggled(false)
-	_discard_pile_ui.set_toggled(false)
+	_draw_pile_ui.set_gallery_mode(false)
+	_discard_pile_ui.set_gallery_mode(false)
+	_animate_piles_back()
+
+
+func _animate_piles_to_gallery() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var spacing := 60.0
+	var pw := _draw_pile_ui.size.x
+	var ph := _draw_pile_ui.size.y
+	var total_w := pw * 3.0 + spacing * 2.0
+	var start_x := (vp.x - total_w) * 0.5
+	var reserve := ph + 70.0
+	var target_y := vp.y - reserve + (reserve - ph) * 0.5
+	var gp := float(CardPileUI.GLOW_PAD)
+	# animate_to subtracts GLOW_PAD, so add it back
+	_draw_pile_ui.animate_to(
+		Vector2(start_x + gp, target_y + gp), 0.3,
+	)
+	_discard_pile_ui.animate_to(
+		Vector2(
+			start_x + pw * 2.0 + spacing * 2.0 + gp,
+			target_y + gp,
+		), 0.3,
+	)
+
+
+func _animate_piles_back() -> void:
+	_draw_pile_ui.animate_back(0.3)
+	_discard_pile_ui.animate_back(0.3)
+
+
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
 
@@ -377,8 +446,11 @@ func _ensure_unit_original_x() -> void:
 
 
 func _on_gallery_card_drag(
-	card: CardData, mouse_pos: Vector2,
+	card: CardData, mouse_pos: Vector2, pile: String,
 ) -> void:
+	if pile != "hand":
+		_flash_reject_card(mouse_pos)
+		return
 	_animate_overlay(false)
 	_slide_hand_in()
 	_slide_ui_in()
@@ -388,9 +460,22 @@ func _on_gallery_card_drag(
 	card_gallery.hide_gallery()
 
 
+func _flash_reject_card(pos: Vector2) -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(1.0, 0.2, 0.2, 0.4)
+	flash.size = Vector2(60, 80)
+	flash.position = pos - flash.size * 0.5
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash)
+	var tw := flash.create_tween()
+	tw.tween_property(flash, "color:a", 0.0, 0.3)
+	tw.tween_callback(flash.queue_free)
+
+
 func _on_gallery_closed() -> void:
 	if not _pending_drag_card:
 		_slide_hand_in()
+	gallery_closed.emit()
 
 
 func _animate_overlay(show: bool) -> void:
