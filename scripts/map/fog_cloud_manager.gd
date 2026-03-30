@@ -31,7 +31,8 @@ func add_fog(
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(coord)
 	var indices: Array[int] = []
-	for b in BLOBS_PER_TILE:
+	var blob_count: int = rng.randi_range(3, BLOBS_PER_TILE)
+	for b in blob_count:
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(0.15, 0.5)
 		var sx: float = rng.randf_range(0.55, 1.1)
