@@ -67,6 +67,7 @@ func update_info(
 		for child in _yield_container.get_children():
 			child.queue_free()
 		return
+	print("[TILE] setting text to: '", terrain_name, "' yields: ", yields.size())
 	_title_label.text = terrain_name
 	if yields.is_empty():
 		_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
