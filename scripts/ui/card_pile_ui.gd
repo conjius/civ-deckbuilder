@@ -26,18 +26,15 @@ func setup(face_down: bool) -> void:
 	_is_face_down = face_down
 	_pile_width = int(float(UIHelpers.CARD_WIDTH) * CARD_SCALE)
 	_pile_height = int(float(UIHelpers.CARD_HEIGHT) * CARD_SCALE)
-	var fan_w: int = int(
-		float(_pile_width) * 2.5 + GLOW_PAD * 2
-	)
-	var fan_h: int = int(
-		float(_pile_height) * 1.4 + GLOW_PAD * 2
-	)
-	custom_minimum_size = Vector2(fan_w, fan_h)
-	size = Vector2(fan_w, fan_h)
+	var total_w: int = _pile_width + GLOW_PAD * 2
+	var total_h: int = _pile_height + GLOW_PAD * 2
+	custom_minimum_size = Vector2(total_w, total_h)
+	size = Vector2(total_w, total_h)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	position -= Vector2(GLOW_PAD, GLOW_PAD)
 
 	var svc := SubViewportContainer.new()
-	svc.size = Vector2(fan_w, fan_h)
+	svc.size = Vector2(total_w, total_h)
 	svc.stretch = true
 	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_glow_mat = _create_glow_shader()
@@ -45,12 +42,12 @@ func setup(face_down: bool) -> void:
 	svc.material = _glow_mat
 	add_child(svc)
 	_sv = SubViewport.new()
-	_sv.size = Vector2i(fan_w, fan_h)
+	_sv.size = Vector2i(total_w, total_h)
 	_sv.transparent_bg = true
 	svc.add_child(_sv)
 
 	_draw_ctrl = Control.new()
-	_draw_ctrl.size = Vector2(fan_w, fan_h)
+	_draw_ctrl.size = Vector2(total_w, total_h)
 	_draw_ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_sv.add_child(_draw_ctrl)
 
@@ -60,7 +57,7 @@ func setup(face_down: bool) -> void:
 	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_count_label.position = Vector2.ZERO
-	_count_label.size = Vector2(fan_w, fan_h)
+	_count_label.size = Vector2(total_w, total_h)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
 		"font_size", int(18 * UIHelpers.UI_SCALE)
@@ -150,11 +147,14 @@ func _draw_cards_fan() -> void:
 	var ptex: Texture2D = load(
 		UIHelpers.PARCHMENT_PATH
 	) as Texture2D
-	var hw := float(_pile_width) * 0.5
-	var hh := float(_pile_height)
-	var card_r := float(UIHelpers.CARD_CORNER_RADIUS) * CARD_SCALE
+	var fan_scale := 0.6
+	var hw := float(_pile_width) * 0.5 * fan_scale
+	var hh := float(_pile_height) * fan_scale
+	var card_r := float(
+		UIHelpers.CARD_CORNER_RADIUS
+	) * CARD_SCALE * fan_scale
 	var cx := size.x * 0.5
-	var cy := size.y * 0.85
+	var cy := float(GLOW_PAD) + float(_pile_height) * 0.85
 	var start_angle := -FAN_SPREAD * 0.5
 	var step: float = FAN_SPREAD / float(FAN_CARDS - 1)
 	for i in range(FAN_CARDS):
@@ -173,7 +173,7 @@ func _draw_single_card() -> void:
 	var hh := float(_pile_height)
 	var card_r := float(UIHelpers.CARD_CORNER_RADIUS) * CARD_SCALE
 	var cx := size.x * 0.5
-	var cy := size.y * 0.5 + hh * 0.35
+	var cy := float(GLOW_PAD) + float(_pile_height) * 0.85
 	_draw_rotated_card(
 		_draw_ctrl, ptex, hw, hh, card_r,
 		cx, cy, 0.0, 0.7,
@@ -252,7 +252,7 @@ func store_original_pos() -> void:
 func animate_to(target: Vector2, dur: float) -> Tween:
 	var tw := create_tween()
 	tw.tween_property(
-		self, "position", target,
+		self, "position", target - Vector2(GLOW_PAD, GLOW_PAD),
 		dur,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	return tw
