@@ -361,10 +361,15 @@ func _draw_rotated_card(
 		var bgg: float = lerpf(bb.g, bg, _gray_strength) * brightness
 		var bbl: float = lerpf(bb.b, bg, _gray_strength) * brightness
 		var midpt := (border_pts[j] + border_pts[k]) * 0.5
-		var label_center := Vector2(
-			pivot_x, pivot_y - ch * 0.5
+		var num_cx := size.x * 0.5
+		var num_cy := (
+			float(GLOW_PAD)
+			+ float(_pile_height) * 0.9
+			- float(_pile_height) * 0.5
 		)
-		var dist_to_label := midpt.distance_to(label_center)
+		var dist_to_label := midpt.distance_to(
+			Vector2(num_cx, num_cy)
+		)
 		if dist_to_label > 30.0:
 			ctrl.draw_line(
 				border_pts[j], border_pts[k],
