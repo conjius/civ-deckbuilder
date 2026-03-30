@@ -10,6 +10,7 @@ extends Node3D
 @export var tilt_max: float = 90.0
 @export var tilt_speed: float = 8.0
 @export var orbit_speed: float = 2.6
+@export var input_enabled: bool = true
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
@@ -29,15 +30,18 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if not input_enabled:
+		_dragging = false
 	var input_dir := Vector2.ZERO
-	if Input.is_action_pressed("pan_up"):
-		input_dir.y -= 1.0
-	if Input.is_action_pressed("pan_down"):
-		input_dir.y += 1.0
-	if Input.is_action_pressed("pan_left"):
-		input_dir.x -= 1.0
-	if Input.is_action_pressed("pan_right"):
-		input_dir.x += 1.0
+	if input_enabled:
+		if Input.is_action_pressed("pan_up"):
+			input_dir.y -= 1.0
+		if Input.is_action_pressed("pan_down"):
+			input_dir.y += 1.0
+		if Input.is_action_pressed("pan_left"):
+			input_dir.x -= 1.0
+		if Input.is_action_pressed("pan_right"):
+			input_dir.x += 1.0
 
 	if input_dir != Vector2.ZERO:
 		var forward := -global_transform.basis.z
@@ -69,7 +73,14 @@ func _process(delta: float) -> void:
 	_apply_tilt()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_dragging = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if not input_enabled:
+		return
 	if event is InputEventMouseButton:
 		var shift: bool = event.shift_pressed
 		var cmd: bool = event.meta_pressed
@@ -101,7 +112,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			rotate_y(deg_to_rad(orbit_speed))
 		elif event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
 			rotate_y(deg_to_rad(-orbit_speed))
-		elif event.button_index == MOUSE_BUTTON_LEFT:
+		elif (event.button_index == MOUSE_BUTTON_LEFT
+			or event.button_index == MOUSE_BUTTON_MIDDLE
+		):
 			if event.pressed:
 				_dragging = true
 				_drag_origin = _screen_to_ground(
