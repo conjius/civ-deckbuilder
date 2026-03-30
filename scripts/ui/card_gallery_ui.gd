@@ -3,7 +3,7 @@ extends Control
 
 signal closing
 signal closed
-signal card_drag_requested(card: CardData, mouse_pos: Vector2)
+signal card_drag_requested(card: CardData, mouse_pos: Vector2, pile: String)
 signal filter_changed
 
 const COLS := 5
@@ -216,6 +216,7 @@ func _build_all_cards() -> void:
 		outer.mouse_filter = Control.MOUSE_FILTER_STOP
 		CardFaceBuilder.build_face(outer, card, sections)
 		var card_ref: CardData = card
+		var pile_ref: String = pile
 		outer.gui_input.connect(
 			func(event: InputEvent) -> void:
 				if _animating:
@@ -225,7 +226,8 @@ func _build_all_cards() -> void:
 						and event.pressed
 					):
 						card_drag_requested.emit(
-							card_ref, event.global_position
+							card_ref, event.global_position,
+							pile_ref,
 						)
 						get_viewport().set_input_as_handled()
 		)

@@ -446,8 +446,11 @@ func _ensure_unit_original_x() -> void:
 
 
 func _on_gallery_card_drag(
-	card: CardData, mouse_pos: Vector2,
+	card: CardData, mouse_pos: Vector2, pile: String,
 ) -> void:
+	if pile != "hand":
+		_flash_reject_card(mouse_pos)
+		return
 	_animate_overlay(false)
 	_slide_hand_in()
 	_slide_ui_in()
@@ -455,6 +458,18 @@ func _on_gallery_card_drag(
 		_current_cards, card, mouse_pos
 	)
 	card_gallery.hide_gallery()
+
+
+func _flash_reject_card(pos: Vector2) -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(1.0, 0.2, 0.2, 0.4)
+	flash.size = Vector2(60, 80)
+	flash.position = pos - flash.size * 0.5
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash)
+	var tw := flash.create_tween()
+	tw.tween_property(flash, "color:a", 0.0, 0.3)
+	tw.tween_callback(flash.queue_free)
 
 
 func _on_gallery_closed() -> void:
