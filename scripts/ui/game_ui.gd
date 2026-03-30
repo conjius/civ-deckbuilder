@@ -19,6 +19,8 @@ var _btn_original_x: float = -1.0
 var _unit_original_x: float = -1.0
 var _unit_panel_hidden: bool = false
 var _dim_overlay: ColorRect
+var _tile_info_card: Control
+var _unit_card: UnitCardUI
 var _pending_drag_card: CardData = null
 var _pending_drag_pos: Vector2 = Vector2.ZERO
 var _draw_pile_ui: CardPileUI
@@ -35,11 +37,19 @@ var _font_regular: Font = _font_bold
 @onready var card_hand: Control = %CardHand
 @onready var turn_label: RichTextLabel = %TurnLabel
 @onready var end_turn_button: Control = %EndTurnButton
-@onready var info_label: RichTextLabel = %InfoLabel
+@onready var info_label: RichTextLabel = %InfoLabel  # Legacy, hidden
 @onready var unit_info: PanelContainer = %UnitInfo
 
 
 func _ready() -> void:
+	if info_label:
+		info_label.visible = false
+	unit_info.visible = false
+	# Reparent end turn button out of layout container
+	var et_parent := end_turn_button.get_parent()
+	if et_parent:
+		et_parent.remove_child(end_turn_button)
+	add_child(end_turn_button)
 	_dim_overlay = ColorRect.new()
 	_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -82,6 +92,13 @@ func _setup_piles() -> void:
 	_discard_pile_ui.setup(false)
 	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
+	var tile_info_cls: GDScript = load(
+		"res://scripts/ui/tile_info_card_ui.gd"
+	) as GDScript
+	_tile_info_card = tile_info_cls.new()
+	add_child(_tile_info_card)
+	_unit_card = UnitCardUI.new()
+	add_child(_unit_card)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
 	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
@@ -103,15 +120,46 @@ func _layout_piles() -> void:
 	)
 	_draw_pile_ui.store_original_pos()
 	_discard_pile_ui.store_original_pos()
-	# Align end turn button X with discard pile center
-	var discard_cx: float = (
+	var pile_gp := float(CardPileUI.glow_pad)
+	# The draw/discard piles position.x includes a -GLOW_PAD offset
+	# Their visual card left edge is at position.x + GLOW_PAD
+	# Their visual card center X is position.x + GLOW_PAD + pile_width/2
+	var draw_visual_cx: float = (
+		_draw_pile_ui.position.x + pile_gp
+		+ float(_draw_pile_ui._pile_width) * 0.5
+	)
+	var discard_visual_cx: float = (
+		_discard_pile_ui.position.x + pile_gp
+		+ float(_discard_pile_ui._pile_width) * 0.5
+	)
+	# Pile screen visual card left edge
+	@warning_ignore("integer_division")
+	var draw_screen_left: float = (
+		_draw_pile_ui.position.x
+		+ (_draw_pile_ui.size.x - float(_draw_pile_ui._pile_width)) * 0.5
+	)
+	@warning_ignore("integer_division")
+	var discard_screen_left: float = (
 		_discard_pile_ui.position.x
-		+ _discard_pile_ui.size.x * 0.5
+		+ (_discard_pile_ui.size.x - float(_discard_pile_ui._pile_width)) * 0.5
 	)
-	end_turn_button.position.x = (
-		discard_cx - end_turn_button.size.x * 0.5
+	# Top cards: match visual card left edge to pile visual card left edge
+	var vcl: float = float(DarkCardUI.glow_pad) + float(DarkCardUI.extra_w) * 0.5
+	var card_y: float = 20.0
+	end_turn_button.position = Vector2(
+		discard_screen_left - vcl, card_y
 	)
-	end_turn_button.position.y = 20.0
+	_btn_original_x = end_turn_button.position.x
+	if _tile_info_card:
+		_tile_info_card.position = Vector2(
+			draw_screen_left - vcl, card_y
+		)
+		_tile_info_card.store_original_pos()
+	if _unit_card:
+		_unit_card.position = Vector2(
+			(vp.x - _unit_card.size.x) * 0.5, card_y
+		)
+		_unit_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
 	card_hand.discard_pile_pos = get_discard_pile_center()
@@ -224,12 +272,11 @@ func update_turn(turn_number: int) -> void:
 	))
 
 
-func update_info(text: String) -> void:
-	if text == "":
-		info_label.visible = false
-		return
-	info_label.visible = true
-	UIHelpers.set_bbcode(info_label, "[center]" + text + "[/center]")
+func update_tile_info(
+	terrain_name: String, yields: Array[String],
+) -> void:
+	if _tile_info_card:
+		_tile_info_card.update_info(terrain_name, yields)
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
@@ -237,15 +284,13 @@ func set_end_turn_enabled(enabled: bool) -> void:
 
 
 func refresh_unit_info() -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_unit(active_unit)
+	if _unit_card and active_unit:
+		_unit_card.show_unit(active_unit)
 
 
 func show_unit_info(unit: Node3D) -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_unit(unit)
+	if _unit_card:
+		_unit_card.show_unit(unit)
 
 
 func show_settlement_info(
@@ -277,6 +322,9 @@ func _toggle_gallery(
 				dm.draw_pile, dm.hand, dm.discard_pile,
 				show_draw, show_hand, show_discard,
 			)
+			_draw_pile_ui.update_count(dm.draw_pile.size())
+			_discard_pile_ui.update_count(dm.discard_pile.size())
+			card_gallery.update_hand_count(dm.hand.size())
 		else:
 			card_gallery.show_gallery(
 				[] as Array[CardData],
@@ -341,7 +389,7 @@ func _animate_piles_to_gallery() -> void:
 	var start_x := (vp.x - total_w) * 0.5
 	var reserve := ph + 70.0
 	var target_y := vp.y - reserve + (reserve - ph) * 0.5
-	var gp := float(CardPileUI.GLOW_PAD)
+	var gp := float(CardPileUI.glow_pad)
 	# animate_to subtracts GLOW_PAD, so add it back
 	_draw_pile_ui.animate_to(
 		Vector2(start_x + gp, target_y + gp), 0.3,
@@ -366,19 +414,16 @@ func _animate_piles_back() -> void:
 func _slide_ui_out() -> void:
 	if _btn_original_x < 0:
 		_btn_original_x = end_turn_button.position.x
-	_ensure_unit_original_x()
 	var tw_btn := end_turn_button.create_tween()
 	tw_btn.tween_property(
 		end_turn_button, "position:x",
 		_btn_original_x + end_turn_button.size.x + 50,
 		0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	var tw_unit := unit_info.create_tween()
-	tw_unit.tween_property(
-		unit_info, "position:x",
-		_unit_original_x - unit_info.size.x - 50,
-		0.35,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	if _tile_info_card:
+		_tile_info_card.slide_out_left()
+	if _unit_card:
+		_unit_card.slide_out_for_gallery()
 
 
 func _slide_ui_in() -> void:
@@ -388,69 +433,24 @@ func _slide_ui_in() -> void:
 		_btn_original_x,
 		0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	var tw_unit := unit_info.create_tween()
-	tw_unit.tween_property(
-		unit_info, "position:x",
-		_unit_original_x,
-		0.35,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if _tile_info_card:
+		_tile_info_card.slide_in_from_left()
+	if _unit_card:
+		_unit_card.slide_in_from_gallery()
 
 
 func slide_unit_panel_out() -> void:
-	_unit_panel_hidden = true
-	_ensure_unit_original_x()
-	var tw := unit_info.create_tween()
-	tw.tween_property(
-		unit_info, "position:x",
-		_unit_original_x - unit_info.size.x - 50,
-		0.175,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tw.finished.connect(func() -> void:
-		if _unit_panel_hidden:
-			unit_info.visible = false
-	)
+	if _unit_card:
+		_unit_card.hide_unit()
 
 
 func slide_unit_panel_in(
-	swap: bool = false, update_fn: Callable = Callable(),
+	_swap: bool = false, update_fn: Callable = Callable(),
 ) -> void:
-	_unit_panel_hidden = false
-	_ensure_unit_original_x()
-	var off_x: float = _unit_original_x - unit_info.size.x - 50
-	if swap and unit_info.visible:
-		var tw := unit_info.create_tween()
-		tw.tween_property(
-			unit_info, "position:x", off_x, 0.1,
-		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tw.finished.connect(func() -> void:
-			if update_fn.is_valid():
-				update_fn.call()
-			_slide_unit_in_from_left(off_x)
-		)
-	else:
-		if update_fn.is_valid():
-			update_fn.call()
-		_slide_unit_in_from_left(off_x)
-
-
-func _slide_unit_in_from_left(off_x: float) -> void:
-	unit_info.visible = true
-	var tw := unit_info.create_tween()
-	tw.tween_property(
-		unit_info, "position:x",
-		off_x,
-		0.0,
-	)
-	tw.tween_property(
-		unit_info, "position:x",
-		_unit_original_x,
-		0.175,
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
-
-func _ensure_unit_original_x() -> void:
-	if _unit_original_x < 0:
-		_unit_original_x = unit_info.position.x
+	if update_fn.is_valid():
+		update_fn.call()
+	if _unit_card and active_unit:
+		_unit_card.show_unit(active_unit)
 
 
 func _on_gallery_card_drag(
@@ -558,12 +558,6 @@ func _apply_sizes() -> void:
 		"normal_font_size", UIHelpers.FONT_TURN
 	)
 
-	info_label.add_theme_font_override(
-		"normal_font", _font_bold
-	)
-	info_label.add_theme_font_size_override(
-		"normal_font_size", UIHelpers.FONT_UNIT_STAT
-	)
 
 	bottom_bar.custom_minimum_size = Vector2(
 		0, UIHelpers.BOTTOM_BAR_HEIGHT
