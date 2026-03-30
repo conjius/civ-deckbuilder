@@ -131,7 +131,8 @@ func _update_glow() -> void:
 func _rebuild_visual() -> void:
 	if _draw_ctrl == null:
 		return
-	_draw_ctrl.material = null
+	if _draw_ctrl.material == null:
+		_draw_ctrl.material = _grayscale_mat
 	_start_angles = _card_angles.duplicate()
 	if _toggled_on:
 		_target_angles.clear()
@@ -181,13 +182,17 @@ func _set_anim_progress(t: float) -> void:
 	var target_bright := 1.0 if _toggled_on else 0.7
 	var start_bright := 0.7 if _toggled_on else 1.0
 	_brightness = lerpf(start_bright, target_bright, t)
+	var target_gray := 0.0 if _toggled_on else 1.0
+	var start_gray := 1.0 if _toggled_on else 0.0
+	_grayscale_mat.set_shader_parameter(
+		"strength", lerpf(start_gray, target_gray, t)
+	)
 	_draw_ctrl.queue_redraw()
 
 
 func _on_anim_finished() -> void:
 	if not _toggled_on:
 		_card_angles = [0.0] as Array[float]
-		_draw_ctrl.material = _grayscale_mat
 		_draw_ctrl.queue_redraw()
 
 
@@ -337,10 +342,12 @@ static func _create_grayscale_shader() -> ShaderMaterial:
 	var shader := Shader.new()
 	shader.code = (
 		"shader_type canvas_item;\n"
+		+ "uniform float strength : hint_range(0.0, 1.0) = 0.0;\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float gray = dot(tex.rgb, vec3(0.3, 0.59, 0.11));\n"
-		+ "  COLOR = vec4(vec3(gray) * 0.6, tex.a);\n"
+		+ "  vec3 dimmed = vec3(gray) * 0.6;\n"
+		+ "  COLOR = vec4(mix(tex.rgb, dimmed, strength), tex.a);\n"
 		+ "}\n"
 	)
 	var mat := ShaderMaterial.new()
