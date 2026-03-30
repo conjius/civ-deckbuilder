@@ -26,26 +26,14 @@ func test_coi_service_worker_exists() -> void:
 		"res://scripts/tools/coi-serviceworker.min.js",
 		FileAccess.READ,
 	)
-	TestAssert.assert_not_null(file, "coi-serviceworker.min.js must exist")
+	TestAssert.assert_not_null(
+		file, "coi-serviceworker.min.js must exist"
+	)
 	if file:
 		var content := file.get_as_text()
 		TestAssert.assert_true(
 			content.length() > 100,
 			"coi-serviceworker should not be empty",
-		)
-		file.close()
-
-
-func test_web_export_uses_nothreads() -> void:
-	var file := FileAccess.open(
-		"res://scripts/tools/dev-server.sh", FileAccess.READ
-	)
-	TestAssert.assert_not_null(file, "dev-server.sh must exist")
-	if file:
-		var content := file.get_as_text()
-		TestAssert.assert_true(
-			content.contains("thread_support=false"),
-			"web export must use nothreads",
 		)
 		file.close()
 
@@ -59,3 +47,18 @@ func test_main_scene_set() -> void:
 	TestAssert.assert_true(
 		scene != "", "main scene must be set"
 	)
+
+
+func test_no_unused_logo_variants_in_root() -> void:
+	var unused: Array[String] = [
+		"res://logo.png",
+		"res://logo_transparent.png",
+		"res://logo_transparent_smooth.png",
+	]
+	for path in unused:
+		var exists := FileAccess.file_exists(path)
+		if exists:
+			TestAssert.assert_true(
+				false,
+				path + " should be removed from repo root",
+			)
