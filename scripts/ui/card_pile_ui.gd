@@ -76,7 +76,7 @@ func setup(face_down: bool) -> void:
 	var card_top: int = pivot_y - _pile_height
 	@warning_ignore("integer_division")
 	var label_x: int = (total_w - _pile_width) / 2
-	_count_label.position = Vector2(label_x, card_top + 3)
+	_count_label.position = Vector2(label_x, card_top + 5)
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(

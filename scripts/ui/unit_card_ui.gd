@@ -14,19 +14,19 @@ func _ready() -> void:
 	var icon_sz: float = UIHelpers.sf(20.0)
 	_unit_icon = TextureRect.new()
 	_unit_icon.texture = load(
-		"res://assets/icons/explorer_unit.svg"
+		"res://assets/icons/boot_move_white_on_transparent.png"
 	) as Texture2D
 	_unit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_unit_icon.size = Vector2(icon_sz, icon_sz)
 	_unit_icon.position = Vector2(
-		(float(card_w) - icon_sz) * 0.5, 4.0
+		(float(card_w) - icon_sz) * 0.5, 34.0
 	)
 	_unit_icon.modulate = Color(0.95, 0.88, 0.7)
 	_unit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content_clip.add_child(_unit_icon)
 
-	var top_offset: float = icon_sz + 8.0
+	var top_offset: float = icon_sz + 32.0
 	_lines_container = VBoxContainer.new()
 	_lines_container.position = Vector2(4, top_offset)
 	_lines_container.size = Vector2(
@@ -106,7 +106,7 @@ func _add_line(bbcode: String) -> void:
 	lbl.fit_content = true
 	lbl.add_theme_font_override("normal_font", _font_bold)
 	lbl.add_theme_font_size_override(
-		"normal_font_size", UIHelpers.s(10)
+		"normal_font_size", UIHelpers.s(8)
 	)
 	lbl.add_theme_color_override(
 		"default_color", Color(0.95, 0.88, 0.7)
