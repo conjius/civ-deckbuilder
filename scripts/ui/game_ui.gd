@@ -275,6 +275,7 @@ func update_turn(turn_number: int) -> void:
 func update_tile_info(
 	terrain_name: String, yields: Array[String],
 ) -> void:
+	print("[GUI] update_tile_info: '", terrain_name, "' card=", _tile_info_card != null)
 	if _tile_info_card:
 		_tile_info_card.update_info(terrain_name, yields)
 
