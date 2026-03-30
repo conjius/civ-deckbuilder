@@ -36,15 +36,15 @@ var _target_brightness: float = 1.0
 var _target_gray: float = 0.0
 
 
-func setup(face_down: bool) -> void:
+func setup(face_down: bool, size_mult: float = 1.0) -> void:
 	_is_face_down = face_down
 	_pile_width = int(
-		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
+		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE * size_mult
 	)
 	_pile_height = int(
-		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
+		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE * size_mult
 	)
-	var total_w: int = _pile_width + glow_pad * 2 + int(54.0 * UIHelpers.UI_SCALE)
+	var total_w: int = _pile_width + glow_pad * 2 + int(54.0 * UIHelpers.UI_SCALE * size_mult)
 	var total_h: int = _pile_height + glow_pad * 2
 	custom_minimum_size = Vector2(total_w, total_h)
 	size = Vector2(total_w, total_h)
@@ -76,7 +76,7 @@ func setup(face_down: bool) -> void:
 	var card_top: int = pivot_y - _pile_height
 	@warning_ignore("integer_division")
 	var label_x: int = (total_w - _pile_width) / 2
-	_count_label.position = Vector2(label_x, card_top - 10)
+	_count_label.position = Vector2(label_x, card_top)
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
@@ -127,6 +127,8 @@ func setup(face_down: bool) -> void:
 		"aspect", float(total_w) / float(total_h)
 	)
 	_draw_ctrl.queue_redraw()
+	# Shift text down slightly from hole center
+	_count_label.position.y += 5
 
 
 func set_title(text: String) -> void:

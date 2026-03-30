@@ -21,6 +21,7 @@ var _show_hand: bool = true
 var _show_discard: bool = false
 var _scroll_offset: float = 0.0
 var _max_scroll: float = 0.0
+var _gallery_bottom_y: float = 0.0
 var _clip_wrapper: Control
 var _container: Control
 var _animating: bool = false
@@ -45,8 +46,7 @@ func _ready() -> void:
 	_clip_wrapper.add_child(_container)
 
 	_hand_btn = CardPileUI.new()
-	_hand_btn.setup(false)
-	# No scale — renders at native resolution for sharp text/borders
+	_hand_btn.setup(false, 1.3)
 	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
@@ -309,9 +309,10 @@ func _position_hand_btn(vp_size: Vector2) -> void:
 	var btn_w: float = _hand_btn.size.x * s
 	var reserve: float = btn_h + 170.0
 	var target_y: float = (
-		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 70.0
+		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 50.0
 	)
 	_bottom_reserve = reserve
+	_gallery_bottom_y = target_y
 	_hand_btn.position = Vector2(
 		(vp_size.x - btn_w) * 0.5,
 		target_y,
