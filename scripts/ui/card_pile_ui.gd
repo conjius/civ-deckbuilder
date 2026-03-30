@@ -25,8 +25,7 @@ var _target_angles: Array[float] = [0.0]
 var _anim_tween: Tween
 var _anim_progress: float = 1.0
 var _start_angles: Array[float] = [0.0]
-var _start_count: int = 1
-var _target_count: int = 1
+var _brightness: float = 0.7
 
 
 func setup(face_down: bool) -> void:
@@ -132,8 +131,8 @@ func _update_glow() -> void:
 func _rebuild_visual() -> void:
 	if _draw_ctrl == null:
 		return
+	_draw_ctrl.material = null
 	_start_angles = _card_angles.duplicate()
-	_start_count = _card_angles.size()
 	if _toggled_on:
 		_target_angles.clear()
 		var start_a := -FAN_SPREAD * 0.5
@@ -142,39 +141,54 @@ func _rebuild_visual() -> void:
 			_target_angles.append(
 				deg_to_rad(start_a + float(i) * step)
 			)
-		_target_count = FAN_CARDS
 	else:
-		_target_angles = [0.0] as Array[float]
-		_target_count = 1
-	# Pad start angles to match target count
-	while _start_angles.size() < _target_count:
+		# All cards collapse to angle 0
+		_target_angles.clear()
+		for i in _start_angles.size():
+			_target_angles.append(0.0)
+	# Pad start to match target count
+	while _start_angles.size() < _target_angles.size():
 		_start_angles.append(0.0)
-	_card_angles.resize(_target_count)
+	# Use max card count during animation
+	var anim_count: int = maxi(
+		_start_angles.size(), _target_angles.size()
+	)
+	_card_angles.resize(anim_count)
 	if not _draw_ctrl.draw.is_connected(_draw_cards):
 		_draw_ctrl.draw.connect(_draw_cards)
-	# Animate
 	if _anim_tween and _anim_tween.is_running():
 		_anim_tween.kill()
 	_anim_progress = 0.0
 	_anim_tween = create_tween()
 	_anim_tween.tween_method(
-		_set_anim_progress, 0.0, 1.0, 0.25,
+		_set_anim_progress, 0.0, 1.0, 0.3,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	_anim_tween.tween_callback(func() -> void:
-		_draw_ctrl.material = (
-			null if _toggled_on else _grayscale_mat
-		)
-		_draw_ctrl.queue_redraw()
-	)
+	_anim_tween.tween_callback(_on_anim_finished)
 
 
 func _set_anim_progress(t: float) -> void:
 	_anim_progress = t
 	for i in _card_angles.size():
-		var from: float = _start_angles[i]
-		var to: float = _target_angles[i] if i < _target_angles.size() else 0.0
+		var from: float = (
+			_start_angles[i] if i < _start_angles.size()
+			else 0.0
+		)
+		var to: float = (
+			_target_angles[i] if i < _target_angles.size()
+			else 0.0
+		)
 		_card_angles[i] = lerpf(from, to, t)
+	var target_bright := 1.0 if _toggled_on else 0.7
+	var start_bright := 0.7 if _toggled_on else 1.0
+	_brightness = lerpf(start_bright, target_bright, t)
 	_draw_ctrl.queue_redraw()
+
+
+func _on_anim_finished() -> void:
+	if not _toggled_on:
+		_card_angles = [0.0] as Array[float]
+		_draw_ctrl.material = _grayscale_mat
+		_draw_ctrl.queue_redraw()
 
 
 func _draw_cards() -> void:
@@ -190,7 +204,7 @@ func _draw_cards() -> void:
 	# Pivot = bottom center of icon area
 	var pivot_x := size.x * 0.5
 	var pivot_y := float(GLOW_PAD) + float(_pile_height) * 0.9
-	var brightness := 1.0 if _toggled_on else 0.7
+	var brightness := _brightness
 	for i in _card_angles.size():
 		var angle: float = _card_angles[i]
 		_draw_rotated_card(
