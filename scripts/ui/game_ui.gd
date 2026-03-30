@@ -120,7 +120,7 @@ func _layout_piles() -> void:
 	)
 	_draw_pile_ui.store_original_pos()
 	_discard_pile_ui.store_original_pos()
-	var pile_gp := float(CardPileUI.GLOW_PAD)
+	var pile_gp := float(CardPileUI.glow_pad)
 	# The draw/discard piles position.x includes a -GLOW_PAD offset
 	# Their visual card left edge is at position.x + GLOW_PAD
 	# Their visual card center X is position.x + GLOW_PAD + pile_width/2
@@ -144,7 +144,7 @@ func _layout_piles() -> void:
 		+ (_discard_pile_ui.size.x - float(_discard_pile_ui._pile_width)) * 0.5
 	)
 	# Top cards: match visual card left edge to pile visual card left edge
-	var vcl: float = float(DarkCardUI.GLOW_PAD) + float(DarkCardUI.EXTRA_W) * 0.5
+	var vcl: float = float(DarkCardUI.glow_pad) + float(DarkCardUI.extra_w) * 0.5
 	var card_y: float = 20.0
 	end_turn_button.position = Vector2(
 		discard_screen_left - vcl, card_y
@@ -389,7 +389,7 @@ func _animate_piles_to_gallery() -> void:
 	var start_x := (vp.x - total_w) * 0.5
 	var reserve := ph + 70.0
 	var target_y := vp.y - reserve + (reserve - ph) * 0.5
-	var gp := float(CardPileUI.GLOW_PAD)
+	var gp := float(CardPileUI.glow_pad)
 	# animate_to subtracts GLOW_PAD, so add it back
 	_draw_pile_ui.animate_to(
 		Vector2(start_x + gp, target_y + gp), 0.3,

@@ -1,8 +1,9 @@
 class_name DarkCardUI
 extends Control
 
-const GLOW_PAD := 50
-const EXTRA_W := 100
+static var glow_pad: int = int(27.0 * UIHelpers.UI_SCALE)
+static var extra_w: int = int(54.0 * UIHelpers.UI_SCALE)
+static var border_w: float = 3.0 * UIHelpers.UI_SCALE
 
 var card_w: int
 var card_h: int
@@ -19,8 +20,8 @@ func setup_card() -> void:
 	card_h = int(
 		float(UIHelpers.CARD_HEIGHT) * CardPileUI.ICON_CARD_SCALE
 	)
-	var total_w: int = card_w + GLOW_PAD * 2 + EXTRA_W
-	var total_h: int = card_h + GLOW_PAD * 2
+	var total_w: int = card_w + glow_pad * 2 + extra_w
+	var total_h: int = card_h + glow_pad * 2
 	custom_minimum_size = Vector2(total_w, total_h)
 	size = Vector2(total_w, total_h)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -58,7 +59,7 @@ func visual_card_left_in_ctrl() -> float:
 
 
 func visual_card_top_in_ctrl() -> float:
-	return float(GLOW_PAD) + float(card_h) * 0.9 - float(card_h)
+	return float(glow_pad) + float(card_h) * 0.9 - float(card_h)
 
 
 func pivot_x() -> float:
@@ -66,7 +67,7 @@ func pivot_x() -> float:
 
 
 func pivot_y() -> float:
-	return float(GLOW_PAD) + float(card_h) * 0.9
+	return float(glow_pad) + float(card_h) * 0.9
 
 
 func _draw_card() -> void:
@@ -110,5 +111,5 @@ func _draw_card() -> void:
 		var k: int = (j + 1) % border_pts.size()
 		_draw_ctrl.draw_line(
 			border_pts[j], border_pts[k],
-			Color(0.65, 0.5, 0.2), 6.0,
+			Color(0.65, 0.5, 0.2), border_w,
 		)

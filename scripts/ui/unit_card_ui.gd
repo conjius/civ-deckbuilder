@@ -1,6 +1,7 @@
 class_name UnitCardUI
 extends DarkCardUI
 
+var _unit_icon: TextureRect
 var _lines_container: VBoxContainer
 var _original_y: float = 0.0
 var _showing: bool = false
@@ -10,10 +11,26 @@ var _current_unit: Node3D
 func _ready() -> void:
 	setup_card()
 
+	var icon_sz: float = UIHelpers.sf(20.0)
+	_unit_icon = TextureRect.new()
+	_unit_icon.texture = load(
+		"res://assets/icons/explorer_unit.svg"
+	) as Texture2D
+	_unit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_unit_icon.size = Vector2(icon_sz, icon_sz)
+	_unit_icon.position = Vector2(
+		(float(card_w) - icon_sz) * 0.5, 4.0
+	)
+	_unit_icon.modulate = Color(0.95, 0.88, 0.7)
+	_unit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_content_clip.add_child(_unit_icon)
+
+	var top_offset: float = icon_sz + 8.0
 	_lines_container = VBoxContainer.new()
-	_lines_container.position = Vector2(4, 8)
+	_lines_container.position = Vector2(4, top_offset)
 	_lines_container.size = Vector2(
-		float(card_w) - 8, float(card_h) - 16
+		float(card_w) - 8, float(card_h) - top_offset - 8
 	)
 	_lines_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_lines_container.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -66,6 +83,9 @@ func _populate(unit: Node3D) -> void:
 		child.queue_free()
 	if unit == null:
 		return
+	if "avatar_color" in unit:
+		var c: Color = unit.avatar_color
+		_unit_icon.modulate = Color(c.r, c.g, c.b, 0.9)
 	_add_line(UIHelpers.icon_value(
 		"HP", "%d/%d" % [unit.health, unit.max_health]
 	))

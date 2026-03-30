@@ -47,7 +47,7 @@ func _ready() -> void:
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	card_title.position = Vector2(
-		0, size.y - float(GLOW_PAD) + 3.0
+		0, size.y - float(glow_pad) + 3.0
 	)
 	card_title.size = Vector2(
 		float(size.x), UIHelpers.sf(14.0)

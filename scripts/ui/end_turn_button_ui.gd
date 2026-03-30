@@ -33,7 +33,7 @@ func _ready() -> void:
 		)
 	)
 	_glow_mat.set_shader_parameter(
-		"hole_radius", 55.0 / float(size.x)
+		"hole_radius", 30.0 * UIHelpers.UI_SCALE / float(size.x)
 	)
 	_glow_mat.set_shader_parameter(
 		"aspect", float(size.x) / float(size.y)
@@ -70,7 +70,7 @@ func _ready() -> void:
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	_title_label.position = Vector2(
-		0, size.y - float(GLOW_PAD) + 3.0
+		0, size.y - float(glow_pad) + 3.0
 	)
 	_title_label.size = Vector2(
 		float(size.x), UIHelpers.sf(14.0)
