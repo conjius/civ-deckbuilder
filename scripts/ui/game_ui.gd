@@ -87,11 +87,10 @@ func _setup_piles() -> void:
 	_discard_pile_ui.setup(false)
 	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
-	var tile_info_script: GDScript = load(
+	var tile_info_cls: GDScript = load(
 		"res://scripts/ui/tile_info_card_ui.gd"
 	) as GDScript
-	_tile_info_card = Control.new()
-	_tile_info_card.set_script(tile_info_script)
+	_tile_info_card = tile_info_cls.new()
 	add_child(_tile_info_card)
 	_unit_card = UnitCardUI.new()
 	add_child(_unit_card)
@@ -128,30 +127,22 @@ func _layout_piles() -> void:
 		_discard_pile_ui.position.x + pile_gp
 		+ float(_discard_pile_ui._pile_width) * 0.5
 	)
-	# All top cards share GLOW_PAD=50, same card dims
-	# Visual card top in control = GLOW_PAD + card_h*0.9 - card_h = GLOW_PAD - card_h*0.1
-	var top_pad := 50.0
-	var icon_card_h := float(UIHelpers.CARD_HEIGHT) * CardPileUI.ICON_CARD_SCALE
-	var visual_top_in_ctrl := top_pad - icon_card_h * 0.1
-	var card_y := 8.0 - visual_top_in_ctrl
-	# Top card visual card center = control.position.x + control.size.x * 0.5
-	# So to align visual center with pile visual center:
-	# control.position.x = pile_visual_cx - control.size.x * 0.5
-	# But the card is drawn at size.x/2 inside the control, so this centers it.
-	# For left alignment: pile visual left = _draw_pile_ui.position.x + pile_gp
-	# control visual left = control.position.x + top_pad + (extra_w / 2)
-	# where extra_w = 100 (the +100 in total_w)
-	var extra_w := 100.0
-	var half_extra := extra_w * 0.5
-	var draw_visual_left := _draw_pile_ui.position.x + pile_gp
-	var discard_visual_left := _discard_pile_ui.position.x + pile_gp
+	# All top cards use DarkCardUI with identical dimensions
+	# Align visual card left edge with pile visual card left edge
+	var draw_left := _draw_pile_ui.position.x + pile_gp
+	var discard_left := _discard_pile_ui.position.x + pile_gp
+	# visual_card_left_in_ctrl() gives the offset from control origin
+	# to the visual card's left edge
+	var vcl := end_turn_button.visual_card_left_in_ctrl()
+	var vct := end_turn_button.visual_card_top_in_ctrl()
+	var card_y := 8.0 - vct
 	end_turn_button.position = Vector2(
-		discard_visual_left - top_pad - half_extra, card_y
+		discard_left - vcl, card_y
 	)
 	_btn_original_x = end_turn_button.position.x
 	if _tile_info_card:
 		_tile_info_card.position = Vector2(
-			draw_visual_left - top_pad - half_extra, card_y
+			draw_left - vcl, card_y
 		)
 		_tile_info_card.store_original_pos()
 	if _unit_card:
