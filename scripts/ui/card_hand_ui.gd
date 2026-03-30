@@ -17,6 +17,7 @@ var _card_display_scene: PackedScene = preload(
 )
 var _focused_card: Control = null
 var _any_dragging: bool = false
+var _dealing: bool = false
 var _removing: bool = false
 var _discarding_all: bool = false
 
@@ -110,6 +111,7 @@ func add_cards_to_hand(new_cards: Array[CardData]) -> void:
 
 
 func _do_draw_anim() -> void:
+	_dealing = true
 	_layout_cards(false)
 	var cards := _get_card_children()
 	var local_draw := draw_pile_pos - global_position
@@ -149,8 +151,11 @@ func _do_draw_anim() -> void:
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
 			Tween.EASE_OUT
 		).set_delay(delay)
+		var is_last: bool = i == cards.size() - 1
 		tw.tween_callback(func() -> void:
 			card.z_index = 0
+			if is_last:
+				_dealing = false
 		).set_delay(delay + dur)
 		# X scale: grow from 0.5 to mid, squeeze to 0, flip, stretch back
 		var mid_sx: float = lerpf(0.5, target_scale.x, 0.35)
@@ -394,7 +399,7 @@ func _get_card_children() -> Array[Control]:
 
 
 func _input(event: InputEvent) -> void:
-	if _any_dragging:
+	if _any_dragging or _dealing:
 		return
 	if event is InputEventMouseButton:
 		if (event.button_index == MOUSE_BUTTON_RIGHT
