@@ -30,7 +30,7 @@ dedicated_server=false
 custom_features=""
 export_filter="all_resources"
 include_filter=""
-exclude_filter="*.fbx, *.obj, *.glb, boots.res, Tcuer.png, Tfbot.png, Tibot.png, Tlbot.png, Trcuer.png, Tsuel.png, Ttbot.png, scout.glb, scout_rogue_texture.png"
+exclude_filter="*.fbx, *.obj, *.glb, boots.res, Tcuer.png, Tfbot.png, Tibot.png, Tlbot.png, Trcuer.png, Tsuel.png, Ttbot.png, scout.glb, scout_rogue_texture.png, tests/*, social-preview.png, build/*"
 export_path="build/web/index.html"
 [preset.0.options]
 variant/thread_support=false

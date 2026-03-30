@@ -6,9 +6,7 @@ var _cloud_multimesh: MultiMeshInstance3D
 var _multimesh: MultiMesh
 var _dirty := false
 
-var _cloud_shader: Shader = preload(
-	"res://assets/shaders/fog_cloud.gdshader"
-)
+var _cloud_shader: Shader
 
 
 func _ready() -> void:
@@ -16,6 +14,9 @@ func _ready() -> void:
 
 
 func _setup_multimesh() -> void:
+	_cloud_shader = load(
+		"res://assets/shaders/fog_cloud.gdshader"
+	) as Shader
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
