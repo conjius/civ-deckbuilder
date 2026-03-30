@@ -108,9 +108,6 @@ func generate_map() -> void:
 		)
 		fog_mesh.mesh = _get_cached_mesh(0.02)
 		fog_mesh.visibility_range_end = 50.0
-		fog_cloud_manager.add_fog(
-			coord, tile.position, terrain.height,
-		)
 	fog_cloud_manager.rebuild()
 
 
