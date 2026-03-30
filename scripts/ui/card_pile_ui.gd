@@ -20,6 +20,8 @@ var _glow_mat: ShaderMaterial
 var _sv: SubViewport
 var _draw_ctrl: Control
 var _grayscale_mat: ShaderMaterial
+var _card_angles: Array[float] = [0.0]
+var _target_angles: Array[float] = [0.0]
 
 
 func setup(face_down: bool) -> void:
@@ -125,83 +127,72 @@ func _update_glow() -> void:
 func _rebuild_visual() -> void:
 	if _draw_ctrl == null:
 		return
-	# Remove old draw connections
-	if _draw_ctrl.draw.is_connected(_draw_cards_fan):
-		_draw_ctrl.draw.disconnect(_draw_cards_fan)
-	if _draw_ctrl.draw.is_connected(_draw_single_card):
-		_draw_ctrl.draw.disconnect(_draw_single_card)
-	# Apply grayscale when off
 	if _toggled_on:
 		_draw_ctrl.material = null
+		_target_angles.clear()
+		var start_a := -FAN_SPREAD * 0.5
+		var step: float = FAN_SPREAD / float(FAN_CARDS - 1)
+		for i in FAN_CARDS:
+			_target_angles.append(
+				deg_to_rad(start_a + float(i) * step)
+			)
 	else:
 		_draw_ctrl.material = _grayscale_mat
-	# Connect the right draw function
-	if _toggled_on:
-		_draw_ctrl.draw.connect(_draw_cards_fan)
-	else:
-		_draw_ctrl.draw.connect(_draw_single_card)
+		_target_angles = [0.0] as Array[float]
+	# Snap immediately (animation can be added by tweening
+	# _card_angles toward _target_angles in _process)
+	_card_angles = _target_angles.duplicate()
+	if not _draw_ctrl.draw.is_connected(_draw_cards):
+		_draw_ctrl.draw.connect(_draw_cards)
 	_draw_ctrl.queue_redraw()
 
 
-func _draw_cards_fan() -> void:
+func _draw_cards() -> void:
 	var ptex: Texture2D = load(
 		UIHelpers.PARCHMENT_PATH
 	) as Texture2D
-	var fan_scale := 0.6
-	var hw := float(_pile_width) * 0.5 * fan_scale
-	var hh := float(_pile_height) * fan_scale
+	# Card dimensions — correct aspect ratio
+	var cw := float(UIHelpers.CARD_WIDTH) * CARD_SCALE * 0.6
+	var ch := float(UIHelpers.CARD_HEIGHT) * CARD_SCALE * 0.6
 	var card_r := float(
 		UIHelpers.CARD_CORNER_RADIUS
-	) * CARD_SCALE * fan_scale
-	var cx := size.x * 0.5
-	var cy := float(GLOW_PAD) + float(_pile_height) * 0.85
-	var start_angle := -FAN_SPREAD * 0.5
-	var step: float = FAN_SPREAD / float(FAN_CARDS - 1)
-	for i in range(FAN_CARDS):
-		var angle := deg_to_rad(start_angle + float(i) * step)
+	) * CARD_SCALE * 0.6
+	# Pivot = bottom center of icon area
+	var pivot_x := size.x * 0.5
+	var pivot_y := float(GLOW_PAD) + float(_pile_height) * 0.9
+	var brightness := 1.0 if _toggled_on else 0.7
+	for i in _card_angles.size():
+		var angle: float = _card_angles[i]
 		_draw_rotated_card(
-			_draw_ctrl, ptex, hw, hh, card_r,
-			cx, cy, angle, 1.0,
+			_draw_ctrl, ptex, cw, ch, card_r,
+			pivot_x, pivot_y, angle, brightness,
 		)
-
-
-func _draw_single_card() -> void:
-	var ptex: Texture2D = load(
-		UIHelpers.PARCHMENT_PATH
-	) as Texture2D
-	var hw := float(_pile_width) * 0.5
-	var hh := float(_pile_height)
-	var card_r := float(UIHelpers.CARD_CORNER_RADIUS) * CARD_SCALE
-	var cx := size.x * 0.5
-	var cy := float(GLOW_PAD) + float(_pile_height) * 0.85
-	_draw_rotated_card(
-		_draw_ctrl, ptex, hw, hh, card_r,
-		cx, cy, 0.0, 0.7,
-	)
 
 
 func _draw_rotated_card(
 	ctrl: Control, ptex: Texture2D,
-	hw: float, hh: float, card_r: float,
-	cx: float, cy: float, angle: float,
-	brightness: float,
+	cw: float, ch: float, card_r: float,
+	pivot_x: float, pivot_y: float,
+	angle: float, brightness: float,
 ) -> void:
+	# Card rect: bottom-center at origin, extends up
 	var raw := UIHelpers._rounded_rect_points(
-		-hw * 0.5, -hh, hw, hh, card_r, 6,
+		-cw * 0.5, -ch, cw, ch, card_r, 6,
 	)
 	var pts := PackedVector2Array()
 	var uvs := PackedVector2Array()
 	var zoom := 1.5
 	for p_idx in range(raw.size()):
 		var c: Vector2 = raw[p_idx]
+		# Rotate around bottom-center (origin = 0,0)
 		var rx := c.x * cos(angle) - c.y * sin(angle)
 		var ry := c.x * sin(angle) + c.y * cos(angle)
-		pts.append(Vector2(cx + rx, cy + ry))
+		pts.append(Vector2(pivot_x + rx, pivot_y + ry))
 		uvs.append(Vector2(
 			(0.5 - 0.5 / zoom)
-				+ ((c.x + hw * 0.5) / hw) / zoom,
+				+ ((c.x + cw * 0.5) / cw) / zoom,
 			(0.5 - 0.5 / zoom)
-				+ ((c.y + hh) / hh) / zoom,
+				+ ((c.y + ch) / ch) / zoom,
 		))
 	var tint: Color
 	if _is_face_down:
@@ -220,13 +211,12 @@ func _draw_rotated_card(
 		ctrl.draw_polygon(pts, colors, uvs, ptex)
 	else:
 		ctrl.draw_colored_polygon(pts, tint)
-	# Border
 	var border_pts := PackedVector2Array()
 	for b_idx in range(raw.size()):
 		var c: Vector2 = raw[b_idx]
 		var rx := c.x * cos(angle) - c.y * sin(angle)
 		var ry := c.x * sin(angle) + c.y * cos(angle)
-		border_pts.append(Vector2(cx + rx, cy + ry))
+		border_pts.append(Vector2(pivot_x + rx, pivot_y + ry))
 	for j in range(border_pts.size()):
 		var k: int = (j + 1) % border_pts.size()
 		ctrl.draw_line(
