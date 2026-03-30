@@ -73,6 +73,11 @@ func _process(delta: float) -> void:
 	_apply_tilt()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_dragging = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled:
 		return
@@ -107,7 +112,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			rotate_y(deg_to_rad(orbit_speed))
 		elif event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
 			rotate_y(deg_to_rad(-orbit_speed))
-		elif event.button_index == MOUSE_BUTTON_LEFT:
+		elif (event.button_index == MOUSE_BUTTON_LEFT
+			or event.button_index == MOUSE_BUTTON_MIDDLE
+		):
 			if event.pressed:
 				_dragging = true
 				_drag_origin = _screen_to_ground(
