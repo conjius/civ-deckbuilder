@@ -88,7 +88,24 @@ func setup(face_down: bool) -> void:
 	mouse_entered.connect(_on_hover_enter)
 	mouse_exited.connect(_on_hover_exit)
 
-	_rebuild_visual()
+	# Initial state: snap, no animation
+	_draw_ctrl.material = _grayscale_mat
+	_grayscale_mat.set_shader_parameter(
+		"strength", 0.0 if _toggled_on else 1.0
+	)
+	_brightness = 1.0 if _toggled_on else 0.7
+	if _toggled_on:
+		_card_angles.clear()
+		var start_a := -FAN_SPREAD * 0.5
+		var step: float = FAN_SPREAD / float(FAN_CARDS - 1)
+		for i in FAN_CARDS:
+			_card_angles.append(
+				deg_to_rad(start_a + float(i) * step)
+			)
+	else:
+		_card_angles = [0.0] as Array[float]
+	_draw_ctrl.draw.connect(_draw_cards)
+	_draw_ctrl.queue_redraw()
 
 
 func update_count(count: int) -> void:
@@ -131,8 +148,6 @@ func _update_glow() -> void:
 func _rebuild_visual() -> void:
 	if _draw_ctrl == null:
 		return
-	if _draw_ctrl.material == null:
-		_draw_ctrl.material = _grayscale_mat
 	_start_angles = _card_angles.duplicate()
 	if _toggled_on:
 		_target_angles.clear()
