@@ -315,7 +315,11 @@ func _update_title_position() -> void:
 	if _title_label == null:
 		return
 	var gap := 17.0 if (_in_gallery and _toggled_on) else 3.0
-	_title_label.position.y = size.y - float(GLOW_PAD) + gap
+	var target_y := size.y - float(GLOW_PAD) + gap
+	var tw := _title_label.create_tween()
+	tw.tween_property(
+		_title_label, "position:y", target_y, 0.2,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _on_anim_finished() -> void:

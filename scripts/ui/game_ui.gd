@@ -20,6 +20,7 @@ var _unit_original_x: float = -1.0
 var _unit_panel_hidden: bool = false
 var _dim_overlay: ColorRect
 var _tile_info_card: Control
+var _unit_card: UnitCardUI
 var _pending_drag_card: CardData = null
 var _pending_drag_pos: Vector2 = Vector2.ZERO
 var _draw_pile_ui: CardPileUI
@@ -36,11 +37,13 @@ var _font_regular: Font = _font_bold
 @onready var card_hand: Control = %CardHand
 @onready var turn_label: RichTextLabel = %TurnLabel
 @onready var end_turn_button: Control = %EndTurnButton
-@onready var info_label: RichTextLabel = %InfoLabel
+@onready var info_label: RichTextLabel = %InfoLabel  # Legacy, hidden
 @onready var unit_info: PanelContainer = %UnitInfo
 
 
 func _ready() -> void:
+	if info_label:
+		info_label.visible = false
 	_dim_overlay = ColorRect.new()
 	_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -89,6 +92,8 @@ func _setup_piles() -> void:
 	_tile_info_card = Control.new()
 	_tile_info_card.set_script(tile_info_script)
 	add_child(_tile_info_card)
+	_unit_card = UnitCardUI.new()
+	add_child(_unit_card)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
 	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
@@ -132,6 +137,12 @@ func _layout_piles() -> void:
 		)
 		_tile_info_card.position.y = card_top_y
 		_tile_info_card.store_original_pos()
+	if _unit_card:
+		_unit_card.position.x = (
+			vp.x - _unit_card.size.x
+		) * 0.5
+		_unit_card.position.y = card_top_y
+		_unit_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
 	card_hand.discard_pile_pos = get_discard_pile_center()
@@ -244,14 +255,6 @@ func update_turn(turn_number: int) -> void:
 	))
 
 
-func update_info(text: String) -> void:
-	if text == "":
-		info_label.visible = false
-		return
-	info_label.visible = true
-	UIHelpers.set_bbcode(info_label, "[center]" + text + "[/center]")
-
-
 func update_tile_info(
 	terrain_name: String, yields: Array[String],
 ) -> void:
@@ -267,6 +270,8 @@ func refresh_unit_info() -> void:
 	if _unit_panel_hidden:
 		return
 	unit_info.update_unit(active_unit)
+	if _unit_card and active_unit:
+		_unit_card.show_unit(active_unit)
 
 
 func show_unit_info(unit: Node3D) -> void:
@@ -408,6 +413,8 @@ func _slide_ui_out() -> void:
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	if _tile_info_card:
 		_tile_info_card.slide_out_left()
+	if _unit_card:
+		_unit_card.slide_out_for_gallery()
 
 
 func _slide_ui_in() -> void:
@@ -419,6 +426,8 @@ func _slide_ui_in() -> void:
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if _tile_info_card:
 		_tile_info_card.slide_in_from_left()
+	if _unit_card:
+		_unit_card.slide_in_from_gallery()
 	var tw_unit := unit_info.create_tween()
 	tw_unit.tween_property(
 		unit_info, "position:x",
@@ -589,12 +598,6 @@ func _apply_sizes() -> void:
 		"normal_font_size", UIHelpers.FONT_TURN
 	)
 
-	info_label.add_theme_font_override(
-		"normal_font", _font_bold
-	)
-	info_label.add_theme_font_size_override(
-		"normal_font_size", UIHelpers.FONT_UNIT_STAT
-	)
 
 	bottom_bar.custom_minimum_size = Vector2(
 		0, UIHelpers.BOTTOM_BAR_HEIGHT
