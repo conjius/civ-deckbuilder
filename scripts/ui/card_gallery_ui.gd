@@ -64,6 +64,7 @@ func show_gallery(
 	_draw_cards = draw
 	_hand_cards = hand
 	_discard_cards = discard
+	_hand_btn.update_count(hand.size(), false)
 	_show_draw = initial_draw
 	_show_hand = initial_hand
 	_show_discard = initial_discard
@@ -124,6 +125,11 @@ func toggle_filter(pile: String) -> void:
 	_update_hand_visual()
 
 
+func update_hand_count(count: int) -> void:
+	if _hand_btn:
+		_hand_btn.update_count(count, false)
+
+
 func _update_hand_visual() -> void:
 	if _hand_btn:
 		_hand_btn.set_toggled(_show_hand)
@@ -147,7 +153,7 @@ func _rebuild() -> void:
 	var cards := _get_filtered_cards()
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
 	var pile_inset: float = (
-		float(UIHelpers.CARD_WIDTH) * 0.5 + 100.0
+		float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
 	)
 	var area_w: float = vp_size.x - pile_inset * 2.0
 	_position_hand_btn(vp_size)
@@ -213,7 +219,7 @@ func _rebuild() -> void:
 
 func _position_hand_btn(vp_size: Vector2) -> void:
 	var pile_h: float = float(UIHelpers.CARD_HEIGHT) * 0.5
-	_hand_btn_height = pile_h + HAND_BTN_GAP * 2 + 80
+	_hand_btn_height = pile_h + HAND_BTN_GAP * 2 + 130
 	_bottom_reserve = _hand_btn_height
 	_hand_btn.position = Vector2(
 		(vp_size.x - _hand_btn.size.x) * 0.5,

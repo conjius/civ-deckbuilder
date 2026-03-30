@@ -42,7 +42,7 @@ func setup(face_down: bool) -> void:
 	_pile_height = int(
 		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
 	)
-	var total_w: int = _pile_width + GLOW_PAD * 2
+	var total_w: int = _pile_width + GLOW_PAD * 2 + 100
 	var total_h: int = _pile_height + GLOW_PAD * 2
 	custom_minimum_size = Vector2(total_w, total_h)
 	size = Vector2(total_w, total_h)
@@ -70,9 +70,11 @@ func setup(face_down: bool) -> void:
 	_count_label = Label.new()
 	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_count_label.position = Vector2(
-		GLOW_PAD, int(float(GLOW_PAD) + float(_pile_height) * 0.2)
-	)
+	var pivot_y: int = GLOW_PAD + int(float(_pile_height) * 0.9)
+	var card_top: int = pivot_y - _pile_height
+	@warning_ignore("integer_division")
+	var label_x: int = (total_w - _pile_width) / 2
+	_count_label.position = Vector2(label_x, card_top)
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
@@ -114,9 +116,10 @@ func setup(face_down: bool) -> void:
 	_draw_ctrl.queue_redraw()
 
 
-func update_count(count: int) -> void:
+func update_count(count: int, hide_on_zero: bool = true) -> void:
 	_count_label.text = str(count)
-	visible = count > 0
+	if hide_on_zero:
+		visible = count > 0
 
 
 func set_toggled(value: bool) -> void:

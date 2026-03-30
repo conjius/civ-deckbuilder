@@ -88,12 +88,13 @@ func _layout_piles() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var focused_y: float = vp.y - float(UIHelpers.CARD_HEIGHT)
 	var pile_y: float = focused_y - 100.0
-	var margin := 16.0
+	var gap_w: float = float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
 	_draw_pile_ui.position = Vector2(
-		margin, pile_y - _draw_pile_ui.size.y
+		(gap_w - _draw_pile_ui.size.x) * 0.5,
+		pile_y - _draw_pile_ui.size.y,
 	)
 	_discard_pile_ui.position = Vector2(
-		vp.x - _discard_pile_ui.size.x - margin,
+		vp.x - gap_w + (gap_w - _discard_pile_ui.size.x) * 0.5,
 		pile_y - _discard_pile_ui.size.y,
 	)
 	_draw_pile_ui.store_original_pos()
@@ -104,9 +105,12 @@ func _layout_piles() -> void:
 
 func update_piles(
 	draw_count: int, discard_count: int,
+	hand_count: int = -1,
 ) -> void:
 	_draw_pile_ui.update_count(draw_count)
 	_discard_pile_ui.update_count(discard_count)
+	if hand_count >= 0:
+		card_gallery.update_hand_count(hand_count)
 
 
 func get_draw_pile_center() -> Vector2:
