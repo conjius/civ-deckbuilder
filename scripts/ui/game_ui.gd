@@ -3,6 +3,7 @@ extends CanvasLayer
 signal end_turn_pressed
 signal card_dropped(card: CardData, target: Vector2i)
 signal action_pressed(action_name: String)
+signal gallery_closed
 
 var hex_map: Node3D
 var camera: Camera3D
@@ -88,12 +89,13 @@ func _layout_piles() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var focused_y: float = vp.y - float(UIHelpers.CARD_HEIGHT)
 	var pile_y: float = focused_y - 100.0
-	var margin := 16.0
+	var gap_w: float = float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
 	_draw_pile_ui.position = Vector2(
-		margin, pile_y - _draw_pile_ui.size.y
+		(gap_w - _draw_pile_ui.size.x) * 0.5,
+		pile_y - _draw_pile_ui.size.y,
 	)
 	_discard_pile_ui.position = Vector2(
-		vp.x - _discard_pile_ui.size.x - margin,
+		vp.x - gap_w + (gap_w - _discard_pile_ui.size.x) * 0.5,
 		pile_y - _discard_pile_ui.size.y,
 	)
 	_draw_pile_ui.store_original_pos()
@@ -104,9 +106,12 @@ func _layout_piles() -> void:
 
 func update_piles(
 	draw_count: int, discard_count: int,
+	hand_count: int = -1,
 ) -> void:
 	_draw_pile_ui.update_count(draw_count)
 	_discard_pile_ui.update_count(discard_count)
+	if hand_count >= 0:
+		card_gallery.update_hand_count(hand_count)
 
 
 func get_draw_pile_center() -> Vector2:
@@ -121,6 +126,9 @@ func animate_deal(
 	cards: Array[CardData],
 	draw_count: int, discard_count: int,
 ) -> void:
+	if card_gallery.visible:
+		card_gallery.hide_gallery()
+		await card_gallery.closed
 	update_piles(draw_count + cards.size(), discard_count)
 	# Move draw pile to center at same height as static piles
 	var vp_w: float = get_viewport().get_visible_rect().size.x
@@ -152,6 +160,15 @@ func _capture_positions() -> void:
 		_unit_original_x = unit_info.position.x
 	if _btn_original_x < 0:
 		_btn_original_x = end_turn_button.position.x
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if (event.keycode == KEY_TAB
+			or event.keycode == KEY_SPACE
+		):
+			_toggle_gallery(false, true, false)
+			get_viewport().set_input_as_handled()
 
 
 func _process(_delta: float) -> void:
@@ -236,6 +253,11 @@ func _toggle_gallery(
 ) -> void:
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
+		var rig := camera.get_parent().get_parent()
+		if "input_enabled" in rig:
+			rig.input_enabled = true
+		if hex_map and hex_map.has_method("restore_highlights"):
+			hex_map.restore_highlights()
 	else:
 		if not _active_picker:
 			_animate_overlay(true)
@@ -254,8 +276,16 @@ func _toggle_gallery(
 				[] as Array[CardData],
 				false, true, false,
 			)
+		var rig := camera.get_parent().get_parent()
+		if "input_enabled" in rig:
+			rig.input_enabled = false
+		if hex_map:
+			hex_map.clear_highlights()
+		_draw_pile_ui.set_gallery_mode(true)
+		_discard_pile_ui.set_gallery_mode(true)
 		_draw_pile_ui.set_toggled(show_draw)
 		_discard_pile_ui.set_toggled(show_discard)
+		_animate_piles_to_gallery()
 		if _active_picker:
 			_active_picker.enter_gallery_mode()
 
@@ -280,8 +310,37 @@ func _on_gallery_closing() -> void:
 	if not _active_picker:
 		_animate_overlay(false)
 	_slide_ui_in()
-	_draw_pile_ui.set_toggled(false)
-	_discard_pile_ui.set_toggled(false)
+	_draw_pile_ui.set_gallery_mode(false)
+	_discard_pile_ui.set_gallery_mode(false)
+	_animate_piles_back()
+
+
+func _animate_piles_to_gallery() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var spacing := 60.0
+	var pw := _draw_pile_ui.size.x
+	var ph := _draw_pile_ui.size.y
+	var total_w := pw * 3.0 + spacing * 2.0
+	var start_x := (vp.x - total_w) * 0.5
+	var target_y := vp.y - ph - 20.0
+	var gp := float(CardPileUI.GLOW_PAD)
+	# animate_to subtracts GLOW_PAD, so add it back
+	_draw_pile_ui.animate_to(
+		Vector2(start_x + gp, target_y + gp), 0.3,
+	)
+	_discard_pile_ui.animate_to(
+		Vector2(
+			start_x + pw * 2.0 + spacing * 2.0 + gp,
+			target_y + gp,
+		), 0.3,
+	)
+
+
+func _animate_piles_back() -> void:
+	_draw_pile_ui.animate_back(0.3)
+	_discard_pile_ui.animate_back(0.3)
+
+
 	if _active_picker:
 		_active_picker.exit_gallery_mode()
 
@@ -391,6 +450,7 @@ func _on_gallery_card_drag(
 func _on_gallery_closed() -> void:
 	if not _pending_drag_card:
 		_slide_hand_in()
+	gallery_closed.emit()
 
 
 func _animate_overlay(show: bool) -> void:

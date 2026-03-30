@@ -63,6 +63,7 @@ func _ready() -> void:
 	game_ui.card_dropped.connect(_on_card_dropped)
 	game_ui.end_turn_pressed.connect(_on_end_turn)
 	game_ui.action_pressed.connect(_on_action_pressed)
+	game_ui.gallery_closed.connect(_highlight_active_unit)
 	card_manager.card_played.connect(game_ui.card_hand.remove_card)
 	turn_manager.turn_started.connect(_on_turn_started)
 	turn_manager.phase_changed.connect(_on_phase_changed)
@@ -161,6 +162,8 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
+	if game_ui.card_gallery.visible:
+		return
 
 	# Show terrain info on hover (throttled)
 	if event is InputEventMouseMotion:
