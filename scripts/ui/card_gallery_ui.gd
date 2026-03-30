@@ -309,7 +309,7 @@ func _position_hand_btn(vp_size: Vector2) -> void:
 	var btn_w: float = _hand_btn.size.x * s
 	var reserve: float = btn_h + 170.0
 	var target_y: float = (
-		vp_size.y - reserve + (reserve - btn_h) * 0.5
+		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 70.0
 	)
 	_bottom_reserve = reserve
 	_hand_btn.position = Vector2(
