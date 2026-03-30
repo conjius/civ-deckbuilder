@@ -145,7 +145,7 @@ func _layout_piles() -> void:
 	)
 	# Top cards: match visual card left edge to pile visual card left edge
 	var vcl: float = float(DarkCardUI.GLOW_PAD) + float(DarkCardUI.EXTRA_W) * 0.5
-	var card_y: float = -20.0
+	var card_y: float = 50.0
 	end_turn_button.position = Vector2(
 		discard_screen_left - vcl, card_y
 	)
