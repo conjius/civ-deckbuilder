@@ -183,6 +183,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				hex_map.map_data.get_visibility(coord)
 			)
 			if vis == MapData.Visibility.UNEXPLORED:
+				print("[HOVER] unexplored at ", coord)
 				game_ui.update_tile_info("Unexplored", [])
 			elif vis == MapData.Visibility.FOGGED:
 				game_ui.update_tile_info("Fogged", [])
