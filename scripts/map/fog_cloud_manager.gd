@@ -1,7 +1,7 @@
 class_name FogCloudManager
 extends Node3D
 
-const BLOBS_PER_TILE := 10
+const BLOBS_PER_TILE := 20
 const CLOUD_Y := 1.1
 const BAND_RATIO := 0.35
 
