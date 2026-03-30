@@ -44,6 +44,7 @@ var _font_regular: Font = _font_bold
 func _ready() -> void:
 	if info_label:
 		info_label.visible = false
+	unit_info.visible = false
 	_dim_overlay = ColorRect.new()
 	_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -115,33 +116,33 @@ func _layout_piles() -> void:
 	)
 	_draw_pile_ui.store_original_pos()
 	_discard_pile_ui.store_original_pos()
-	# Align end turn and tile info X with pile centers
-	var gp := float(CardPileUI.GLOW_PAD)
+	# All top cards: visual card top at y=10
+	var pile_gp := float(CardPileUI.GLOW_PAD)
+	var top_gp := 50.0
+	var card_y := 10.0 - top_gp
+	# Discard pile visual center X
 	var discard_cx: float = (
-		_discard_pile_ui.position.x + gp
+		_discard_pile_ui.position.x + pile_gp
 		+ float(_discard_pile_ui._pile_width) * 0.5
 	)
-	var card_top_y: float = -gp
-	end_turn_button.position.x = (
-		discard_cx - end_turn_button.size.x * 0.5
+	# Draw pile visual center X
+	var draw_cx: float = (
+		_draw_pile_ui.position.x + pile_gp
+		+ float(_draw_pile_ui._pile_width) * 0.5
 	)
-	end_turn_button.position.y = card_top_y
-	# Align tile info card with draw pile
+	end_turn_button.position = Vector2(
+		discard_cx - end_turn_button.size.x * 0.5, card_y
+	)
+	_btn_original_x = end_turn_button.position.x
 	if _tile_info_card:
-		var draw_cx: float = (
-			_draw_pile_ui.position.x + gp
-			+ float(_draw_pile_ui._pile_width) * 0.5
+		_tile_info_card.position = Vector2(
+			draw_cx - _tile_info_card.size.x * 0.5, card_y
 		)
-		_tile_info_card.position.x = (
-			draw_cx - _tile_info_card.size.x * 0.5
-		)
-		_tile_info_card.position.y = card_top_y
 		_tile_info_card.store_original_pos()
 	if _unit_card:
-		_unit_card.position.x = (
-			vp.x - _unit_card.size.x
-		) * 0.5
-		_unit_card.position.y = card_top_y
+		_unit_card.position = Vector2(
+			(vp.x - _unit_card.size.x) * 0.5, card_y
+		)
 		_unit_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()

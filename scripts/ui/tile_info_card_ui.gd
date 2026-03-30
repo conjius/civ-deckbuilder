@@ -108,6 +108,14 @@ func update_info(terrain_name: String, yields: Array[String]) -> void:
 		return
 
 	_title_label.text = terrain_name
+	if yields.is_empty():
+		_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_title_label.position.y = 0.0
+		_title_label.size.y = float(_card_h)
+	else:
+		_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_title_label.position.y = 8.0
+		_title_label.size.y = UIHelpers.sf(16.0)
 
 	for child in _yield_container.get_children():
 		child.queue_free()
