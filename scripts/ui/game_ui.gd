@@ -158,6 +158,15 @@ func _capture_positions() -> void:
 		_btn_original_x = end_turn_button.position.x
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if (event.keycode == KEY_TAB
+			or event.keycode == KEY_SPACE
+		):
+			_toggle_gallery(false, true, false)
+			get_viewport().set_input_as_handled()
+
+
 func _process(_delta: float) -> void:
 	_fps_label.text = "%d FPS" % Engine.get_frames_per_second()
 

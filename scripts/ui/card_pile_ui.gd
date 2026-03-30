@@ -78,7 +78,7 @@ func setup(face_down: bool) -> void:
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
-		"font_size", int(18 * UIHelpers.UI_SCALE)
+		"font_size", int(36 * UIHelpers.UI_SCALE)
 	)
 	if face_down:
 		_count_label.add_theme_color_override(
@@ -252,7 +252,27 @@ func _set_anim_progress(t: float) -> void:
 		_card_angles[i] = lerpf(from, to, t)
 	_brightness = lerpf(_start_brightness, _target_brightness, t)
 	_gray_strength = lerpf(_start_gray, _target_gray, t)
+	_update_label_color()
 	_draw_ctrl.queue_redraw()
+
+
+func _update_label_color() -> void:
+	if _count_label == null:
+		return
+	var base_col: Color
+	if _is_face_down:
+		base_col = Color(0.95, 0.88, 0.7)
+	else:
+		base_col = Color(0.3, 0.2, 0.1)
+	var gray_val: float = (
+		base_col.r * 0.3 + base_col.g * 0.59 + base_col.b * 0.11
+	) * 0.6
+	var r: float = lerpf(base_col.r, gray_val, _gray_strength) * _brightness
+	var g: float = lerpf(base_col.g, gray_val, _gray_strength) * _brightness
+	var b: float = lerpf(base_col.b, gray_val, _gray_strength) * _brightness
+	_count_label.add_theme_color_override(
+		"font_color", Color(r, g, b)
+	)
 
 
 func _on_anim_finished() -> void:
@@ -340,10 +360,16 @@ func _draw_rotated_card(
 		var br: float = lerpf(bb.r, bg, _gray_strength) * brightness
 		var bgg: float = lerpf(bb.g, bg, _gray_strength) * brightness
 		var bbl: float = lerpf(bb.b, bg, _gray_strength) * brightness
-		ctrl.draw_line(
-			border_pts[j], border_pts[k],
-			Color(br, bgg, bbl), 4.0,
+		var midpt := (border_pts[j] + border_pts[k]) * 0.5
+		var label_center := Vector2(
+			pivot_x, pivot_y - ch * 0.5
 		)
+		var dist_to_label := midpt.distance_to(label_center)
+		if dist_to_label > 30.0:
+			ctrl.draw_line(
+				border_pts[j], border_pts[k],
+				Color(br, bgg, bbl), 6.0,
+			)
 
 
 func _gui_input(event: InputEvent) -> void:

@@ -65,6 +65,7 @@ func show_gallery(
 	_hand_cards = hand
 	_discard_cards = discard
 	_hand_btn.update_count(hand.size(), false)
+	_hand_btn.set_gallery_mode(true)
 	_show_draw = initial_draw
 	_show_hand = initial_hand
 	_show_discard = initial_discard
@@ -90,6 +91,7 @@ func hide_gallery() -> void:
 	_animating = true
 	closing.emit()
 	_hand_btn.visible = false
+	_hand_btn.set_gallery_mode(false)
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var past_middle: bool = _scroll_offset > _max_scroll * 0.5
 	var target_y: float
