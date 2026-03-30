@@ -24,6 +24,9 @@ var _max_scroll: float = 0.0
 var _clip_wrapper: Control
 var _container: Control
 var _animating: bool = false
+var _funnel_active: bool = false
+var _card_rest_positions: Array = []
+var _card_rest_scales: Array = []
 var _card_nodes: Array = []
 var _cards_built: bool = false
 var _hand_btn: CardPileUI
@@ -98,6 +101,7 @@ func show_gallery(
 		_hand_btn, "position:y", final_y, ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_animating = true
+	_funnel_active = true
 	var total_h: float = _container.size.y + 200.0
 	_container.position.y = -total_h
 	var tween := create_tween()
@@ -105,8 +109,10 @@ func show_gallery(
 		_container, "position:y", -_scroll_offset,
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(
-		func() -> void: _animating = false
+	tween.tween_callback(func() -> void:
+		_animating = false
+		_funnel_active = false
+		_restore_card_scales()
 	)
 
 
@@ -128,6 +134,7 @@ func hide_gallery() -> void:
 	)
 	var total_h: float = _container.size.y + 200.0
 	var target_y: float = -total_h
+	_funnel_active = true
 	var tween := create_tween()
 	tween.tween_property(
 		_container, "position:y", target_y,
@@ -136,6 +143,7 @@ func hide_gallery() -> void:
 	tween.tween_callback(func() -> void:
 		visible = false
 		_animating = false
+		_funnel_active = false
 		for entry in _card_nodes:
 			var node: Control = entry["node"] as Control
 			node.visible = false
@@ -256,8 +264,11 @@ func _layout_visible_cards() -> void:
 	)
 	var card_scale: float = cw / float(UIHelpers.CARD_WIDTH)
 
+	_card_rest_positions.clear()
+	_card_rest_scales.clear()
 	var row := 0
 	var col := 0
+	var idx := 0
 	for entry in _card_nodes:
 		var node: Control = entry["node"] as Control
 		var pile: String = entry["pile"] as String
@@ -274,10 +285,16 @@ func _layout_visible_cards() -> void:
 			var y: float = PADDING + row * (ch + ROW_GAP)
 			node.scale = Vector2(card_scale, card_scale)
 			node.position = Vector2(x, y)
+			_card_rest_positions.append(Vector2(x, y))
+			_card_rest_scales.append(card_scale)
 			col += 1
 			if col >= COLS:
 				col = 0
 				row += 1
+		else:
+			_card_rest_positions.append(Vector2.ZERO)
+			_card_rest_scales.append(card_scale)
+		idx += 1
 
 	@warning_ignore("integer_division")
 	var visible_count := 0
@@ -315,6 +332,53 @@ func _position_hand_btn(vp_size: Vector2) -> void:
 	)
 
 
+
+
+func _process(_delta: float) -> void:
+	if not _funnel_active:
+		return
+	_apply_funnel()
+
+
+func _apply_funnel() -> void:
+	var clip_h: float = _clip_wrapper.size.y
+	if clip_h <= 0.0:
+		return
+	var container_y: float = _container.position.y
+	var idx := 0
+	for entry in _card_nodes:
+		var node: Control = entry["node"] as Control
+		if not node.visible or idx >= _card_rest_positions.size():
+			idx += 1
+			continue
+		var rest_pos: Vector2 = _card_rest_positions[idx]
+		var rest_scale: float = _card_rest_scales[idx]
+		var screen_y: float = rest_pos.y + container_y
+		var t: float = clampf(screen_y / clip_h, 0.0, 1.0)
+		var funnel_scale: float = lerpf(0.1, 1.0, t)
+		var actual_scale: float = rest_scale * funnel_scale
+		node.scale = Vector2(actual_scale, actual_scale)
+		var center_x: float = (
+			rest_pos.x + float(UIHelpers.CARD_WIDTH)
+			* rest_scale * 0.5
+		)
+		node.position.x = (
+			center_x - float(UIHelpers.CARD_WIDTH)
+			* actual_scale * 0.5
+		)
+		node.position.y = rest_pos.y
+		idx += 1
+
+
+func _restore_card_scales() -> void:
+	var idx := 0
+	for entry in _card_nodes:
+		var node: Control = entry["node"] as Control
+		if node.visible and idx < _card_rest_positions.size():
+			node.position = _card_rest_positions[idx]
+			var s: float = _card_rest_scales[idx]
+			node.scale = Vector2(s, s)
+		idx += 1
 
 
 func _apply_scroll() -> void:
