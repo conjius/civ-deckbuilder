@@ -6,9 +6,7 @@ var _cloud_multimesh: MultiMeshInstance3D
 var _multimesh: MultiMesh
 var _dirty := false
 
-var _cloud_shader: Shader = preload(
-	"res://assets/shaders/fog_cloud.gdshader"
-)
+var _cloud_shader: Shader
 
 
 func _ready() -> void:
@@ -19,20 +17,22 @@ func _setup_multimesh() -> void:
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(0.6, 0.6, 0.65, 0.5)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_BACK
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.0
 	sphere.radial_segments = 6
 	sphere.rings = 3
+	sphere.material = mat
 	_multimesh.mesh = sphere
 	_multimesh.instance_count = 0
 
 	_cloud_multimesh = MultiMeshInstance3D.new()
 	_cloud_multimesh.multimesh = _multimesh
-	var mat := ShaderMaterial.new()
-	mat.shader = _cloud_shader
-	mat.render_priority = 1
-	_cloud_multimesh.material_override = mat
 	_cloud_multimesh.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	)
