@@ -20,20 +20,20 @@ func _setup_multimesh() -> void:
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
+	var mat := ShaderMaterial.new()
+	mat.shader = _cloud_shader
+	mat.render_priority = 1
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.0
 	sphere.radial_segments = 6
 	sphere.rings = 3
+	sphere.material = mat
 	_multimesh.mesh = sphere
 	_multimesh.instance_count = 0
 
 	_cloud_multimesh = MultiMeshInstance3D.new()
 	_cloud_multimesh.multimesh = _multimesh
-	var mat := ShaderMaterial.new()
-	mat.shader = _cloud_shader
-	mat.render_priority = 1
-	_cloud_multimesh.material_override = mat
 	_cloud_multimesh.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	)
