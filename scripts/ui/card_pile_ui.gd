@@ -3,10 +3,11 @@ extends Control
 
 signal clicked
 
-const GLOW_PAD := 40
+const GLOW_PAD := 50
 const FAN_CARDS := 4
 const FAN_SPREAD := 60.0
 const CARD_SCALE := 0.5
+const ICON_CARD_SCALE := 0.6
 
 var _count_label: Label
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
@@ -35,8 +36,12 @@ var _target_gray: float = 0.0
 
 func setup(face_down: bool) -> void:
 	_is_face_down = face_down
-	_pile_width = int(float(UIHelpers.CARD_WIDTH) * CARD_SCALE)
-	_pile_height = int(float(UIHelpers.CARD_HEIGHT) * CARD_SCALE)
+	_pile_width = int(
+		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
+	)
+	_pile_height = int(
+		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
+	)
 	var total_w: int = _pile_width + GLOW_PAD * 2
 	var total_h: int = _pile_height + GLOW_PAD * 2
 	custom_minimum_size = Vector2(total_w, total_h)
@@ -65,8 +70,10 @@ func setup(face_down: bool) -> void:
 	_count_label = Label.new()
 	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_count_label.position = Vector2.ZERO
-	_count_label.size = Vector2(total_w, total_h)
+	_count_label.position = Vector2(
+		GLOW_PAD, int(float(GLOW_PAD) + float(_pile_height) * 0.2)
+	)
+	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
 		"font_size", int(18 * UIHelpers.UI_SCALE)
@@ -255,12 +262,11 @@ func _draw_cards() -> void:
 	var ptex: Texture2D = load(
 		UIHelpers.PARCHMENT_PATH
 	) as Texture2D
-	# Card dimensions — correct aspect ratio
-	var cw := float(UIHelpers.CARD_WIDTH) * CARD_SCALE * 0.6
-	var ch := float(UIHelpers.CARD_HEIGHT) * CARD_SCALE * 0.6
+	var cw := float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
+	var ch := float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
 	var card_r := float(
 		UIHelpers.CARD_CORNER_RADIUS
-	) * CARD_SCALE * 0.6
+	) * ICON_CARD_SCALE
 	# Pivot = bottom center of icon area
 	var pivot_x := size.x * 0.5
 	var pivot_y := float(GLOW_PAD) + float(_pile_height) * 0.9
