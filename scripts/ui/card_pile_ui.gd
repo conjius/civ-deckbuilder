@@ -88,12 +88,7 @@ func setup(face_down: bool) -> void:
 		_count_label.add_theme_color_override(
 			"font_color", Color(0.3, 0.2, 0.1)
 		)
-	_count_label.add_theme_constant_override("outline_size", 3)
-	_count_label.add_theme_color_override(
-		"font_outline_color",
-		Color(0.2, 0.15, 0.05) if face_down
-		else Color(0.85, 0.78, 0.65),
-	)
+	_count_label.add_theme_constant_override("outline_size", 0)
 	_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_count_label)
 
