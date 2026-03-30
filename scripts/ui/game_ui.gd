@@ -103,6 +103,16 @@ func _layout_piles() -> void:
 	)
 	_draw_pile_ui.store_original_pos()
 	_discard_pile_ui.store_original_pos()
+	# Align end turn button X with discard pile center
+	var discard_cx: float = (
+		_discard_pile_ui.position.x
+		+ _discard_pile_ui.size.x * 0.5
+	)
+	end_turn_button.position.x = (
+		discard_cx - end_turn_button.size.x * 0.5
+	)
+	end_turn_button.position.y = 20.0
+	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
 	card_hand.discard_pile_pos = get_discard_pile_center()
 
