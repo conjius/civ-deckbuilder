@@ -10,12 +10,15 @@ extends Node3D
 @export var tilt_max: float = 90.0
 @export var tilt_speed: float = 8.0
 @export var orbit_speed: float = 2.6
+@export var input_enabled: bool = true
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
 var _target_position: Vector3 = Vector3.ZERO
 var _target_tilt: float = 60.0
 var _current_tilt: float = 60.0
+var _target_rot_y: float = 0.0
+var _current_rot_y: float = 0.0
 var _dragging: bool = false
 var _drag_origin: Vector3 = Vector3.ZERO
 
@@ -29,15 +32,18 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if not input_enabled:
+		_dragging = false
 	var input_dir := Vector2.ZERO
-	if Input.is_action_pressed("pan_up"):
-		input_dir.y -= 1.0
-	if Input.is_action_pressed("pan_down"):
-		input_dir.y += 1.0
-	if Input.is_action_pressed("pan_left"):
-		input_dir.x -= 1.0
-	if Input.is_action_pressed("pan_right"):
-		input_dir.x += 1.0
+	if input_enabled:
+		if Input.is_action_pressed("pan_up"):
+			input_dir.y -= 1.0
+		if Input.is_action_pressed("pan_down"):
+			input_dir.y += 1.0
+		if Input.is_action_pressed("pan_left"):
+			input_dir.x -= 1.0
+		if Input.is_action_pressed("pan_right"):
+			input_dir.x += 1.0
 
 	if input_dir != Vector2.ZERO:
 		var forward := -global_transform.basis.z
@@ -55,6 +61,7 @@ func _process(delta: float) -> void:
 		global_position = _target_position
 		_current_zoom = _target_zoom
 		_current_tilt = _target_tilt
+		_current_rot_y = _target_rot_y
 	else:
 		global_position = global_position.lerp(
 			_target_position, smooth_factor * delta
@@ -65,17 +72,35 @@ func _process(delta: float) -> void:
 		_current_tilt = lerpf(
 			_current_tilt, _target_tilt, smooth_factor * delta
 		)
+		_current_rot_y = lerpf(
+			_current_rot_y, _target_rot_y, smooth_factor * delta
+		)
+	rotation.y = _current_rot_y
 	_apply_zoom()
 	_apply_tilt()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_dragging = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if not input_enabled:
+		return
 	if event is InputEventMouseButton:
 		var shift: bool = event.shift_pressed
 		var cmd: bool = event.meta_pressed
+		if _dragging and (
+			event.button_index == MOUSE_BUTTON_WHEEL_UP
+			or event.button_index == MOUSE_BUTTON_WHEEL_DOWN
+			or event.button_index == MOUSE_BUTTON_WHEEL_LEFT
+			or event.button_index == MOUSE_BUTTON_WHEEL_RIGHT
+		):
+			return
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			if shift:
-				rotate_y(deg_to_rad(orbit_speed))
+				_target_rot_y += deg_to_rad(orbit_speed)
 			elif cmd:
 				_target_tilt = clampf(
 					_target_tilt - tilt_speed,
@@ -87,7 +112,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			if shift:
-				rotate_y(deg_to_rad(-orbit_speed))
+				_target_rot_y -= deg_to_rad(orbit_speed)
 			elif cmd:
 				_target_tilt = clampf(
 					_target_tilt + tilt_speed,
@@ -98,10 +123,12 @@ func _unhandled_input(event: InputEvent) -> void:
 					zoom_max, _target_zoom + zoom_speed
 				)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_LEFT:
-			rotate_y(deg_to_rad(orbit_speed))
+			_target_rot_y += deg_to_rad(orbit_speed)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
-			rotate_y(deg_to_rad(-orbit_speed))
-		elif event.button_index == MOUSE_BUTTON_LEFT:
+			_target_rot_y -= deg_to_rad(orbit_speed)
+		elif (event.button_index == MOUSE_BUTTON_LEFT
+			or event.button_index == MOUSE_BUTTON_MIDDLE
+		):
 			if event.pressed:
 				_dragging = true
 				_drag_origin = _screen_to_ground(
