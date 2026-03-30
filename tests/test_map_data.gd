@@ -135,3 +135,34 @@ func test_find_path_same_tile() -> void:
 	var path := map.find_path(Vector2i(0, 0), Vector2i(0, 0))
 	TestAssert.assert_size(path, 1)
 	TestAssert.assert_eq(path[0], Vector2i(0, 0))
+
+
+func test_settlement_default_stats() -> void:
+	var map := MapData.new()
+	map.place_settlement(Vector2i(0, 0), "Camp")
+	TestAssert.assert_eq(map.get_settlement_hp(Vector2i(0, 0)), 5)
+	TestAssert.assert_eq(map.get_settlement_max_hp(Vector2i(0, 0)), 5)
+	TestAssert.assert_eq(map.get_settlement_attack(Vector2i(0, 0)), 1)
+	TestAssert.assert_eq(map.get_settlement_defense(Vector2i(0, 0)), 1)
+
+
+func test_settlement_damage() -> void:
+	var map := MapData.new()
+	map.place_settlement(Vector2i(0, 0), "Camp")
+	map.damage_settlement(Vector2i(0, 0), 3)
+	TestAssert.assert_eq(map.get_settlement_hp(Vector2i(0, 0)), 2)
+
+
+func test_settlement_damage_cannot_go_below_zero() -> void:
+	var map := MapData.new()
+	map.place_settlement(Vector2i(0, 0), "Camp")
+	map.damage_settlement(Vector2i(0, 0), 100)
+	TestAssert.assert_eq(map.get_settlement_hp(Vector2i(0, 0)), 0)
+
+
+func test_settlement_removal() -> void:
+	var map := MapData.new()
+	map.place_settlement(Vector2i(0, 0), "Camp")
+	TestAssert.assert_true(map.has_settlement(Vector2i(0, 0)))
+	map.remove_settlement(Vector2i(0, 0))
+	TestAssert.assert_false(map.has_settlement(Vector2i(0, 0)))

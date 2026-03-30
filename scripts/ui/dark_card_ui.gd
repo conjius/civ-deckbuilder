@@ -111,5 +111,5 @@ func _draw_card() -> void:
 		var k: int = (j + 1) % border_pts.size()
 		_draw_ctrl.draw_line(
 			border_pts[j], border_pts[k],
-			Color(0.65, 0.5, 0.2), border_w,
+			Color(0.65, 0.5, 0.2), border_w, true,
 		)

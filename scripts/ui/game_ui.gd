@@ -96,9 +96,12 @@ func _setup_piles() -> void:
 		"res://scripts/ui/tile_info_card_ui.gd"
 	) as GDScript
 	_tile_info_card = tile_info_cls.new()
+	_tile_info_card.z_index = -1
 	add_child(_tile_info_card)
 	_unit_card = UnitCardUI.new()
+	_unit_card.z_index = -1
 	add_child(_unit_card)
+	end_turn_button.z_index = -1
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
 	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
@@ -295,11 +298,11 @@ func show_unit_info(unit: Node3D) -> void:
 
 func show_settlement_info(
 	sname: String, color: Color,
-	coord: Vector2i, terrain: TerrainType,
+	_coord: Vector2i, _terrain: TerrainType,
+	hp: int = 5, atk: int = 1, def: int = 1,
 ) -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_settlement(sname, color, coord, terrain)
+	if _unit_card:
+		_unit_card.show_settlement(sname, color, hp, atk, def)
 
 
 
@@ -387,8 +390,7 @@ func _animate_piles_to_gallery() -> void:
 	var ph := _draw_pile_ui.size.y
 	var total_w := pw * 3.0 + spacing * 2.0
 	var start_x := (vp.x - total_w) * 0.5
-	var reserve := ph + 70.0
-	var target_y := vp.y - reserve + (reserve - ph) * 0.5
+	var target_y := card_gallery._gallery_bottom_y + 20.0
 	var gp := float(CardPileUI.glow_pad)
 	# animate_to subtracts GLOW_PAD, so add it back
 	_draw_pile_ui.animate_to(

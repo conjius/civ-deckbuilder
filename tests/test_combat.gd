@@ -5,6 +5,7 @@ var _map: MapData
 var _melee: CardData
 var _ranged: CardData
 var _shield: CardData
+var _armor: CardData
 
 
 func before_each() -> void:
@@ -34,6 +35,11 @@ func before_each() -> void:
 	_shield.card_name = "Shields Up!"
 	_shield.card_type = CardData.CardType.DEFENSE
 	_shield.defense_bonus = 1
+
+	_armor = CardData.new()
+	_armor.card_name = "Armor Up!"
+	_armor.card_type = CardData.CardType.DEFENSE
+	_armor.defense_bonus = 2
 
 
 func test_attack_targets_empty_without_enemies() -> void:
@@ -142,6 +148,50 @@ func test_shield_targets_self_only() -> void:
 	)
 	TestAssert.assert_size(targets, 1)
 	TestAssert.assert_contains(targets, Vector2i(0, 0))
+
+
+func test_resolve_armor() -> void:
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_armor, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_eq(result.defense_gained, 2)
+
+
+func test_damage_blocked_by_defense() -> void:
+	var ps := PlayerState.new()
+	ps.health = 10
+	ps.max_health = 10
+	ps.defense = 2
+	var actual_damage: int = CombatResolver.compute_damage(3, ps.defense + ps.defense_modifier)
+	TestAssert.assert_eq(actual_damage, 1)
+	ps.take_damage(actual_damage)
+	TestAssert.assert_eq(ps.health, 9)
+
+
+func test_damage_fully_blocked() -> void:
+	var actual_damage: int = CombatResolver.compute_damage(2, 3)
+	TestAssert.assert_eq(actual_damage, 0)
+
+
+func test_damage_with_defense_modifier() -> void:
+	var ps := PlayerState.new()
+	ps.health = 10
+	ps.max_health = 10
+	ps.defense = 0
+	ps.defense_modifier = 2
+	var actual_damage: int = CombatResolver.compute_damage(3, ps.defense + ps.defense_modifier)
+	TestAssert.assert_eq(actual_damage, 1)
+
+
+func test_attack_settlement_with_defense() -> void:
+	_map.place_settlement(Vector2i(1, 0), "Camp", Color.RED)
+	var def: int = _map.get_settlement_defense(Vector2i(1, 0))
+	var actual_damage: int = CombatResolver.compute_damage(2, def)
+	TestAssert.assert_eq(actual_damage, 1)
+	_map.damage_settlement(Vector2i(1, 0), actual_damage)
+	TestAssert.assert_eq(_map.get_settlement_hp(Vector2i(1, 0)), 4)
 
 
 func test_defense_resets_on_turn() -> void:

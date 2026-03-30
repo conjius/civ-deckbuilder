@@ -6,7 +6,7 @@ signal gather_choice_needed(
 	types: Array[CardData.ResourceType],
 )
 signal settled(coord: Vector2i, settlement_name: String)
-signal attacked(target: Vector2i, damage: int)
+signal attacked(target: Vector2i, damage: int, attacker: Node3D)
 signal defended(bonus: int)
 signal turn_should_end
 
@@ -71,7 +71,7 @@ func execute_card(
 				result.settlement_name,
 			)
 		CardData.CardType.ATTACK:
-			attacked.emit(target_coord, result.damage_dealt)
+			attacked.emit(target_coord, result.damage_dealt, unit)
 		CardData.CardType.DEFENSE:
 			unit.state.defense_modifier += result.defense_gained
 			defended.emit(result.defense_gained)
