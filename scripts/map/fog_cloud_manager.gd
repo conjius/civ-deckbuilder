@@ -34,8 +34,8 @@ func add_fog(
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(0.2, 0.6)
-		var sx: float = rng.randf_range(0.71, 1.43)
-		var sz: float = rng.randf_range(0.5, 1.07)
+		var sx: float = rng.randf_range(0.55, 1.1)
+		var sz: float = rng.randf_range(0.4, 0.85)
 		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
