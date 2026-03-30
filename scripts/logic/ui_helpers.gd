@@ -203,7 +203,7 @@ static func create_icon_shadow_shader() -> ShaderMaterial:
 	var shader := Shader.new()
 	shader.code = (
 		"shader_type canvas_item;\n"
-		+ "uniform float glow_size = 0.12;\n"
+		+ "uniform float glow_size = 0.18;\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float acc = 0.0;\n"
@@ -220,7 +220,7 @@ static func create_icon_shadow_shader() -> ShaderMaterial:
 		+ "  }\n"
 		+ "  float shadow = (acc / total) * (1.0 - tex.a);\n"
 		+ "  vec3 col = mix(vec3(0.0), tex.rgb, tex.a);\n"
-		+ "  float fa = max(tex.a, shadow * 0.8);\n"
+		+ "  float fa = max(tex.a, shadow * 0.5);\n"
 		+ "  COLOR = vec4(col, fa);\n"
 		+ "}\n"
 	)
