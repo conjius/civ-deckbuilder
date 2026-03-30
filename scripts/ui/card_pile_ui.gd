@@ -22,6 +22,11 @@ var _draw_ctrl: Control
 var _grayscale_mat: ShaderMaterial
 var _card_angles: Array[float] = [0.0]
 var _target_angles: Array[float] = [0.0]
+var _anim_tween: Tween
+var _anim_progress: float = 1.0
+var _start_angles: Array[float] = [0.0]
+var _start_count: int = 1
+var _target_count: int = 1
 
 
 func setup(face_down: bool) -> void:
@@ -127,8 +132,9 @@ func _update_glow() -> void:
 func _rebuild_visual() -> void:
 	if _draw_ctrl == null:
 		return
+	_start_angles = _card_angles.duplicate()
+	_start_count = _card_angles.size()
 	if _toggled_on:
-		_draw_ctrl.material = null
 		_target_angles.clear()
 		var start_a := -FAN_SPREAD * 0.5
 		var step: float = FAN_SPREAD / float(FAN_CARDS - 1)
@@ -136,14 +142,38 @@ func _rebuild_visual() -> void:
 			_target_angles.append(
 				deg_to_rad(start_a + float(i) * step)
 			)
+		_target_count = FAN_CARDS
 	else:
-		_draw_ctrl.material = _grayscale_mat
 		_target_angles = [0.0] as Array[float]
-	# Snap immediately (animation can be added by tweening
-	# _card_angles toward _target_angles in _process)
-	_card_angles = _target_angles.duplicate()
+		_target_count = 1
+	# Pad start angles to match target count
+	while _start_angles.size() < _target_count:
+		_start_angles.append(0.0)
+	_card_angles.resize(_target_count)
 	if not _draw_ctrl.draw.is_connected(_draw_cards):
 		_draw_ctrl.draw.connect(_draw_cards)
+	# Animate
+	if _anim_tween and _anim_tween.is_running():
+		_anim_tween.kill()
+	_anim_progress = 0.0
+	_anim_tween = create_tween()
+	_anim_tween.tween_method(
+		_set_anim_progress, 0.0, 1.0, 0.25,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_anim_tween.tween_callback(func() -> void:
+		_draw_ctrl.material = (
+			null if _toggled_on else _grayscale_mat
+		)
+		_draw_ctrl.queue_redraw()
+	)
+
+
+func _set_anim_progress(t: float) -> void:
+	_anim_progress = t
+	for i in _card_angles.size():
+		var from: float = _start_angles[i]
+		var to: float = _target_angles[i] if i < _target_angles.size() else 0.0
+		_card_angles[i] = lerpf(from, to, t)
 	_draw_ctrl.queue_redraw()
 
 
