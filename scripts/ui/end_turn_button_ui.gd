@@ -65,14 +65,14 @@ func _ready() -> void:
 		)
 	)
 	_glow_mat.set_shader_parameter(
-		"hole_radius", 22.0 / float(total_w)
+		"hole_radius", 55.0 / float(total_w)
 	)
 	_glow_mat.set_shader_parameter(
 		"aspect", float(total_w) / float(total_h)
 	)
 
 	# Hourglass icon — inside the hole
-	var icon_sz: float = float(_card_w) * 0.25
+	var icon_sz: float = float(_card_w) * 0.5
 	_icon = TextureRect.new()
 	_icon.texture = _tex
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

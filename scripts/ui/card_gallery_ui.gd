@@ -65,6 +65,13 @@ func show_gallery(
 	initial_hand: bool = true,
 	initial_discard: bool = false,
 ) -> void:
+	var cards_changed := (
+		draw != _draw_cards
+		or hand != _hand_cards
+		or discard != _discard_cards
+	)
+	if cards_changed:
+		_cards_built = false
 	_draw_cards = draw
 	_hand_cards = hand
 	_discard_cards = discard
@@ -77,8 +84,9 @@ func show_gallery(
 	visible = true
 	var vp_size := get_viewport().get_visible_rect().size
 	_position_hand_btn(vp_size)
-	_build_all_cards.call_deferred()
-	_layout_visible_cards.call_deferred()
+	if not _cards_built:
+		_build_all_cards()
+	_layout_visible_cards()
 	_hand_btn.visible = true
 	_hand_btn.set_gallery_mode(true)
 	_update_hand_visual()
@@ -133,10 +141,9 @@ func hide_gallery() -> void:
 	tween.tween_callback(func() -> void:
 		visible = false
 		_animating = false
-		for child in _container.get_children():
-			child.queue_free()
-		_card_nodes.clear()
-		_cards_built = false
+		for entry in _card_nodes:
+			var node: Control = entry["node"] as Control
+			node.visible = false
 		closed.emit()
 	)
 
@@ -189,7 +196,8 @@ func _get_filtered_cards() -> Array[CardData]:
 
 
 func _build_all_cards() -> void:
-	# Clear old cards
+	if _cards_built:
+		return
 	for child in _container.get_children():
 		child.queue_free()
 	_card_nodes.clear()

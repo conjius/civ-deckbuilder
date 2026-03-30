@@ -140,7 +140,7 @@ func set_title(text: String) -> void:
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	_title_label.position = Vector2(
-		0, size.y - float(GLOW_PAD) + 17.0
+		0, size.y - float(GLOW_PAD) + 8.0
 	)
 	_title_label.size = Vector2(size.x, UIHelpers.s(14))
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -205,6 +205,7 @@ func set_gallery_mode(active: bool) -> void:
 			_card_angles = [0.0] as Array[float]
 			_brightness = 1.0
 			_gray_strength = 0.0
+			_update_title_position()
 			_draw_ctrl.queue_redraw()
 		)
 
@@ -273,6 +274,7 @@ func _rebuild_visual() -> void:
 		_set_anim_progress, 0.0, 1.0, 0.3,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	_anim_tween.tween_callback(_on_anim_finished)
+	_update_title_position()
 
 
 func _set_anim_progress(t: float) -> void:
@@ -307,6 +309,13 @@ func _update_label_color() -> void:
 	_count_label.add_theme_color_override(
 		"font_color", Color(r, g, b)
 	)
+
+
+func _update_title_position() -> void:
+	if _title_label == null:
+		return
+	var gap := 17.0 if (_in_gallery and _toggled_on) else 8.0
+	_title_label.position.y = size.y - float(GLOW_PAD) + gap
 
 
 func _on_anim_finished() -> void:
