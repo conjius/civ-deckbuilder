@@ -5,7 +5,7 @@ const UI_SCALE: float = 1.845
 
 const CARD_WIDTH: int = int(115 * UI_SCALE)
 const CARD_HEIGHT: int = int(165 * UI_SCALE)
-const CARD_BORDER: int = int(2 * UI_SCALE)
+const CARD_BORDER: int = int(4 * UI_SCALE)
 const CARD_PADDING: int = int(2 * UI_SCALE)
 const SECTION_TOP: int = CARD_BORDER + CARD_PADDING
 const SECTION_GAP: int = int(2 * UI_SCALE)
