@@ -36,7 +36,7 @@ func _ready() -> void:
 		+ "    float acc = 0.0;\n"
 		+ "    float total = 0.0;\n"
 		+ "    for (int r = 1; r <= 6; r++) {\n"
-		+ "      float rd = 0.1 * float(r) / 6.0;\n"
+		+ "      float rd = 0.15 * float(r) / 6.0;\n"
 		+ "      float w = 1.0 - float(r) / 7.0;\n"
 		+ "      for (int i = 0; i < 12; i++) {\n"
 		+ "        float a = float(i) / 12.0 * 6.2832;\n"
@@ -47,7 +47,7 @@ func _ready() -> void:
 		+ "    }\n"
 		+ "    float shadow = (acc / total) * (1.0 - tex.a);\n"
 		+ "    vec3 col = mix(vec3(0.0), tinted, tex.a);\n"
-		+ "    float fa = max(tex.a, shadow * 0.8);\n"
+		+ "    float fa = max(tex.a, shadow * 0.5);\n"
 		+ "    COLOR = vec4(col, fa);\n"
 		+ "}\n"
 	)
