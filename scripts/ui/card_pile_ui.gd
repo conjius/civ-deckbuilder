@@ -144,6 +144,8 @@ func set_gallery_mode(active: bool) -> void:
 		if _anim_tween and _anim_tween.is_running():
 			_anim_tween.kill()
 		_anim_progress = 0.0
+		var exit_b: float = _brightness
+		var exit_g: float = _gray_strength
 		_anim_tween = create_tween()
 		_anim_tween.tween_method(
 			func(t: float) -> void:
@@ -153,8 +155,9 @@ func set_gallery_mode(active: bool) -> void:
 						if i < _start_angles.size() else 0.0
 					)
 					_card_angles[i] = lerpf(from, 0.0, t)
-				_brightness = lerpf(_brightness, 1.0, t)
-				_gray_strength = lerpf(_gray_strength, 0.0, t)
+				_brightness = lerpf(exit_b, 1.0, t)
+				_gray_strength = lerpf(exit_g, 0.0, t)
+				_update_label_color()
 				_draw_ctrl.queue_redraw(),
 			0.0, 1.0, 0.25,
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
