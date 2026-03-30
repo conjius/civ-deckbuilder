@@ -206,7 +206,7 @@ static func _build_defense_footer(
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var text := "[center]" + UIHelpers.icon_value(
-		"Defense", "+" + str(card.defense_bonus)
+		"Defense", str(card.defense_bonus)
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl

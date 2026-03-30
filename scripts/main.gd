@@ -11,16 +11,11 @@ var _scout: CardData = preload("res://resources/cards/scout.tres")
 var _gather: CardData = preload("res://resources/cards/gather.tres")
 var _settle: CardData = preload("res://resources/cards/settle.tres")
 var _chicken: CardData = preload("res://resources/cards/chicken.tres")
-var _beef: CardData = preload("res://resources/cards/beef.tres")
-var _pork: CardData = preload("res://resources/cards/pork.tres")
-var _ore: CardData = preload("res://resources/cards/ore.tres")
-var _iron: CardData = preload("res://resources/cards/iron.tres")
-var _copper: CardData = preload("res://resources/cards/copper.tres")
 var _wood: CardData = preload("res://resources/cards/wood.tres")
-var _glass: CardData = preload("res://resources/cards/glass.tres")
 var _strike: CardData = preload("res://resources/cards/strike.tres")
 var _shoot: CardData = preload("res://resources/cards/shoot.tres")
 var _shields_up: CardData = preload("res://resources/cards/shields_up.tres")
+var _armor_up: CardData = preload("res://resources/cards/armor_up.tres")
 var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
 var _last_hover_time: int = 0
@@ -72,17 +67,18 @@ func _ready() -> void:
 		_on_gather_choice_needed
 	)
 	card_effects.settled.connect(_on_settled)
+	card_effects.attacked.connect(_on_attacked)
 
 	# Build the starter deck
 	var deck: Array[CardData] = [
 		_move_1, _move_1, _move_1, _move_1,
 		_move_2, _move_2,
 		_scout, _scout,
-		_gather, _gather,
-		_settle,
-		_chicken, _beef, _pork,
-		_ore, _iron, _copper, _wood, _glass,
-		_strike, _shoot, _shields_up,
+		_gather, _gather, _gather, _gather,
+		_settle, _settle,
+		_chicken, _wood,
+		_strike, _strike, _shoot, _shoot,
+		_shields_up, _shields_up, _armor_up,
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
@@ -246,7 +242,10 @@ func _on_end_turn() -> void:
 
 func _finish_end_turn() -> void:
 	# Opponent's turn
-	await ai_controller.take_turn()
+	if ai_controller and ai_unit:
+		await ai_controller.take_turn()
+	elif ai_controller and not ai_unit:
+		ai_controller = null
 	turn_manager.end_turn()
 	_degrade_fog()
 	_reveal_around(
@@ -353,6 +352,92 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 	_update_packing()
 
 
+func _on_attacked(
+	target_coord: Vector2i, raw_damage: int,
+	_attacker: Node3D,
+) -> void:
+	var target_unit: Node3D = _get_unit_at(target_coord)
+	if target_unit:
+		var def: int = (
+			target_unit.state.defense
+			+ target_unit.state.defense_modifier
+		)
+		var actual: int = CombatResolver.compute_damage(
+			raw_damage, def
+		)
+		if actual > 0:
+			target_unit.state.take_damage(actual)
+			game_ui.refresh_unit_info()
+			if target_unit.state.health <= 0:
+				_eliminate_unit(target_unit)
+	elif hex_map.map_data.has_settlement(target_coord):
+		var def: int = (
+			hex_map.map_data.get_settlement_defense(target_coord)
+		)
+		var actual: int = CombatResolver.compute_damage(
+			raw_damage, def
+		)
+		if actual > 0:
+			hex_map.map_data.damage_settlement(target_coord, actual)
+			if hex_map.map_data.get_settlement_hp(target_coord) <= 0:
+				_destroy_settlement(target_coord)
+
+
+func _get_unit_at(coord: Vector2i) -> Node3D:
+	if player_unit and player_unit.current_coord == coord:
+		return player_unit
+	if ai_unit and ai_unit.current_coord == coord:
+		return ai_unit
+	return null
+
+
+func _eliminate_unit(unit: Node3D) -> void:
+	var coord: Vector2i = unit.current_coord
+	if unit == ai_unit:
+		hex_map.map_data.set_enemy_position(coord, false)
+		ai_unit.queue_free()
+		ai_unit = null
+		if _is_ai_eliminated():
+			ai_controller = null
+	elif unit == player_unit:
+		player_unit.queue_free()
+		if _is_player_eliminated():
+			get_tree().quit(0)
+
+
+func _destroy_settlement(coord: Vector2i) -> void:
+	hex_map.map_data.remove_settlement(coord)
+	var tile: Node3D = hex_map.get_tile(coord)
+	if tile and tile.has_method("remove_settlement"):
+		tile.remove_settlement()
+	if _is_ai_eliminated():
+		ai_controller = null
+
+
+func _is_ai_eliminated() -> bool:
+	if ai_unit != null:
+		return false
+	for coord: Vector2i in hex_map.map_data._settlements:
+		var color: Color = hex_map.map_data.get_settlement_color(
+			coord
+		)
+		if color != player_unit.avatar_color:
+			return false
+	return true
+
+
+func _is_player_eliminated() -> bool:
+	if player_unit.state.health > 0:
+		return false
+	for coord: Vector2i in hex_map.map_data._settlements:
+		var color: Color = hex_map.map_data.get_settlement_color(
+			coord
+		)
+		if color == player_unit.avatar_color:
+			return false
+	return true
+
+
 func _handle_click(screen_pos: Vector2) -> void:
 	var coord: Vector2i = hex_map.raycast_to_hex(
 		$CameraRig/CameraPivot/Camera3D, screen_pos
@@ -427,8 +512,11 @@ func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
 			hex_map.map_data.get_settlement_color(coord)
 		)
 		var terrain: TerrainType = hex_map.get_terrain(coord)
+		var hp: int = hex_map.map_data.get_settlement_hp(coord)
+		var atk: int = hex_map.map_data.get_settlement_attack(coord)
+		var def: int = hex_map.map_data.get_settlement_defense(coord)
 		game_ui.show_settlement_info(
-			sname, owner_color, coord, terrain
+			sname, owner_color, coord, terrain, hp, atk, def
 		)
 
 
@@ -506,6 +594,7 @@ func _setup_ai(
 	# Create AI controller
 	ai_controller = AIController.new()
 	ai_controller.ai_unit = ai_unit
+	ai_controller.player_unit = player_unit
 	ai_controller.card_effects = card_effects
 	ai_controller.card_resolver = card_effects.card_resolver
 	ai_controller.hex_map = hex_map

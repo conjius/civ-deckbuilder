@@ -21,6 +21,7 @@ var _show_hand: bool = true
 var _show_discard: bool = false
 var _scroll_offset: float = 0.0
 var _max_scroll: float = 0.0
+var _gallery_bottom_y: float = 0.0
 var _clip_wrapper: Control
 var _container: Control
 var _animating: bool = false
@@ -45,7 +46,7 @@ func _ready() -> void:
 	_clip_wrapper.add_child(_container)
 
 	_hand_btn = CardPileUI.new()
-	_hand_btn.setup(false)
+	_hand_btn.setup(false, 1.2)
 	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
@@ -241,18 +242,22 @@ func _build_all_cards() -> void:
 
 func _layout_visible_cards() -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	var side_margin: float = 40.0
-	var area_w: float = vp_size.x - side_margin * 2.0
 	_position_hand_btn(vp_size)
-	var cw: float = (
-		(area_w - PADDING * 2 - COL_GAP * (COLS - 1))
-		/ float(COLS)
+	# Fit exactly 2 rows in available height
+	var avail_h: float = vp_size.y - _bottom_reserve
+	var aspect: float = (
+		float(UIHelpers.CARD_HEIGHT) / float(UIHelpers.CARD_WIDTH)
 	)
-	var ch: float = cw * (
-		float(UIHelpers.CARD_HEIGHT)
-		/ float(UIHelpers.CARD_WIDTH)
-	)
+	# 2 rows: 2*ch + ROW_GAP + 2*PADDING = avail_h
+	var ch: float = (avail_h - ROW_GAP - PADDING * 2) / 2.0
+	var cw: float = ch / aspect
 	var card_scale: float = cw / float(UIHelpers.CARD_WIDTH)
+	# Center the 5-column grid
+	var grid_w: float = (
+		cw * float(COLS) + COL_GAP * float(COLS - 1)
+		+ PADDING * 2
+	)
+	var grid_left: float = (vp_size.x - grid_w) * 0.5
 
 	var row := 0
 	var col := 0
@@ -267,7 +272,7 @@ func _layout_visible_cards() -> void:
 		node.visible = show
 		if show:
 			var x: float = (
-				side_margin + PADDING + col * (cw + COL_GAP)
+				grid_left + PADDING + col * (cw + COL_GAP)
 			)
 			var y: float = PADDING + row * (ch + ROW_GAP)
 			node.scale = Vector2(card_scale, card_scale)
@@ -299,12 +304,17 @@ func _layout_visible_cards() -> void:
 
 
 func _position_hand_btn(vp_size: Vector2) -> void:
-	var btn_h := _hand_btn.size.y
-	var reserve := btn_h + 70.0
-	var target_y := vp_size.y - reserve + (reserve - btn_h) * 0.5
+	var s: float = _hand_btn.scale.y
+	var btn_h: float = _hand_btn.size.y * s
+	var btn_w: float = _hand_btn.size.x * s
+	var reserve: float = btn_h + 170.0
+	var target_y: float = (
+		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 20.0
+	)
 	_bottom_reserve = reserve
+	_gallery_bottom_y = target_y
 	_hand_btn.position = Vector2(
-		(vp_size.x - _hand_btn.size.x) * 0.5,
+		(vp_size.x - btn_w) * 0.5,
 		target_y,
 	)
 	_clip_wrapper.position = Vector2.ZERO

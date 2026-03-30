@@ -10,6 +10,8 @@ const ICON_CARD_SCALE := 0.6
 
 static var glow_pad: int = int(27.0 * UIHelpers.UI_SCALE)
 
+var _size_mult: float = 1.0
+
 var _count_label: Label
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _is_face_down: bool = false
@@ -36,15 +38,16 @@ var _target_brightness: float = 1.0
 var _target_gray: float = 0.0
 
 
-func setup(face_down: bool) -> void:
+func setup(face_down: bool, size_mult: float = 1.0) -> void:
 	_is_face_down = face_down
+	_size_mult = size_mult
 	_pile_width = int(
-		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
+		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE * size_mult
 	)
 	_pile_height = int(
-		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
+		float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE * size_mult
 	)
-	var total_w: int = _pile_width + glow_pad * 2 + int(54.0 * UIHelpers.UI_SCALE)
+	var total_w: int = _pile_width + glow_pad * 2 + int(54.0 * UIHelpers.UI_SCALE * size_mult)
 	var total_h: int = _pile_height + glow_pad * 2
 	custom_minimum_size = Vector2(total_w, total_h)
 	size = Vector2(total_w, total_h)
@@ -76,11 +79,11 @@ func setup(face_down: bool) -> void:
 	var card_top: int = pivot_y - _pile_height
 	@warning_ignore("integer_division")
 	var label_x: int = (total_w - _pile_width) / 2
-	_count_label.position = Vector2(label_x, card_top + 3)
+	_count_label.position = Vector2(label_x, card_top)
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
-		"font_size", int(36 * UIHelpers.UI_SCALE)
+		"font_size", int(36 * UIHelpers.UI_SCALE * _size_mult)
 	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.95, 0.88, 0.7)
@@ -127,6 +130,8 @@ func setup(face_down: bool) -> void:
 		"aspect", float(total_w) / float(total_h)
 	)
 	_draw_ctrl.queue_redraw()
+	# Shift text down slightly from hole center
+	_count_label.position.y += 3
 
 
 func set_title(text: String) -> void:
@@ -333,11 +338,11 @@ func _draw_cards() -> void:
 	var ptex: Texture2D = load(
 		UIHelpers.PARCHMENT_PATH
 	) as Texture2D
-	var cw := float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
-	var ch := float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
+	var cw := float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE * _size_mult
+	var ch := float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE * _size_mult
 	var card_r := float(
 		UIHelpers.CARD_CORNER_RADIUS
-	) * ICON_CARD_SCALE
+	) * ICON_CARD_SCALE * _size_mult
 	# Pivot = bottom center of icon area
 	var pivot_x := size.x * 0.5
 	var pivot_y := float(glow_pad) + float(_pile_height) * 0.9
@@ -411,6 +416,7 @@ func _draw_rotated_card(
 		ctrl.draw_line(
 			border_pts[j], border_pts[k],
 			Color(br, bgg, bbl), DarkCardUI.border_w,
+			true,
 		)
 
 
@@ -484,7 +490,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "  float hole = smoothstep("
 		+ "hole_radius - 0.015, hole_radius, d);\n"
 		+ "  float card_a = tex.a * hole;\n"
-		+ "  float border_w = 0.012;\n"
+		+ "  float border_w = 0.018;\n"
 		+ "  float ring = (1.0 - smoothstep("
 		+ "hole_radius - border_w, hole_radius, d))\n"
 		+ "    * smoothstep("

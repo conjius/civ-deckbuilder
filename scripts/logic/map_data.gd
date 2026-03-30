@@ -61,8 +61,12 @@ func has_settlement(coord: Vector2i) -> bool:
 func place_settlement(
 	coord: Vector2i, sname: String,
 	owner_color: Color = Color.WHITE,
+	hp: int = 5, atk: int = 1, def: int = 1,
 ) -> void:
-	_settlements[coord] = {"name": sname, "color": owner_color}
+	_settlements[coord] = {
+		"name": sname, "color": owner_color,
+		"hp": hp, "max_hp": hp, "attack": atk, "defense": def,
+	}
 
 
 func set_enemy_position(coord: Vector2i, present: bool) -> void:
@@ -88,6 +92,46 @@ func get_settlement_color(coord: Vector2i) -> Color:
 		_settlements.get(coord, {}) as Dictionary
 	)
 	return data.get("color", Color.WHITE) as Color
+
+
+func get_settlement_hp(coord: Vector2i) -> int:
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("hp", 0) as int
+
+
+func get_settlement_max_hp(coord: Vector2i) -> int:
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("max_hp", 0) as int
+
+
+func get_settlement_attack(coord: Vector2i) -> int:
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("attack", 0) as int
+
+
+func get_settlement_defense(coord: Vector2i) -> int:
+	var data: Dictionary = (
+		_settlements.get(coord, {}) as Dictionary
+	)
+	return data.get("defense", 0) as int
+
+
+func damage_settlement(coord: Vector2i, amount: int) -> void:
+	if not _settlements.has(coord):
+		return
+	var data: Dictionary = _settlements[coord] as Dictionary
+	var hp: int = data.get("hp", 0) as int
+	data["hp"] = maxi(0, hp - amount)
+
+
+func remove_settlement(coord: Vector2i) -> void:
+	_settlements.erase(coord)
 
 
 func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:

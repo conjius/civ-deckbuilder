@@ -6,6 +6,7 @@ signal turn_completed
 const PLAY_DELAY: float = 0.4
 
 var ai_unit: Node3D
+var player_unit: Node3D
 var deck_manager: DeckManager = DeckManager.new()
 var card_effects: Node
 var card_resolver: CardResolver
@@ -18,6 +19,8 @@ func initialize(deck: Array[CardData]) -> void:
 
 
 func take_turn() -> void:
+	_update_enemy_positions()
+	ai_unit.state.defense_modifier = 0
 	var cards_to_play: Array[CardData] = deck_manager.hand.duplicate()
 	for card in cards_to_play:
 		if card.card_type == CardData.CardType.RESOURCE:
@@ -40,7 +43,24 @@ func take_turn() -> void:
 			await get_tree().create_timer(PLAY_DELAY).timeout
 	deck_manager.end_turn()
 	deck_manager.draw_hand()
+	_restore_enemy_positions()
 	turn_completed.emit()
+
+
+func _update_enemy_positions() -> void:
+	hex_map.map_data._enemies.clear()
+	if player_unit:
+		hex_map.map_data.set_enemy_position(
+			player_unit.current_coord, true
+		)
+
+
+func _restore_enemy_positions() -> void:
+	hex_map.map_data._enemies.clear()
+	if ai_unit:
+		hex_map.map_data.set_enemy_position(
+			ai_unit.current_coord, true
+		)
 
 
 func _handle_result(

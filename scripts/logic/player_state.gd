@@ -2,10 +2,10 @@ class_name PlayerState
 extends RefCounted
 
 var unit_name: String = "Explorer"
-var max_health: int = 10
-var health: int = 10
-var attack: int = 2
-var defense: int = 1
+var max_health: int = 1
+var health: int = 1
+var attack: int = 0
+var defense: int = 0
 var defense_modifier: int = 0
 var sight_range: int = 2
 var current_coord: Vector2i = Vector2i.ZERO
