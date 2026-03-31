@@ -10,4 +10,6 @@ card_type = 2
 range_value = 1
 cost = 1
 card_color = Color(0.839, 0.706, 0.271, 1)
+range_display = "0-1"
+icon_path = "res://assets/icons/gather_64.svg"
 icon_scale = 0.9

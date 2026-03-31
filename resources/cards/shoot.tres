@@ -5,10 +5,11 @@
 [resource]
 script = ExtResource("1")
 card_name = "Shoot"
-description = "Ranged attack within 2 tiles"
+description = "+1 Attack within 2 tiles for this attack"
 card_type = 5
 range_value = 2
 card_color = Color(0.29, 0.56, 0.85, 1)
 icon_path = "res://assets/icons/resources/shoot.svg"
 icon_scale = 0.9
+range_display = "0-2"
 attack_damage = 1

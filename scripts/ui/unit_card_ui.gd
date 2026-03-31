@@ -20,13 +20,13 @@ func _ready() -> void:
 	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_unit_icon.size = Vector2(icon_sz, icon_sz)
 	_unit_icon.position = Vector2(
-		(float(card_w) - icon_sz) * 0.5, 34.0
+		(float(card_w) - icon_sz) * 0.5, 14.0
 	)
 	_unit_icon.modulate = Color(0.95, 0.88, 0.7)
 	_unit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content_clip.add_child(_unit_icon)
 
-	var top_offset: float = icon_sz + 32.0
+	var top_offset: float = icon_sz + 22.0
 	_lines_container = VBoxContainer.new()
 	_lines_container.position = Vector2(4, top_offset)
 	_lines_container.size = Vector2(

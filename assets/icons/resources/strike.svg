@@ -1,3 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <path d="M38 4L42 8L24 26L28 30L46 12L50 16L52 6L42 4ZM22 30L8 44L6 52L10 56L18 54L32 40L28 36Z" fill="#C04030"/>
+  <g transform="rotate(-30 32 32)">
+    <polygon points="30,4 32,2 34,4 34,36 30,36" fill="#C04030"/>
+    <line x1="25" y1="36" x2="39" y2="36" stroke="#C04030" stroke-width="3" stroke-linecap="round"/>
+    <rect x="30" y="39" width="4" height="12" rx="1" fill="#C04030"/>
+    <ellipse cx="32" cy="53" rx="5" ry="2.5" fill="#C04030"/>
+    <g transform="translate(46 38) scale(4 1)">
+      <path d="M0 0 C1 -1 1.5 0 1 1" fill="none" stroke="#C04030" stroke-width="0.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(46 48) scale(4 1)">
+      <path d="M0 0 C1 -1 1.5 0 1 1" fill="none" stroke="#C04030" stroke-width="0.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(46 58) scale(4 1)">
+      <path d="M0 0 C1 -1 1.5 0 1 1" fill="none" stroke="#C04030" stroke-width="0.5" stroke-linecap="round"/>
+    </g>
+  </g>
 </svg>

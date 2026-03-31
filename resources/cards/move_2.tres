@@ -8,6 +8,7 @@ card_name = "Dash"
 description = "Move up to 4 tiles, -1 Defense"
 range_value = 4
 card_color = Color(0.1, 0.35, 0.1, 1)
+range_display = "1-4"
 icon_path = "res://assets/icons/dash_64.svg"
 defense_cost = 1
 icon_scale = 0.8

@@ -199,6 +199,44 @@ static func fit_font_size(
 
 
 
+static func create_icon_tint_shader(
+	tint: Color,
+) -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = (
+		"shader_type canvas_item;\n"
+		+ "uniform vec4 tint_color : source_color;\n"
+		+ "uniform float glow_size = 0.18;\n"
+		+ "void fragment() {\n"
+		+ "  vec4 tex = texture(TEXTURE, UV);\n"
+		+ "  float acc = 0.0;\n"
+		+ "  float total = 0.0;\n"
+		+ "  for (int r = 1; r <= 8; r++) {\n"
+		+ "    float rd = glow_size * float(r) / 8.0;\n"
+		+ "    float w = 1.0 - float(r) / 9.0;\n"
+		+ "    for (int i = 0; i < 16; i++) {\n"
+		+ "      float a = float(i) / 16.0 * 6.2832;\n"
+		+ "      vec2 off = vec2(cos(a), sin(a)) * rd;\n"
+		+ "      acc += texture(TEXTURE, UV + off).a * w;\n"
+		+ "      total += w;\n"
+		+ "    }\n"
+		+ "  }\n"
+		+ "  float shadow = (acc / total)"
+		+ " * (1.0 - tex.a);\n"
+		+ "  float lum = dot(tex.rgb,"
+		+ " vec3(0.299, 0.587, 0.114));\n"
+		+ "  vec3 col = tint_color.rgb"
+		+ " * max(lum, 0.15) * tex.a;\n"
+		+ "  float fa = max(tex.a, shadow * 0.5);\n"
+		+ "  COLOR = vec4(col, fa);\n"
+		+ "}\n"
+	)
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("tint_color", tint)
+	return mat
+
+
 static func create_icon_shadow_shader() -> ShaderMaterial:
 	var shader := Shader.new()
 	shader.code = (

@@ -137,19 +137,24 @@ static func _build_range_label(card: CardData) -> Control:
 	if card.card_type == CardData.CardType.DEFENSE:
 		return _build_defense_footer(card)
 	if card.range_value == 0:
-		var lbl := Label.new()
-		lbl.text = "Current tile"
-		lbl.layout_mode = 1
-		lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_override("font", _font_bold)
-		lbl.add_theme_font_size_override(
-			"font_size", UIHelpers.FONT_UNIT_STAT
+		var rtl0 := RichTextLabel.new()
+		rtl0.bbcode_enabled = true
+		rtl0.fit_content = true
+		rtl0.layout_mode = 1
+		rtl0.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rtl0.add_theme_font_override("normal_font", _font_bold)
+		rtl0.add_theme_color_override(
+			"default_color", Color.BLACK
 		)
-		lbl.add_theme_color_override("font_color", Color.BLACK)
-		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		return lbl
+		rtl0.add_theme_font_size_override(
+			"normal_font_size", UIHelpers.FONT_UNIT_STAT
+		)
+		rtl0.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var text0 := "[center]" + UIHelpers.icon_value(
+			"Range", "0"
+		) + "[/center]"
+		UIHelpers.set_bbcode(rtl0, text0)
+		return rtl0
 	var rtl := RichTextLabel.new()
 	rtl.bbcode_enabled = true
 	rtl.fit_content = true
@@ -161,8 +166,11 @@ static func _build_range_label(card: CardData) -> Control:
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var range_str: String = card.range_display
+	if range_str == "":
+		range_str = str(card.range_value)
 	var text := "[center]" + UIHelpers.icon_value(
-		"Range", str(card.range_value)
+		"Range", range_str
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
@@ -182,10 +190,13 @@ static func _build_attack_footer(
 		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var atk_range_str: String = card.range_display
+	if atk_range_str == "":
+		atk_range_str = str(card.range_value)
 	var text := "[center]" + UIHelpers.icon_value(
 		"Attack", str(card.attack_damage)
 	) + "    " + UIHelpers.icon_value(
-		"Range", str(card.range_value)
+		"Range", atk_range_str
 	) + "[/center]"
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
@@ -297,5 +308,7 @@ static func _add_avatar(
 		var inset := sz * (1.0 - sc) * 0.5
 		tex_rect.position = inset
 		tex_rect.size = sz * sc
-		tex_rect.material = UIHelpers.create_icon_shadow_shader()
+		tex_rect.material = (
+			UIHelpers.create_icon_tint_shader(card.card_color)
+		)
 		section.add_child(tex_rect)

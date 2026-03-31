@@ -7,5 +7,5 @@ script = ExtResource("1")
 card_name = "Watch"
 description = "Reveal a tile within a 5-tile radius of the unit"
 card_type = 1
-range_value = 4
+range_value = 5
 card_color = Color(0.271, 0.506, 0.839, 1)
