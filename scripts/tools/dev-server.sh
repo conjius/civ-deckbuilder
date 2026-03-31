@@ -43,7 +43,11 @@ cp "$PROJECT_DIR/scripts/tools/coi-serviceworker.min.js" "$BUILD_DIR/"
 cp "$PROJECT_DIR/assets/boot_logo.png" "$BUILD_DIR/index.png"
 node "$PROJECT_DIR/scripts/tools/patch_web_loading.mjs" "$BUILD_DIR/index.html"
 
+LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || echo "unknown")
+
 echo ""
-echo "==> Game ready at: http://localhost:8060"
+echo "==> Game ready at:"
+echo "    Local:   http://localhost:8060"
+echo "    Network: http://$LOCAL_IP:8060"
 echo ""
-npx -y serve "$BUILD_DIR" -l 8060 --no-clipboard 2>&1 | grep -v "Accepting connections"
+npx -y serve "$BUILD_DIR" -l 8060 --host 0.0.0.0 --no-clipboard 2>&1 | grep -v "Accepting connections"
