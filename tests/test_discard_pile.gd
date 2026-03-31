@@ -38,7 +38,7 @@ func test_discard_anim_has_flip() -> void:
 		load("res://scripts/ui/card_hand_ui.gd") as GDScript
 	).source_code
 	var fn_start := src.find("func _animate_to_discard_pile")
-	var fn_body := src.substr(fn_start, 1200)
+	var fn_body := src.substr(fn_start, 1600)
 	TestAssert.assert_true(
 		fn_body.contains("set_face_up(false)"),
 		"discard animation should flip card to face-down"

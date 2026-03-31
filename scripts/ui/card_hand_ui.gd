@@ -52,6 +52,7 @@ func discard_all(on_done: Callable = Callable()) -> void:
 	_discarding_all = true
 	var last_delay := float(cards.size() - 1) * 0.05
 	var dur := DISCARD_DUR
+	var end_scale := CardPileUI.ICON_CARD_SCALE
 	var flip_time := dur * 0.35
 	var flip_dur := 0.15
 	for i in range(cards.size()):
@@ -70,8 +71,8 @@ func discard_all(on_done: Callable = Callable()) -> void:
 		var tw := card.create_tween()
 		tw.set_parallel(true)
 		var half_pile := Vector2(
-			float(UIHelpers.CARD_WIDTH) * 0.25,
-			float(UIHelpers.CARD_HEIGHT) * 0.25,
+			float(UIHelpers.CARD_WIDTH) * end_scale * 0.5,
+			float(UIHelpers.CARD_HEIGHT) * end_scale * 0.5,
 		)
 		var disc_target := discard_pile_pos - half_pile
 		tw.tween_property(
@@ -80,7 +81,7 @@ func discard_all(on_done: Callable = Callable()) -> void:
 			Tween.EASE_IN
 		).set_delay(delay)
 		tw.tween_property(
-			card, "scale:y", 0.5, dur,
+			card, "scale:y", end_scale, dur,
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
 			Tween.EASE_IN
 		).set_delay(delay)
@@ -91,7 +92,7 @@ func discard_all(on_done: Callable = Callable()) -> void:
 		).set_delay(delay)
 		# Flip: face-up → squash x → face-down → stretch
 		var start_sx: float = card.scale.x
-		var mid_sx: float = lerpf(start_sx, 0.5, 0.35)
+		var mid_sx: float = lerpf(start_sx, end_scale, 0.35)
 		var flip_tw := card.create_tween()
 		flip_tw.tween_interval(delay)
 		flip_tw.tween_property(
@@ -108,7 +109,7 @@ func discard_all(on_done: Callable = Callable()) -> void:
 			card.set_face_up(false)
 		)
 		flip_tw.tween_property(
-			card, "scale:x", 0.5, flip_dur,
+			card, "scale:x", end_scale, flip_dur,
 		).set_trans(Tween.TRANS_SINE).set_ease(
 			Tween.EASE_OUT
 		)
@@ -285,9 +286,10 @@ func remove_card(card: CardData) -> void:
 
 
 func _animate_to_discard_pile(card: Control) -> void:
+	var end_scale := CardPileUI.ICON_CARD_SCALE
 	var half_pile := Vector2(
-		float(UIHelpers.CARD_WIDTH) * 0.25,
-		float(UIHelpers.CARD_HEIGHT) * 0.25,
+		float(UIHelpers.CARD_WIDTH) * end_scale * 0.5,
+		float(UIHelpers.CARD_HEIGHT) * end_scale * 0.5,
 	)
 	var target := discard_pile_pos - half_pile
 	card.z_index = 50
@@ -298,7 +300,7 @@ func _animate_to_discard_pile(card: Control) -> void:
 		card, "global_position", target, dur,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_property(
-		card, "scale:y", 0.5, dur,
+		card, "scale:y", end_scale, dur,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_property(
 		card, "rotation", 0.0, dur,
@@ -307,7 +309,7 @@ func _animate_to_discard_pile(card: Control) -> void:
 	var flip_time := dur * 0.35
 	var flip_dur := 0.15
 	var start_sx: float = card.scale.x
-	var mid_sx: float = lerpf(start_sx, 0.5, 0.35)
+	var mid_sx: float = lerpf(start_sx, end_scale, 0.35)
 	var flip_tw := card.create_tween()
 	flip_tw.tween_property(
 		card, "scale:x", mid_sx, flip_time,
@@ -319,7 +321,7 @@ func _animate_to_discard_pile(card: Control) -> void:
 		card.set_face_up(false)
 	)
 	flip_tw.tween_property(
-		card, "scale:x", 0.5, flip_dur,
+		card, "scale:x", end_scale, flip_dur,
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tw.finished.connect(func() -> void:
 		card.queue_free()

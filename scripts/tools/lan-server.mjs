@@ -22,9 +22,13 @@ const server = createServer(async (req, res) => {
   const url = req.url === "/" ? "/index.html" : req.url.split("?")[0];
   const filePath = join(DIR, url);
 
-  // COOP/COEP headers on every response (needed for Godot WASM on LAN)
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  // COOP/COEP headers for Godot WASM — skip on Safari (breaks require-corp)
+  const ua = req.headers["user-agent"] || "";
+  const isSafari = ua.includes("Safari") && !ua.includes("Chrome");
+  if (!isSafari) {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  }
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 
   try {
