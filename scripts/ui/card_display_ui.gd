@@ -117,8 +117,8 @@ func _show_cursor_node() -> void:
 		+ "  float glow = (acc / total) * (1.0 - tex.a);\n"
 		+ "  float lum = dot(tex.rgb,"
 		+ " vec3(0.299, 0.587, 0.114));\n"
-		+ "  vec3 col = tint_color.rgb * (0.4 + 0.6 * lum)"
-		+ " * tex.a;\n"
+		+ "  vec3 col = tint_color.rgb"
+		+ " * max(lum, 0.15) * tex.a;\n"
 		+ "  float fa = max(tex.a * tint_color.a,"
 		+ " glow * 0.9);\n"
 		+ "  COLOR = vec4(col, fa);\n"
@@ -126,10 +126,7 @@ func _show_cursor_node() -> void:
 	)
 	mat.shader = shader
 	mat.set_shader_parameter(
-		"tint_color", Color(
-			card_data.card_color.r, card_data.card_color.g,
-			card_data.card_color.b, 0.8,
-		)
+		"tint_color", card_data.card_color
 	)
 	_cursor_node.material = mat
 	get_tree().root.add_child(_cursor_node)

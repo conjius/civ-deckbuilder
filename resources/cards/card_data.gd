@@ -15,5 +15,6 @@ enum ResourceType { NONE, FOOD, MATERIALS }
 @export var icon_scale: float = 1.0
 @export var resource_type: ResourceType = ResourceType.NONE
 @export var resource_value: int = 0
+@export var range_display: String = ""
 @export var attack_damage: int = 0
 @export var defense_bonus: int = 0

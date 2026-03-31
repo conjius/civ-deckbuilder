@@ -23,7 +23,7 @@ func before_each() -> void:
 	_melee.card_name = "Strike"
 	_melee.card_type = CardData.CardType.ATTACK
 	_melee.range_value = 1
-	_melee.attack_damage = 2
+	_melee.attack_damage = 1
 
 	_ranged = CardData.new()
 	_ranged.card_name = "Shoot"
@@ -111,7 +111,7 @@ func test_resolve_melee_attack() -> void:
 		_melee, Vector2i(1, 0), Vector2i(0, 0)
 	)
 	TestAssert.assert_true(result.success)
-	TestAssert.assert_eq(result.damage_dealt, 2)
+	TestAssert.assert_eq(result.damage_dealt, 1)
 
 
 func test_resolve_ranged_attack() -> void:

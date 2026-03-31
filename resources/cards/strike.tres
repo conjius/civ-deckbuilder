@@ -5,10 +5,11 @@
 [resource]
 script = ExtResource("1")
 card_name = "Strike"
-description = "Melee attack on an adjacent target"
+description = "+1 Attack on an adjacent target for this attack"
 card_type = 5
 range_value = 1
 card_color = Color(0.75, 0.25, 0.2, 1)
 icon_path = "res://assets/icons/resources/strike.svg"
 icon_scale = 0.9
-attack_damage = 2
+range_display = "0-1"
+attack_damage = 1

@@ -1,6 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <path d="M32 6C24 6 16 10 12 14L14 34C15 40 18 46 24 50L32 56L40 50C46 46 49 40 50 34L52 14C48 10 40 6 32 6Z" fill="none" stroke="#4080C0" stroke-width="3"/>
-  <path d="M32 12C26 12 20 15 17 18L18.5 33C19.3 38 22 43 26.5 46L32 50L37.5 46C42 43 44.7 38 45.5 33L47 18C44 15 38 12 32 12Z" fill="#4080C0"/>
-  <line x1="32" y1="20" x2="32" y2="42" stroke="#1A3A60" stroke-width="2.5"/>
-  <line x1="22" y1="30" x2="42" y2="30" stroke="#1A3A60" stroke-width="2.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 0 112 64" width="112" height="64">
+  <g transform="translate(-10 0)">
+    <path d="M32 6C24 6 16 10 12 14L14 34C15 40 18 46 24 50L32 56L40 50C46 46 49 40 50 34L52 14C48 10 40 6 32 6Z" fill="none" stroke="#4080C0" stroke-width="3"/>
+    <path d="M32 12C26 12 20 15 17 18L18.5 33C19.3 38 22 43 26.5 46L32 50L37.5 46C42 43 44.7 38 45.5 33L47 18C44 15 38 12 32 12Z" fill="#4080C0"/>
+    <line x1="32" y1="20" x2="32" y2="42" stroke="#1A3A60" stroke-width="2.5"/>
+    <line x1="22" y1="30" x2="42" y2="30" stroke="#1A3A60" stroke-width="2.5"/>
+  </g>
+  <g transform="translate(44 0)">
+    <path d="M32 6C24 6 16 10 12 14L14 34C15 40 18 46 24 50L32 56L40 50C46 46 49 40 50 34L52 14C48 10 40 6 32 6Z" fill="none" stroke="#4080C0" stroke-width="3"/>
+    <path d="M32 12C26 12 20 15 17 18L18.5 33C19.3 38 22 43 26.5 46L32 50L37.5 46C42 43 44.7 38 45.5 33L47 18C44 15 38 12 32 12Z" fill="#4080C0"/>
+    <line x1="32" y1="20" x2="32" y2="42" stroke="#1A3A60" stroke-width="2.5"/>
+    <line x1="22" y1="30" x2="42" y2="30" stroke="#1A3A60" stroke-width="2.5"/>
+  </g>
 </svg>
