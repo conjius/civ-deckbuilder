@@ -69,6 +69,12 @@ func _ready() -> void:
 	card_effects.settled.connect(_on_settled)
 	card_effects.attacked.connect(_on_attacked)
 
+	# Pile counters: auto-update UI on every deck change
+	card_manager.deck_manager.piles_changed.connect(
+		func(d: int, h: int, di: int) -> void:
+			game_ui.update_piles(d, di, h)
+	)
+
 	# Build the starter deck
 	var deck: Array[CardData] = [
 		_move_1, _move_1, _move_1, _move_1,
@@ -218,10 +224,6 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 					card.defense_cost
 				)
 			card_manager.play_card(card)
-			game_ui.update_piles(
-				card_manager.deck_manager.draw_pile_count(),
-				card_manager.deck_manager.discard_pile_count(),
-			)
 			_highlight_active_unit()
 			game_ui.refresh_unit_info()
 
@@ -232,10 +234,6 @@ func _on_end_turn() -> void:
 	# Animate discard, then continue turn
 	card_manager.discard_hand()
 	game_ui.card_hand.discard_all(func() -> void:
-		game_ui.update_piles(
-			card_manager.deck_manager.draw_pile_count(),
-			card_manager.deck_manager.discard_pile_count(),
-		)
 		_finish_end_turn()
 	)
 
@@ -332,7 +330,7 @@ func _on_gather_choice_needed(
 func _complete_gather(res_type: CardData.ResourceType) -> void:
 	var resolver: CardResolver = card_effects.card_resolver
 	var card: CardData = resolver.pick_resource_card(res_type)
-	card_manager.deck_manager.hand.append(card)
+	card_manager.deck_manager.add_to_hand(card)
 	game_ui.set_current_cards(card_manager.deck_manager.hand)
 	game_ui.card_hand.add_cards_to_hand(
 		[card] as Array[CardData]
@@ -544,9 +542,6 @@ func _refresh_cards_ui(animate: bool = true) -> void:
 	else:
 		game_ui.set_current_cards(dm.hand)
 		game_ui.card_hand.show_cards(dm.hand, false)
-		game_ui.update_piles(
-			dm.draw_pile_count(), dm.discard_pile_count(),
-		)
 
 
 func _on_action_pressed(action_name: String) -> void:

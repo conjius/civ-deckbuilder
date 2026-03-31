@@ -325,9 +325,6 @@ func _toggle_gallery(
 				dm.draw_pile, dm.hand, dm.discard_pile,
 				show_draw, show_hand, show_discard,
 			)
-			_draw_pile_ui.update_count(dm.draw_pile.size())
-			_discard_pile_ui.update_count(dm.discard_pile.size())
-			card_gallery.update_hand_count(dm.hand.size())
 		else:
 			card_gallery.show_gallery(
 				[] as Array[CardData],

@@ -89,7 +89,7 @@ func _handle_result(
 					var new_card := (
 						card_resolver.pick_resource_card(picked)
 					)
-					deck_manager.hand.append(new_card)
+					deck_manager.add_to_hand(new_card)
 		CardData.CardType.SETTLE:
 			hex_map.map_data.place_settlement(
 				result.settled_coord,
