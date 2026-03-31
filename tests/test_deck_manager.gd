@@ -234,3 +234,85 @@ func test_discard_pile_count() -> void:
 	dm.draw_hand()
 	dm.play_card(dm.hand[0])
 	TestAssert.assert_eq(dm.discard_pile_count(), 1)
+
+
+func test_signal_fires_on_initialize() -> void:
+	var dm := DeckManager.new()
+	var fired := [false]
+	dm.piles_changed.connect(func(_d: int, _h: int, _di: int) -> void:
+		fired[0] = true
+	)
+	dm.initialize([_card_a, _card_b] as Array[CardData])
+	TestAssert.assert_true(fired[0], "signal should fire on initialize")
+
+
+func test_signal_fires_on_draw_hand() -> void:
+	var dm := DeckManager.new()
+	dm.initialize(_make_deck(10))
+	var counts: Array[int] = []
+	dm.piles_changed.connect(func(d: int, h: int, di: int) -> void:
+		counts.assign([d, h, di])
+	)
+	dm.draw_hand()
+	TestAssert.assert_eq(counts[0], 3)
+	TestAssert.assert_eq(counts[1], 7)
+	TestAssert.assert_eq(counts[2], 0)
+
+
+func test_signal_fires_on_play_card() -> void:
+	var dm := DeckManager.new()
+	dm.initialize([_card_a, _card_b, _card_c] as Array[CardData])
+	dm.draw_hand()
+	var counts: Array[int] = []
+	dm.piles_changed.connect(func(d: int, h: int, di: int) -> void:
+		counts.assign([d, h, di])
+	)
+	dm.play_card(_card_a)
+	TestAssert.assert_eq(counts[0], 0)
+	TestAssert.assert_eq(counts[1], 2)
+	TestAssert.assert_eq(counts[2], 1)
+
+
+func test_signal_fires_on_end_turn() -> void:
+	var deck := _make_deck(10)
+	var dm := DeckManager.new()
+	dm.initialize(deck)
+	dm.draw_hand()
+	var counts: Array[int] = []
+	dm.piles_changed.connect(func(d: int, h: int, di: int) -> void:
+		counts.assign([d, h, di])
+	)
+	dm.end_turn()
+	TestAssert.assert_eq(counts[0], 3)
+	TestAssert.assert_eq(counts[1], 0)
+	TestAssert.assert_eq(counts[2], 7)
+
+
+func test_signal_fires_on_add_card() -> void:
+	var dm := DeckManager.new()
+	dm.initialize([_card_a] as Array[CardData])
+	dm.draw_hand()
+	var counts: Array[int] = []
+	dm.piles_changed.connect(func(d: int, h: int, di: int) -> void:
+		counts.assign([d, h, di])
+	)
+	dm.add_card(_card_b)
+	TestAssert.assert_eq(counts[0], 0)
+	TestAssert.assert_eq(counts[1], 1)
+	TestAssert.assert_eq(counts[2], 1)
+
+
+func test_signal_counts_correct_after_reshuffle() -> void:
+	var deck := _make_deck(9)
+	var dm := DeckManager.new()
+	dm.initialize(deck)
+	dm.draw_hand()
+	dm.end_turn()
+	var counts: Array[int] = []
+	dm.piles_changed.connect(func(d: int, h: int, di: int) -> void:
+		counts.assign([d, h, di])
+	)
+	dm.draw_hand()
+	TestAssert.assert_eq(counts[0], 2)
+	TestAssert.assert_eq(counts[1], 7)
+	TestAssert.assert_eq(counts[2], 0)

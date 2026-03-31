@@ -1,6 +1,8 @@
 class_name DeckManager
 extends RefCounted
 
+signal piles_changed(draw_count: int, hand_count: int, discard_count: int)
+
 const HAND_SIZE := 7
 
 var draw_pile: Array[CardData] = []
@@ -8,11 +10,18 @@ var hand: Array[CardData] = []
 var discard_pile: Array[CardData] = []
 
 
+func _emit_counts() -> void:
+	piles_changed.emit(
+		draw_pile.size(), hand.size(), discard_pile.size()
+	)
+
+
 func initialize(deck: Array[CardData]) -> void:
 	draw_pile = deck.duplicate()
 	draw_pile.shuffle()
 	hand.clear()
 	discard_pile.clear()
+	_emit_counts()
 
 
 func draw_hand() -> void:
@@ -22,6 +31,7 @@ func draw_hand() -> void:
 		if draw_pile.is_empty():
 			_reshuffle_discard()
 		hand.append(draw_pile.pop_back())
+	_emit_counts()
 
 
 func play_card(card: CardData) -> bool:
@@ -30,12 +40,14 @@ func play_card(card: CardData) -> bool:
 		return false
 	hand.remove_at(idx)
 	discard_pile.append(card)
+	_emit_counts()
 	return true
 
 
 func end_turn() -> void:
 	discard_pile.append_array(hand)
 	hand.clear()
+	_emit_counts()
 
 
 func reorder_card(card: CardData, new_index: int) -> void:
@@ -49,6 +61,12 @@ func reorder_card(card: CardData, new_index: int) -> void:
 
 func add_card(card: CardData) -> void:
 	discard_pile.append(card)
+	_emit_counts()
+
+
+func add_to_hand(card: CardData) -> void:
+	hand.append(card)
+	_emit_counts()
 
 
 func draw_pile_count() -> int:

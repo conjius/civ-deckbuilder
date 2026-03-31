@@ -89,7 +89,7 @@ func _setup_piles() -> void:
 	_draw_pile_ui.set_title("Draw")
 	add_child(_draw_pile_ui)
 	_discard_pile_ui = CardPileUI.new()
-	_discard_pile_ui.setup(false)
+	_discard_pile_ui.setup(true)
 	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
 	var tile_info_cls: GDScript = load(
@@ -325,9 +325,6 @@ func _toggle_gallery(
 				dm.draw_pile, dm.hand, dm.discard_pile,
 				show_draw, show_hand, show_discard,
 			)
-			_draw_pile_ui.update_count(dm.draw_pile.size())
-			_discard_pile_ui.update_count(dm.discard_pile.size())
-			card_gallery.update_hand_count(dm.hand.size())
 		else:
 			card_gallery.show_gallery(
 				[] as Array[CardData],
