@@ -88,6 +88,17 @@ func test_attack_targets_include_settlement() -> void:
 	TestAssert.assert_contains(targets, Vector2i(1, 0))
 
 
+func test_attack_targets_exclude_own_settlement() -> void:
+	_map.place_settlement(
+		Vector2i(1, 0), "My Camp", Color.BLUE
+	)
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		_melee, Vector2i(0, 0), Color.BLUE
+	)
+	TestAssert.assert_not_contains(targets, Vector2i(1, 0))
+
+
 func test_attack_targets_exclude_empty_terrain() -> void:
 	var resolver := CardResolver.new(_map)
 	var targets := resolver.get_valid_targets(
@@ -189,9 +200,35 @@ func test_attack_settlement_with_defense() -> void:
 	_map.place_settlement(Vector2i(1, 0), "Camp", Color.RED)
 	var def: int = _map.get_settlement_defense(Vector2i(1, 0))
 	var actual_damage: int = CombatResolver.compute_damage(2, def)
-	TestAssert.assert_eq(actual_damage, 1)
+	TestAssert.assert_eq(actual_damage, 2)
 	_map.damage_settlement(Vector2i(1, 0), actual_damage)
-	TestAssert.assert_eq(_map.get_settlement_hp(Vector2i(1, 0)), 4)
+	TestAssert.assert_eq(_map.get_settlement_hp(Vector2i(1, 0)), 3)
+
+
+func test_attack_modifier_adds_to_base_attack() -> void:
+	var ps := PlayerState.new()
+	ps.attack = 0
+	ps.attack_modifier = 1
+	var total_atk: int = ps.attack + ps.attack_modifier
+	var actual: int = CombatResolver.compute_damage(total_atk, 0)
+	TestAssert.assert_eq(actual, 1)
+
+
+func test_modifiers_reset_after_combat() -> void:
+	var attacker := PlayerState.new()
+	attacker.attack_modifier = 1
+	var defender := PlayerState.new()
+	defender.health = 10
+	defender.max_health = 10
+	defender.defense_modifier = 1
+	var total_atk: int = attacker.attack + attacker.attack_modifier
+	var def: int = defender.defense + defender.defense_modifier
+	var actual: int = CombatResolver.compute_damage(total_atk, def)
+	TestAssert.assert_eq(actual, 0)
+	attacker.attack_modifier = 0
+	defender.defense_modifier = 0
+	TestAssert.assert_eq(attacker.attack_modifier, 0)
+	TestAssert.assert_eq(defender.defense_modifier, 0)
 
 
 func test_defense_resets_on_turn() -> void:

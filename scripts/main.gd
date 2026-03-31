@@ -284,6 +284,7 @@ func _degrade_fog() -> void:
 
 
 func _on_turn_started(turn_number: int) -> void:
+	player_unit.state.attack_modifier = 0
 	player_unit.state.defense_modifier = 0
 	game_ui.update_turn(turn_number)
 	game_ui.refresh_unit_info()
@@ -353,8 +354,8 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 
 
 func _on_attacked(
-	target_coord: Vector2i, raw_damage: int,
-	_attacker: Node3D,
+	target_coord: Vector2i, total_attack: int,
+	attacker: Node3D,
 ) -> void:
 	var target_unit: Node3D = _get_unit_at(target_coord)
 	if target_unit:
@@ -363,24 +364,26 @@ func _on_attacked(
 			+ target_unit.state.defense_modifier
 		)
 		var actual: int = CombatResolver.compute_damage(
-			raw_damage, def
+			total_attack, def
 		)
 		if actual > 0:
 			target_unit.state.take_damage(actual)
 			game_ui.refresh_unit_info()
 			if target_unit.state.health <= 0:
 				_eliminate_unit(target_unit)
+		target_unit.state.defense_modifier = 0
 	elif hex_map.map_data.has_settlement(target_coord):
 		var def: int = (
 			hex_map.map_data.get_settlement_defense(target_coord)
 		)
 		var actual: int = CombatResolver.compute_damage(
-			raw_damage, def
+			total_attack, def
 		)
 		if actual > 0:
 			hex_map.map_data.damage_settlement(target_coord, actual)
 			if hex_map.map_data.get_settlement_hp(target_coord) <= 0:
 				_destroy_settlement(target_coord)
+	attacker.state.attack_modifier = 0
 
 
 func _get_unit_at(coord: Vector2i) -> Node3D:

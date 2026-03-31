@@ -22,8 +22,11 @@ func execute_card(
 	if unit == null:
 		unit = player_unit
 	var origin: Vector2i = unit.current_coord
+	var unit_color: Color = Color(-1, -1, -1)
+	if "avatar_color" in unit:
+		unit_color = unit.avatar_color
 	var result := card_resolver.resolve_card(
-		card, target_coord, origin
+		card, target_coord, origin, unit_color
 	)
 	if not result.success:
 		return result
@@ -71,7 +74,12 @@ func execute_card(
 				result.settlement_name,
 			)
 		CardData.CardType.ATTACK:
-			attacked.emit(target_coord, result.damage_dealt, unit)
+			unit.state.attack_modifier += result.damage_dealt
+			var total_atk: int = (
+				unit.state.attack
+				+ unit.state.attack_modifier
+			)
+			attacked.emit(target_coord, total_atk, unit)
 		CardData.CardType.DEFENSE:
 			unit.state.defense_modifier += result.defense_gained
 			defended.emit(result.defense_gained)
@@ -80,5 +88,10 @@ func execute_card(
 	return result
 
 
-func get_valid_targets(card: CardData, unit_coord: Vector2i) -> Array[Vector2i]:
-	return card_resolver.get_valid_targets(card, unit_coord)
+func get_valid_targets(
+	card: CardData, unit_coord: Vector2i,
+	unit_color: Color = Color(-1, -1, -1),
+) -> Array[Vector2i]:
+	return card_resolver.get_valid_targets(
+		card, unit_coord, unit_color
+	)

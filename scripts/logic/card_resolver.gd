@@ -74,6 +74,7 @@ func get_map_data() -> MapData:
 
 func get_valid_targets(
 	card: CardData, origin: Vector2i,
+	attacker_color: Color = Color(-1, -1, -1),
 ) -> Array[Vector2i]:
 	match card.card_type:
 		CardData.CardType.MOVE:
@@ -85,7 +86,9 @@ func get_valid_targets(
 		CardData.CardType.SETTLE:
 			return _get_settle_targets(origin)
 		CardData.CardType.ATTACK:
-			return _get_attack_targets(origin, card.range_value)
+			return _get_attack_targets(
+				origin, card.range_value, attacker_color
+			)
 		CardData.CardType.DEFENSE:
 			return [origin] as Array[Vector2i]
 	return []
@@ -93,6 +96,7 @@ func get_valid_targets(
 
 func resolve_card(
 	card: CardData, target: Vector2i, origin: Vector2i,
+	attacker_color: Color = Color(-1, -1, -1),
 ) -> CardResult:
 	match card.card_type:
 		CardData.CardType.MOVE:
@@ -104,7 +108,9 @@ func resolve_card(
 		CardData.CardType.SETTLE:
 			return _resolve_settle(target)
 		CardData.CardType.ATTACK:
-			return _resolve_attack(card, target, origin)
+			return _resolve_attack(
+				card, target, origin, attacker_color
+			)
 		CardData.CardType.DEFENSE:
 			return _resolve_defense(card)
 	return CardResult.new()
@@ -198,25 +204,43 @@ func _resolve_settle(target: Vector2i) -> CardResult:
 
 func _get_attack_targets(
 	origin: Vector2i, max_range: int,
+	attacker_color: Color = Color(-1, -1, -1),
 ) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	var hexes := HexUtil.get_hexes_in_range(origin, max_range)
 	for coord in hexes:
 		if coord == origin:
 			continue
-		if _map.has_enemy(coord) or _map.has_settlement(coord):
+		var is_enemy: bool = _map.has_enemy(coord)
+		var is_enemy_settlement: bool = false
+		if attacker_color.r >= 0.0:
+			is_enemy_settlement = (
+				_map.has_enemy_settlement(coord, attacker_color)
+			)
+		else:
+			is_enemy_settlement = _map.has_settlement(coord)
+		if is_enemy or is_enemy_settlement:
 			result.append(coord)
 	return result
 
 
 func _resolve_attack(
 	card: CardData, target: Vector2i, origin: Vector2i,
+	attacker_color: Color = Color(-1, -1, -1),
 ) -> CardResult:
 	var result := CardResult.new()
 	var distance := HexUtil.axial_distance(origin, target)
 	if distance > card.range_value or distance == 0:
 		return result
-	if not _map.has_enemy(target) and not _map.has_settlement(target):
+	var has_target: bool = _map.has_enemy(target)
+	if not has_target:
+		if attacker_color.r >= 0.0:
+			has_target = _map.has_enemy_settlement(
+				target, attacker_color
+			)
+		else:
+			has_target = _map.has_settlement(target)
+	if not has_target:
 		return result
 	result.success = true
 	result.damage_dealt = card.attack_damage
