@@ -175,8 +175,11 @@ func _start_drag() -> void:
 	_show_cursor_node()
 	_valid_targets.clear()
 	if hex_map and card_effects and active_unit:
+		var unit_color: Color = Color(-1, -1, -1)
+		if "avatar_color" in active_unit:
+			unit_color = active_unit.avatar_color
 		_valid_targets = card_effects.get_valid_targets(
-			card_data, active_unit.current_coord
+			card_data, active_unit.current_coord, unit_color
 		)
 		if _valid_targets.is_empty():
 			_apply_blocked()

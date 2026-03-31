@@ -142,8 +142,8 @@ func test_settlement_default_stats() -> void:
 	map.place_settlement(Vector2i(0, 0), "Camp")
 	TestAssert.assert_eq(map.get_settlement_hp(Vector2i(0, 0)), 5)
 	TestAssert.assert_eq(map.get_settlement_max_hp(Vector2i(0, 0)), 5)
-	TestAssert.assert_eq(map.get_settlement_attack(Vector2i(0, 0)), 1)
-	TestAssert.assert_eq(map.get_settlement_defense(Vector2i(0, 0)), 1)
+	TestAssert.assert_eq(map.get_settlement_attack(Vector2i(0, 0)), 0)
+	TestAssert.assert_eq(map.get_settlement_defense(Vector2i(0, 0)), 0)
 
 
 func test_settlement_damage() -> void:

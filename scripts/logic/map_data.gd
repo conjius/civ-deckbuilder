@@ -58,10 +58,19 @@ func has_settlement(coord: Vector2i) -> bool:
 	return _settlements.has(coord)
 
 
+func has_enemy_settlement(
+	coord: Vector2i, own_color: Color,
+) -> bool:
+	if not _settlements.has(coord):
+		return false
+	var color: Color = get_settlement_color(coord)
+	return color != own_color
+
+
 func place_settlement(
 	coord: Vector2i, sname: String,
 	owner_color: Color = Color.WHITE,
-	hp: int = 5, atk: int = 1, def: int = 1,
+	hp: int = 5, atk: int = 0, def: int = 0,
 ) -> void:
 	_settlements[coord] = {
 		"name": sname, "color": owner_color,

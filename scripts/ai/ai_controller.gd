@@ -20,13 +20,15 @@ func initialize(deck: Array[CardData]) -> void:
 
 func take_turn() -> void:
 	_update_enemy_positions()
+	ai_unit.state.attack_modifier = 0
 	ai_unit.state.defense_modifier = 0
 	var cards_to_play: Array[CardData] = deck_manager.hand.duplicate()
 	for card in cards_to_play:
 		if card.card_type == CardData.CardType.RESOURCE:
 			continue
 		var targets := card_resolver.get_valid_targets(
-			card, ai_unit.current_coord
+			card, ai_unit.current_coord,
+			ai_unit.avatar_color,
 		)
 		if targets.is_empty():
 			continue
