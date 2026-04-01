@@ -118,7 +118,8 @@ static func build_face(
 		sections_out, -1.0, cont_r
 	)
 	var range_rtl := _build_range_label(card)
-	footer_sec.add_child(range_rtl)
+	if range_rtl:
+		footer_sec.add_child(range_rtl)
 
 	return {
 		"bg": bg,
@@ -136,6 +137,12 @@ static func _build_range_label(card: CardData) -> Control:
 		return _build_attack_footer(card)
 	if card.card_type == CardData.CardType.DEFENSE:
 		return _build_defense_footer(card)
+	if card.card_type in [
+		CardData.CardType.DRAW,
+		CardData.CardType.BUFF,
+		CardData.CardType.BUILD,
+	]:
+		return null
 	if card.range_value == 0:
 		var rtl0 := RichTextLabel.new()
 		rtl0.bbcode_enabled = true

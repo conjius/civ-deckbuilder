@@ -27,6 +27,7 @@ var _last_hover_coord: Vector2i = Vector2i(-999, -999)
 var _click_start_pos: Vector2 = Vector2.ZERO
 var _click_pending: bool = false
 var _click_start_time: int = 0
+var _pending_discard_visual: int = 0
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -77,9 +78,23 @@ func _ready() -> void:
 	card_effects.building_upgraded.connect(_on_building_upgraded)
 
 	# Pile counters: auto-update UI on every deck change
+	# Discard counter defers visual increment during card-play animations
 	card_manager.deck_manager.piles_changed.connect(
 		func(d: int, h: int, di: int) -> void:
-			game_ui.update_piles(d, di, h)
+			game_ui.update_piles(
+				d, di - _pending_discard_visual, h
+			)
+	)
+	game_ui.card_hand.card_discarded_visually.connect(
+		func() -> void:
+			if _pending_discard_visual > 0:
+				_pending_discard_visual -= 1
+				var dm: DeckManager = card_manager.deck_manager
+				game_ui.update_piles(
+					dm.draw_pile_count(),
+					dm.discard_pile_count() - _pending_discard_visual,
+					dm.hand.size(),
+				)
 	)
 
 	# Build the starter deck
@@ -96,6 +111,7 @@ func _ready() -> void:
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
+	game_ui.card_gallery.prebuild_cards(deck)
 
 	# Find a passable starting tile near center
 	var start_coord: Vector2i = _find_start_coord()
@@ -231,6 +247,7 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 				player_unit.state.defense_modifier -= (
 					card.defense_cost
 				)
+			_pending_discard_visual += 1
 			card_manager.play_card(card)
 			_highlight_active_unit()
 			game_ui.refresh_unit_info()
@@ -239,10 +256,22 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 func _on_end_turn() -> void:
 	hex_map.clear_highlights()
 	game_ui.set_end_turn_enabled(false)
-	# Animate discard, then continue turn
+	var dm: DeckManager = card_manager.deck_manager
+	var hand_size := dm.hand.size()
+	var draw_count := dm.draw_pile_count()
+	var discard_base := dm.discard_pile_count()
 	card_manager.discard_hand()
-	game_ui.card_hand.discard_all(func() -> void:
-		_finish_end_turn()
+	# Hand pulls out → decrement at START; discard adds → increment at END
+	game_ui.update_piles(draw_count, discard_base, hand_size)
+	game_ui.card_hand.discard_all(
+		func() -> void:
+			_finish_end_turn(),
+		func(i: int) -> void:
+			game_ui.card_gallery.update_hand_count(hand_size - i - 1),
+		func(i: int) -> void:
+			game_ui.update_piles(
+				draw_count, discard_base + i + 1, -1,
+			)
 	)
 
 
@@ -259,8 +288,9 @@ func _finish_end_turn() -> void:
 		player_unit.state.sight_range,
 	)
 	_highlight_active_unit()
-	# Draw new hand
+	# Draw new hand — flip end turn back to light
 	card_manager.draw_new_hand()
+	game_ui.end_turn_button.flip_to_light()
 	_refresh_cards_ui()
 
 
