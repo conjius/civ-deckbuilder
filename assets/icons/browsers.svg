@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 24">
+<g transform="translate(18 0) scale(0.5)" fill="white">
+<path fill-rule="evenodd" d="M24 2a22 22 0 100 44 22 22 0 000-44zm0 15.5a8.5 8.5 0 100 17 8.5 8.5 0 000-17z"/>
+<path d="M24 2C13 2 4 9 2 19l20 7.5a8.5 8.5 0 0110-5.3L56 12A22 22 0 0024 2z" opacity="0.5"/>
+<path d="M24 46a22 22 0 0020.5-14L32 26.5a8.5 8.5 0 01-10 5.3z" opacity="0.5"/>
+</g>
+<circle cx="12" cy="12" r="16" fill="none" stroke="#32cd32" stroke-width="5"/>
+<g transform="scale(0.5)" fill="white">
+<path fill-rule="evenodd" d="M24 2a22 22 0 100 44 22 22 0 000-44zm0 13a9 9 0 100 18 9 9 0 000-18z"/>
+<circle cx="24" cy="24" r="4"/>
+<path d="M24 15a9 9 0 017.8 4.5H43A22 22 0 0024 2v13z" opacity="0.85"/>
+<path d="M16.2 19.5A9 9 0 0024 33v11A22 22 0 015 24h14.4z" opacity="0.85"/>
+<path d="M31.8 28.5A9 9 0 0124 33v13a22 22 0 0019-11H31.8z" opacity="0.7"/>
+</g>
+</svg>
