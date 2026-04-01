@@ -21,7 +21,6 @@ const MIME = {
 
 const DEV_SCRIPTS = `<script>
 (function(){
-  // Live reload via SSE
   function connect() {
     var es = new EventSource("/__reload");
     es.onmessage = function(e) {
@@ -35,61 +34,46 @@ const DEV_SCRIPTS = `<script>
   if (document.readyState === "complete") connect();
   else window.addEventListener("load", connect);
 
-  // Cache compiled WASM in IndexedDB to skip compilation on reload
-  var DB_NAME = "godot-wasm-cache";
-  var STORE = "modules";
-
-  function openDB() {
-    return new Promise(function(resolve, reject) {
-      var req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = function() { req.result.createObjectStore(STORE); };
-      req.onsuccess = function() { resolve(req.result); };
-      req.onerror = function() { reject(req.error); };
+  // Cache WASM bytes in IndexedDB (works in Firefox + Chrome)
+  var DB = "wasm-cache", ST = "m";
+  function idb(mode) {
+    return new Promise(function(ok, fail) {
+      var r = indexedDB.open(DB, 1);
+      r.onupgradeneeded = function() { r.result.createObjectStore(ST); };
+      r.onsuccess = function() { ok(r.result.transaction(ST, mode).objectStore(ST)); };
+      r.onerror = fail;
     });
   }
-
-  function dbGet(db, key) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(STORE, "readonly");
-      var req = tx.objectStore(STORE).get(key);
-      req.onsuccess = function() { resolve(req.result || null); };
-      req.onerror = function() { resolve(null); };
+  function idbGet(key) {
+    return idb("readonly").then(function(s) {
+      return new Promise(function(ok) {
+        var g = s.get(key); g.onsuccess = function() { ok(g.result || null); }; g.onerror = function() { ok(null); };
+      });
     });
   }
-
-  function dbPut(db, key, value) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(STORE, "readwrite");
-      tx.objectStore(STORE).put(value, key);
-      tx.oncomplete = function() { resolve(); };
-      tx.onerror = function() { resolve(); };
-    });
+  function idbPut(key, val) {
+    return idb("readwrite").then(function(s) { s.put(val, key); }).catch(function(){});
   }
-
-  var origInstantiateStreaming = WebAssembly.instantiateStreaming;
-  WebAssembly.instantiateStreaming = async function(source, imports) {
-    try {
-      var response = await source;
-      var etag = response.headers.get("etag") || "";
-      var url = response.url;
-      var cacheKey = url + "|" + etag;
-      var db = await openDB();
-      var cached = await dbGet(db, cacheKey);
-      if (cached) {
-        console.log("[wasm-cache] Using cached compiled module");
-        var instance = await WebAssembly.instantiate(cached, imports);
-        return { module: cached, instance: instance };
-      }
-      console.log("[wasm-cache] Compiling and caching module");
-      var buffer = await response.arrayBuffer();
-      var module = await WebAssembly.compile(buffer);
-      await dbPut(db, cacheKey, module);
-      var instance = await WebAssembly.instantiate(module, imports);
-      return { module: module, instance: instance };
-    } catch(e) {
-      console.warn("[wasm-cache] Fallback to default", e);
-      return origInstantiateStreaming(source, imports);
-    }
+  var orig = WebAssembly.instantiateStreaming;
+  WebAssembly.instantiateStreaming = function(source, imports) {
+    return Promise.resolve(source).then(function(resp) {
+      var etag = resp.headers.get("etag") || "";
+      var key = resp.url + "|" + etag;
+      return idbGet(key).then(function(cached) {
+        if (cached) {
+          return WebAssembly.instantiate(cached, imports);
+        }
+        var cloned = resp.clone();
+        return orig(resp, imports).then(function(result) {
+          cloned.arrayBuffer().then(function(buf) {
+            idbPut(key, buf);
+          });
+          return result;
+        });
+      });
+    }).catch(function(e) {
+      return orig(source, imports);
+    });
   };
 })();
 </script>`;
@@ -111,13 +95,6 @@ function handleSSE(req, res) {
   req.on("close", () => {
     reloadClients = reloadClients.filter(c => c !== res);
   });
-}
-
-// --- ETag caching ---
-
-async function getETag(filePath) {
-  const s = await stat(filePath);
-  return `"${s.mtimeMs.toString(36)}-${s.size.toString(36)}"`;
 }
 
 // --- COOP/COEP headers ---
