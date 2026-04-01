@@ -299,7 +299,7 @@ func set_end_turn_enabled(enabled: bool) -> void:
 
 
 func refresh_unit_info() -> void:
-	if _unit_card and active_unit:
+	if _unit_card and active_unit and _unit_card._showing:
 		_unit_card.show_unit(active_unit)
 
 
@@ -476,7 +476,7 @@ func slide_unit_panel_in(
 ) -> void:
 	if update_fn.is_valid():
 		update_fn.call()
-	if _unit_card and active_unit:
+	if _unit_card and active_unit and _unit_card._showing:
 		_unit_card.show_unit(active_unit)
 
 

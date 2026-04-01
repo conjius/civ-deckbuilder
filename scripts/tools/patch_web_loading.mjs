@@ -62,7 +62,7 @@ canvas { background: #000 !important; }
   100% { transform: scaleX(0.98); }
 }
 </style>`;
-html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
+html = html.replace("<head>", `<head>${css}`);
 
 // Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
