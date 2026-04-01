@@ -203,8 +203,8 @@ jobs:
           rm -rf "$TMPDIR/play"
           mkdir -p "$TMPDIR/play"
           cp -r build/web/* "$TMPDIR/play/"
-          cp scripts/tools/coi-serviceworker.min.js "$TMPDIR/play/"
           cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
+          touch "$TMPDIR/.nojekyll"
           cp assets/boot_logo.png "$TMPDIR/logo.png"
           if ls screenshots/screenshot-*.jpg >/dev/null 2>&1; then
             cp screenshots/screenshot-*.jpg "$TMPDIR/"
