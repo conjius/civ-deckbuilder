@@ -37,6 +37,8 @@ jobs:
 
   export:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -138,11 +140,6 @@ jobs:
         with:
           ref: gh-pages
           fetch-depth: 1
-      - name: version
-        id: version
-        run: |
-          PATCH=$(($(git rev-list --count HEAD) - 378))
-          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
       - name: branch-slug
         id: slug
         run: |
@@ -152,7 +149,7 @@ jobs:
       - name: download-web
         uses: actions/download-artifact@v8
         with:
-          name: CivDecks-${{ steps.version.outputs.tag }}-web
+          name: CivDecks-${{ needs.export.outputs.tag }}-web
           path: preview/${{ steps.slug.outputs.slug }}/
       - name: patch-loading
         run: |
