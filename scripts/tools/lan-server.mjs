@@ -68,17 +68,6 @@ const DEV_SCRIPTS = `<script>
 let reloadClients = [];
 let lastReloadMtime = 0;
 
-setInterval(async () => {
-  try {
-    const s = await stat(RELOAD_FILE);
-    const mtime = s.mtimeMs;
-    if (mtime > lastReloadMtime && lastReloadMtime > 0) {
-      reloadClients.forEach(r => r.write("data: reload\n\n"));
-    }
-    lastReloadMtime = mtime;
-  } catch {}
-}, 500);
-
 function handleSSE(req, res) {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -112,6 +101,41 @@ function setCrossOriginHeaders(req, res) {
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 }
 
+// --- In-memory file cache ---
+
+const fileCache = new Map();
+
+async function getCachedFile(filePath) {
+  const s = await stat(filePath);
+  const mtime = s.mtimeMs;
+  const cached = fileCache.get(filePath);
+  if (cached && cached.mtime === mtime) return cached;
+  let data = await readFile(filePath);
+  const ext = extname(filePath);
+  const etag = `"${mtime.toString(36)}-${s.size.toString(36)}"`;
+  if (ext === ".html") {
+    data = Buffer.from(
+      data.toString().replace("</head>", DEV_SCRIPTS + "</head>")
+    );
+  }
+  const entry = { data, etag, mtime, ext };
+  fileCache.set(filePath, entry);
+  return entry;
+}
+
+// Invalidate cache when rebuild triggers
+setInterval(async () => {
+  try {
+    const s = await stat(RELOAD_FILE);
+    const mtime = s.mtimeMs;
+    if (mtime > lastReloadMtime && lastReloadMtime > 0) {
+      fileCache.clear();
+      reloadClients.forEach(r => r.write("data: reload\n\n"));
+    }
+    lastReloadMtime = mtime;
+  } catch {}
+}, 500);
+
 // --- Request handler ---
 
 const server = createServer(async (req, res) => {
@@ -123,36 +147,27 @@ const server = createServer(async (req, res) => {
   setCrossOriginHeaders(req, res);
 
   try {
-    const etag = await getETag(filePath);
-    if (req.headers["if-none-match"] === etag) {
+    const entry = await getCachedFile(filePath);
+
+    if (req.headers["if-none-match"] === entry.etag) {
       res.writeHead(304);
       res.end();
       return;
     }
 
-    let data = await readFile(filePath);
-    const ext = extname(filePath);
-
-    // HTML: inject reload script, no cache
-    if (ext === ".html") {
-      data = Buffer.from(
-        data.toString().replace("</head>", DEV_SCRIPTS + "</head>")
-      );
+    if (entry.ext === ".html") {
       res.writeHead(200, {
         "Content-Type": "text/html",
         "Cache-Control": "no-cache",
       });
-      res.end(data);
-      return;
+    } else {
+      res.writeHead(200, {
+        "Content-Type": MIME[entry.ext] || "application/octet-stream",
+        "ETag": entry.etag,
+        "Cache-Control": "max-age=31536000, immutable",
+      });
     }
-
-    // All other files: cache with ETag
-    res.writeHead(200, {
-      "Content-Type": MIME[ext] || "application/octet-stream",
-      "ETag": etag,
-      "Cache-Control": "max-age=31536000, immutable",
-    });
-    res.end(data);
+    res.end(entry.data);
   } catch {
     res.writeHead(404);
     res.end("Not found");
