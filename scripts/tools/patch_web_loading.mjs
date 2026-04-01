@@ -92,7 +92,7 @@ const initScript = `<script>
 		}
 	}, 10);
 
-	// Detect cached resources and speed up loading animation
+	// On cached loads, snap logo to full brightness immediately
 	var cacheCheck = setInterval(function() {
 		var entries = performance.getEntriesByType('resource');
 		var wasm = entries.find(function(e) {
@@ -101,10 +101,6 @@ const initScript = `<script>
 		if (!wasm) return;
 		clearInterval(cacheCheck);
 		if (wasm.transferSize === 0) {
-			var inner = document.querySelector('.progress-fill-inner');
-			if (inner) {
-				inner.style.animationDuration = '2.8s';
-			}
 			var logo = document.getElementById('status-splash');
 			if (logo) {
 				logo.style.animation = 'none';
