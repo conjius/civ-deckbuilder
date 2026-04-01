@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Supplies"
+description = "+1 Attack, +1 Defense, +1 HP until your next turn"
+card_type = 7
+range_value = 0
+card_color = Color(0.63, 0.47, 0.16, 1)
+icon_path = "res://assets/icons/resources/supplies.svg"
+icon_scale = 0.9
+attack_bonus = 1
+defense_bonus = 1
+health_bonus = 1

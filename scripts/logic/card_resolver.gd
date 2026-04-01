@@ -17,6 +17,12 @@ class CardResult extends RefCounted:
 	var ends_turn: bool = false
 	var damage_dealt: int = 0
 	var defense_gained: int = 0
+	var attack_gained: int = 0
+	var health_gained: int = 0
+	var cards_to_draw: int = 0
+	var permanent_hp_gained: int = 0
+	var settlement_upgraded: bool = false
+	var spawn_explorer_at: Vector2i = Vector2i(-999, -999)
 
 
 func _init(map: MapData) -> void:
@@ -91,6 +97,14 @@ func get_valid_targets(
 			)
 		CardData.CardType.DEFENSE:
 			return [origin] as Array[Vector2i]
+		CardData.CardType.BUFF:
+			return [origin] as Array[Vector2i]
+		CardData.CardType.DRAW:
+			return [origin] as Array[Vector2i]
+		CardData.CardType.RECRUIT:
+			return _get_recruit_targets(origin, card.range_value)
+		CardData.CardType.BUILD:
+			return _get_build_targets(origin)
 	return []
 
 
@@ -113,6 +127,14 @@ func resolve_card(
 			)
 		CardData.CardType.DEFENSE:
 			return _resolve_defense(card)
+		CardData.CardType.BUFF:
+			return _resolve_buff(card)
+		CardData.CardType.DRAW:
+			return _resolve_draw(card)
+		CardData.CardType.RECRUIT:
+			return _resolve_recruit(card, target)
+		CardData.CardType.BUILD:
+			return _resolve_build(target)
 	return CardResult.new()
 
 
@@ -268,4 +290,68 @@ func _resolve_gather(target: Vector2i) -> CardResult:
 		result.gained_cards.append(
 			pick_resource_card(CardData.ResourceType.FOOD)
 		)
+	return result
+
+
+func _resolve_buff(card: CardData) -> CardResult:
+	var result := CardResult.new()
+	result.success = true
+	result.attack_gained = card.attack_bonus
+	result.defense_gained = card.defense_bonus
+	result.health_gained = card.health_bonus
+	return result
+
+
+func _resolve_draw(card: CardData) -> CardResult:
+	var result := CardResult.new()
+	result.success = true
+	result.cards_to_draw = card.draw_count
+	return result
+
+
+func _resolve_recruit(card: CardData, target: Vector2i) -> CardResult:
+	var result := CardResult.new()
+	var has_settlement: bool = _map.has_settlement(target)
+	var has_unit: bool = _map.has_enemy_position(target)
+	if has_settlement or has_unit:
+		result.success = true
+		result.permanent_hp_gained = card.permanent_hp
+	else:
+		var terrain: TerrainType = _map.get_terrain(target)
+		if terrain and terrain.is_passable:
+			result.success = true
+			result.spawn_explorer_at = target
+	return result
+
+
+func _get_recruit_targets(
+	origin: Vector2i, max_range: int,
+) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	var hexes := HexUtil.get_hexes_in_range(origin, max_range)
+	for coord in hexes:
+		if coord == origin:
+			result.append(coord)
+			continue
+		if _map.has_settlement(coord):
+			result.append(coord)
+			continue
+		var terrain: TerrainType = _map.get_terrain(coord)
+		if terrain and terrain.is_passable:
+			result.append(coord)
+	return result
+
+
+func _resolve_build(target: Vector2i) -> CardResult:
+	var result := CardResult.new()
+	if _map.has_settlement(target):
+		result.success = true
+		result.settlement_upgraded = true
+	return result
+
+
+func _get_build_targets(origin: Vector2i) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if _map.has_settlement(origin):
+		result.append(origin)
 	return result

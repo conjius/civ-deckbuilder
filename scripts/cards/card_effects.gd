@@ -8,6 +8,10 @@ signal gather_choice_needed(
 signal settled(coord: Vector2i, settlement_name: String)
 signal attacked(target: Vector2i, damage: int, attacker: Node3D)
 signal defended(bonus: int)
+signal buffed(atk: int, def: int, hp: int)
+signal draw_requested(count: int)
+signal recruited(target: Vector2i, permanent_hp: int, spawn: bool)
+signal building_upgraded(target: Vector2i)
 signal turn_should_end
 
 var hex_map: Node3D
@@ -83,6 +87,26 @@ func execute_card(
 		CardData.CardType.DEFENSE:
 			unit.state.defense_modifier += result.defense_gained
 			defended.emit(result.defense_gained)
+		CardData.CardType.BUFF:
+			unit.state.attack_modifier += result.attack_gained
+			unit.state.defense_modifier += result.defense_gained
+			unit.state.health_modifier += result.health_gained
+			buffed.emit(
+				result.attack_gained,
+				result.defense_gained,
+				result.health_gained,
+			)
+		CardData.CardType.DRAW:
+			draw_requested.emit(result.cards_to_draw)
+		CardData.CardType.RECRUIT:
+			var is_spawn: bool = (
+				result.spawn_explorer_at != Vector2i(-999, -999)
+			)
+			recruited.emit(
+				target_coord, result.permanent_hp_gained, is_spawn
+			)
+		CardData.CardType.BUILD:
+			building_upgraded.emit(target_coord)
 
 	effect_completed.emit()
 	return result
