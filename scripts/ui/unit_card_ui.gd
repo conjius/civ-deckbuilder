@@ -7,15 +7,20 @@ var _original_y: float = 0.0
 var _showing: bool = false
 var _current_unit: Node3D
 
+var _boot_tex: Texture2D = preload(
+	"res://assets/icons/boot_move_white_on_transparent.png"
+)
+var _tent_tex: Texture2D = preload(
+	"res://assets/icons/tent_icon.svg"
+)
+
 
 func _ready() -> void:
 	setup_card()
 
 	var icon_sz: float = UIHelpers.sf(20.0)
 	_unit_icon = TextureRect.new()
-	_unit_icon.texture = load(
-		"res://assets/icons/boot_move_white_on_transparent.png"
-	) as Texture2D
+	_unit_icon.texture = _boot_tex
 	_unit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_unit_icon.size = Vector2(icon_sz, icon_sz)
@@ -105,16 +110,16 @@ func _populate(unit: Node3D) -> void:
 		child.queue_free()
 	if unit == null:
 		return
+	_unit_icon.texture = _boot_tex
 	if "avatar_color" in unit:
 		var c: Color = unit.avatar_color
 		_unit_icon.modulate = Color(c.r, c.g, c.b, 0.9)
 	var hp: int = unit.health if "health" in unit else 0
-	var max_hp: int = unit.max_health if "max_health" in unit else 0
 	var atk: int = unit.attack if "attack" in unit else 0
 	var def: int = unit.defense if "defense" in unit else 0
 	if "state" in unit and unit.state:
 		def += unit.state.defense_modifier
-	_add_line(UIHelpers.icon_value("HP", "%d/%d" % [hp, max_hp]))
+	_add_line(UIHelpers.icon_value("HP", str(hp)))
 	_add_line(UIHelpers.icon_value("Attack", str(atk)))
 	_add_line(UIHelpers.icon_value("Defense", str(def)))
 
@@ -125,6 +130,7 @@ func _populate_settlement(
 ) -> void:
 	for child in _lines_container.get_children():
 		child.queue_free()
+	_unit_icon.texture = _tent_tex
 	_unit_icon.modulate = Color(color.r, color.g, color.b, 0.9)
 	_add_line(UIHelpers.icon_value("HP", str(hp)))
 	_add_line(UIHelpers.icon_value("Attack", str(atk)))
