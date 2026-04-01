@@ -44,6 +44,7 @@ PRESETS
     cp "$PROJECT_DIR/assets/boot_logo.png" "$BUILD_DIR/index.png"
     node "$PROJECT_DIR/scripts/tools/patch_web_loading.mjs" "$BUILD_DIR/index.html"
     echo "==> Build ready."
+    touch "$PROJECT_DIR/build/.reload"
 }
 
 # Initial build
@@ -59,6 +60,47 @@ echo "    Network: http://$LOCAL_IP:8060"
 # Start LAN server
 node "$PROJECT_DIR/scripts/tools/lan-server.mjs" &
 SERVER_PID=$!
+sleep 1
+
+# Open browser only if no existing tab is on this URL
+osascript -e '
+tell application "System Events"
+    set browserOpen to false
+    try
+        tell application "Google Chrome"
+            repeat with w in windows
+                repeat with t in tabs of w
+                    if URL of t starts with "http://localhost:8060" then
+                        set browserOpen to true
+                        reload t
+                        exit repeat
+                    end if
+                end repeat
+                if browserOpen then exit repeat
+            end repeat
+        end tell
+    end try
+    if not browserOpen then
+        try
+            tell application "Safari"
+                repeat with w in windows
+                    repeat with t in tabs of w
+                        if URL of t starts with "http://localhost:8060" then
+                            set browserOpen to true
+                            do JavaScript "location.reload()" in t
+                            exit repeat
+                        end if
+                    end repeat
+                    if browserOpen then exit repeat
+                end repeat
+            end tell
+        end try
+    end if
+    if not browserOpen then
+        do shell script "open http://localhost:8060/"
+    end if
+end tell
+' 2>/dev/null &
 
 # Start HTTPS tunnel for iOS Safari
 TUNNEL_PID=""

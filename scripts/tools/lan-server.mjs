@@ -1,9 +1,10 @@
 import { createServer } from "http";
-import { readFile } from "fs/promises";
+import { readFile, stat } from "fs/promises";
 import { join, extname } from "path";
 
 const PORT = 8060;
 const DIR = join(import.meta.dirname, "../../build/web");
+const RELOAD_FILE = join(import.meta.dirname, "../../build/.reload");
 
 const MIME = {
   ".html": "text/html",
@@ -18,11 +19,49 @@ const MIME = {
   ".json": "application/json",
 };
 
+const RELOAD_SCRIPT = `<script>
+(function(){
+  var es = new EventSource("/__reload");
+  es.onmessage = function() { location.reload(); };
+})();
+</script>`;
+
+let reloadClients = [];
+let lastReloadMtime = 0;
+
+// Poll the reload trigger file
+setInterval(async () => {
+  try {
+    const s = await stat(RELOAD_FILE);
+    const mtime = s.mtimeMs;
+    if (mtime > lastReloadMtime && lastReloadMtime > 0) {
+      reloadClients.forEach(res => {
+        res.write("data: reload\n\n");
+      });
+    }
+    lastReloadMtime = mtime;
+  } catch {}
+}, 500);
+
 const server = createServer(async (req, res) => {
+  // SSE endpoint for live reload
+  if (req.url === "/__reload") {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    });
+    res.write("data: connected\n\n");
+    reloadClients.push(res);
+    req.on("close", () => {
+      reloadClients = reloadClients.filter(c => c !== res);
+    });
+    return;
+  }
+
   const url = req.url === "/" ? "/index.html" : req.url.split("?")[0];
   const filePath = join(DIR, url);
 
-  // COOP/COEP headers for Godot WASM — skip on Safari (breaks require-corp)
   const ua = req.headers["user-agent"] || "";
   const isSafari = ua.includes("Safari") && !ua.includes("Chrome");
   if (!isSafari) {
@@ -32,8 +71,14 @@ const server = createServer(async (req, res) => {
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 
   try {
-    const data = await readFile(filePath);
+    let data = await readFile(filePath);
     const ext = extname(filePath);
+    // Inject reload script into HTML
+    if (ext === ".html") {
+      data = Buffer.from(
+        data.toString().replace("</head>", RELOAD_SCRIPT + "</head>")
+      );
+    }
     res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
     res.end(data);
   } catch {
