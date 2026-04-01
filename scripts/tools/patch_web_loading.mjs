@@ -12,8 +12,8 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   transition: opacity 0.5s;
 }
 img#status-splash {
-  width: 950px !important; height: auto !important;
-  max-width: 950px !important; max-height: none !important;
+  width: min(80vw, 950px) !important; height: auto !important;
+  max-width: min(80vw, 950px) !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important;
   position: fixed !important;
@@ -27,7 +27,7 @@ img#status-splash {
   to { opacity: 1; transform: scale(0.85); }
 }
 #status-progress {
-  width: 400px !important; height: 6px !important;
+  width: min(70vw, 400px) !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
@@ -44,7 +44,7 @@ canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, 150px);
-  width: 400px; height: 6px;
+  width: min(70vw, 400px); height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
