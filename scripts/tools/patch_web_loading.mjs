@@ -92,7 +92,25 @@ const initScript = `<script>
 		}
 	}, 10);
 
-	// progress-fill div is injected into body below
+	// Detect cached resources and speed up loading animation
+	var cacheCheck = setInterval(function() {
+		var entries = performance.getEntriesByType('resource');
+		var wasm = entries.find(function(e) {
+			return e.name.indexOf('.wasm') !== -1;
+		});
+		if (!wasm) return;
+		clearInterval(cacheCheck);
+		if (wasm.transferSize === 0) {
+			var inner = document.querySelector('.progress-fill-inner');
+			if (inner) {
+				inner.style.animationDuration = '2.8s';
+			}
+			var logo = document.getElementById('status-splash');
+			if (logo) {
+				logo.style.animationDuration = '2.8s';
+			}
+		}
+	}, 200);
 
 	// Detect game ready -> snap to 100% and fade out
 	var canvasFrames = 0;
