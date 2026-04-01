@@ -88,5 +88,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`LAN server: http://0.0.0.0:${PORT}`);
+  console.log(`LAN server: http://0.0.0.0:${PORT} (live reload enabled)`);
 });

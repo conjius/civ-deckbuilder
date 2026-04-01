@@ -1,5 +1,23 @@
 -- Open or refresh an existing browser tab on localhost:8060
--- Checks Chrome first, then Safari. Opens a new tab only if none found.
+-- Checks Firefox first, then Chrome, then Safari. Opens new tab if none found.
+
+on findInFirefox()
+    try
+        tell application "Firefox"
+            activate
+            tell application "System Events"
+                tell process "Firefox"
+                    set frontURL to value of UI element 1 of combo box 1 of toolbar "Navigation" of first window
+                    if frontURL contains "localhost:8060" then
+                        keystroke "r" using command down
+                        return true
+                    end if
+                end tell
+            end tell
+        end tell
+    end try
+    return false
+end findInFirefox
 
 on findInChrome()
     try
@@ -33,8 +51,10 @@ on findInSafari()
     return false
 end findInSafari
 
-if not findInChrome() then
-    if not findInSafari() then
-        do shell script "open http://localhost:8060/"
+if not findInFirefox() then
+    if not findInChrome() then
+        if not findInSafari() then
+            do shell script "open http://localhost:8060/"
+        end if
     end if
 end if
