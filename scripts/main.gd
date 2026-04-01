@@ -111,6 +111,7 @@ func _ready() -> void:
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
+	game_ui.card_gallery.prebuild_cards(deck)
 
 	# Find a passable starting tile near center
 	var start_coord: Vector2i = _find_start_coord()
