@@ -23,16 +23,16 @@ img#status-splash {
   animation: logoFadeIn 14s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
 @keyframes logoFadeIn {
-  from { opacity: 0; transform: scale(0.7); }
-  to { opacity: 1; transform: scale(0.85); }
+  from { opacity: 0; transform: scale(0.56); }
+  to { opacity: 1; transform: scale(0.68); }
 }
 #status-progress {
-  width: min(70vw, 400px) !important; height: 6px !important;
+  width: min(50vw, 280px) !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 150px) !important;
+  transform: translate(-50%, 30px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
@@ -43,8 +43,8 @@ img#status-splash {
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, 150px);
-  width: min(70vw, 400px); height: 6px;
+  transform: translate(-50%, 30px);
+  width: min(50vw, 280px); height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
@@ -62,7 +62,59 @@ canvas { background: #000 !important; }
   100% { transform: scaleX(0.98); }
 }
 </style>`;
-html = html.replace("<head>", `<head>${css}`);
+const wasmCache = `<script>
+(function(){
+  var DB_NAME = "godot-wasm-cache";
+  var STORE = "modules";
+  function openDB() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function() { req.result.createObjectStore(STORE); };
+      req.onsuccess = function() { resolve(req.result); };
+      req.onerror = function() { reject(req.error); };
+    });
+  }
+  function dbGet(db, key) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(STORE, "readonly");
+      var req = tx.objectStore(STORE).get(key);
+      req.onsuccess = function() { resolve(req.result || null); };
+      req.onerror = function() { resolve(null); };
+    });
+  }
+  function dbPut(db, key, value) {
+    return new Promise(function(resolve) {
+      var tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(value, key);
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { resolve(); };
+    });
+  }
+  var origInstantiateStreaming = WebAssembly.instantiateStreaming;
+  WebAssembly.instantiateStreaming = async function(source, imports) {
+    try {
+      var response = await source;
+      var etag = response.headers.get("etag") || response.headers.get("last-modified") || "";
+      var cacheKey = response.url + "|" + etag;
+      var db = await openDB();
+      var cached = await dbGet(db, cacheKey);
+      if (cached) {
+        var instance = await WebAssembly.instantiate(cached, imports);
+        return { module: cached, instance: instance };
+      }
+      var buffer = await response.arrayBuffer();
+      var module = await WebAssembly.compile(buffer);
+      await dbPut(db, cacheKey, module);
+      var instance = await WebAssembly.instantiate(module, imports);
+      return { module: module, instance: instance };
+    } catch(e) {
+      return origInstantiateStreaming(source, imports);
+    }
+  };
+})();
+</script>`;
+
+html = html.replace("<head>", `<head>${wasmCache}${css}`);
 
 // Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
