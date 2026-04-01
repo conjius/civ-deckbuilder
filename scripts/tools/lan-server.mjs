@@ -34,7 +34,7 @@ const DEV_SCRIPTS = `<script>
   if (document.readyState === "complete") connect();
   else window.addEventListener("load", connect);
 
-  // Cache compiled WASM in IndexedDB
+  // Cache WASM bytes in IndexedDB (works in Firefox + Chrome)
   var DB = "wasm-cache", ST = "m";
   function idb(mode) {
     return new Promise(function(ok, fail) {
@@ -44,30 +44,34 @@ const DEV_SCRIPTS = `<script>
       r.onerror = fail;
     });
   }
+  function idbGet(key) {
+    return idb("readonly").then(function(s) {
+      return new Promise(function(ok) {
+        var g = s.get(key); g.onsuccess = function() { ok(g.result || null); }; g.onerror = function() { ok(null); };
+      });
+    });
+  }
+  function idbPut(key, val) {
+    return idb("readwrite").then(function(s) { s.put(val, key); }).catch(function(){});
+  }
   var orig = WebAssembly.instantiateStreaming;
   WebAssembly.instantiateStreaming = function(source, imports) {
     return Promise.resolve(source).then(function(resp) {
-      var key = resp.url;
-      return idb("readonly").then(function(store) {
-        return new Promise(function(ok) {
-          var g = store.get(key);
-          g.onsuccess = function() { ok(g.result || null); };
-          g.onerror = function() { ok(null); };
-        });
-      }).then(function(cached) {
+      var etag = resp.headers.get("etag") || "";
+      var key = resp.url + "|" + etag;
+      return idbGet(key).then(function(cached) {
         if (cached) {
-          return WebAssembly.instantiate(cached, imports).then(function(inst) {
-            return { module: cached, instance: inst };
-          });
+          return WebAssembly.instantiate(cached, imports);
         }
-        return orig(resp.clone(), imports).then(function(result) {
-          idb("readwrite").then(function(store) {
-            try { store.put(result.module, key); } catch(e) {}
+        var cloned = resp.clone();
+        return orig(resp, imports).then(function(result) {
+          cloned.arrayBuffer().then(function(buf) {
+            idbPut(key, buf);
           });
           return result;
         });
       });
-    }).catch(function() {
+    }).catch(function(e) {
       return orig(source, imports);
     });
   };
