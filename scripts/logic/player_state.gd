@@ -21,7 +21,15 @@ func move_to(coord: Vector2i) -> void:
 	current_coord = coord
 
 
+func effective_health() -> int:
+	return health + health_modifier
+
+
 func take_damage(amount: int) -> void:
+	if health_modifier > 0:
+		var absorbed: int = mini(amount, health_modifier)
+		health_modifier -= absorbed
+		amount -= absorbed
 	health = maxi(0, health - amount)
 
 
