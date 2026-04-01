@@ -62,7 +62,7 @@ canvas { background: #000 !important; }
   100% { transform: scaleX(0.98); }
 }
 </style>`;
-html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
+html = html.replace("<head>", `<head>${css}`);
 
 // Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
@@ -158,6 +158,13 @@ window.addEventListener('keydown', function(e) {
 
 // Remove fullsize class so Godot doesn't force 100% width/height
 html = html.replaceAll('fullsize--true', 'fullsize--false');
+
+// Disable cross-origin isolation check — not needed for single-threaded export
+// Prevents Godot from trying to install a service worker that breaks iOS WebKit
+html = html.replace(
+	'"ensureCrossOriginIsolationHeaders":true',
+	'"ensureCrossOriginIsolationHeaders":false'
+);
 
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);

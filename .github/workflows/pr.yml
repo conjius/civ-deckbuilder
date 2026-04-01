@@ -111,6 +111,8 @@ jobs:
           PRESETS
           mkdir -p build/web
           godot --headless --export-release "Web" build/web/index.html 2>&1
+          cp assets/boot_logo.png build/web/index.png
+          node scripts/tools/patch_web_loading.mjs build/web/index.html
         timeout-minutes: 3
       - name: version
         id: version
