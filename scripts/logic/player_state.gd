@@ -8,6 +8,7 @@ var attack: int = 0
 var defense: int = 0
 var attack_modifier: int = 0
 var defense_modifier: int = 0
+var health_modifier: int = 0
 var sight_range: int = 2
 var current_coord: Vector2i = Vector2i.ZERO
 

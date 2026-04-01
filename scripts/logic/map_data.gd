@@ -139,6 +139,37 @@ func damage_settlement(coord: Vector2i, amount: int) -> void:
 	data["hp"] = maxi(0, hp - amount)
 
 
+func heal_settlement(coord: Vector2i, amount: int) -> void:
+	if not _settlements.has(coord):
+		return
+	var data: Dictionary = _settlements[coord] as Dictionary
+	var hp: int = data.get("hp", 0) as int
+	var max_hp: int = data.get("max_hp", 5) as int
+	data["hp"] = mini(max_hp + amount, hp + amount)
+	data["max_hp"] = max_hp + amount
+
+
+func upgrade_settlement(coord: Vector2i) -> void:
+	if not _settlements.has(coord):
+		return
+	var data: Dictionary = _settlements[coord] as Dictionary
+	var tier: int = data.get("tier", 0) as int
+	data["tier"] = tier + 1
+	if tier == 0:
+		data["name"] = "Village"
+		data["max_hp"] = 10
+		data["hp"] = 10
+		data["attack"] = 2
+		data["defense"] = 2
+
+
+func get_settlement_tier(coord: Vector2i) -> int:
+	if not _settlements.has(coord):
+		return -1
+	var data: Dictionary = _settlements[coord] as Dictionary
+	return data.get("tier", 0) as int
+
+
 func remove_settlement(coord: Vector2i) -> void:
 	_settlements.erase(coord)
 
