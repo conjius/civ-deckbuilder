@@ -127,6 +127,8 @@ func _populate(unit: Node3D) -> void:
 	var atk: int = unit.attack if "attack" in unit else 0
 	var def: int = unit.defense if "defense" in unit else 0
 	if "state" in unit and unit.state:
+		hp += unit.state.health_modifier
+		atk += unit.state.attack_modifier
 		def += unit.state.defense_modifier
 	_add_line(UIHelpers.icon_value("HP", str(hp)))
 	_add_line(UIHelpers.icon_value("Attack", str(atk)))
