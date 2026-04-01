@@ -16,6 +16,10 @@ var _strike: CardData = preload("res://resources/cards/strike.tres")
 var _shoot: CardData = preload("res://resources/cards/shoot.tres")
 var _shields_up: CardData = preload("res://resources/cards/shields_up.tres")
 var _armor_up: CardData = preload("res://resources/cards/armor_up.tres")
+var _supplies: CardData = preload("res://resources/cards/supplies.tres")
+var _plan_ahead: CardData = preload("res://resources/cards/plan_ahead.tres")
+var _recruit: CardData = preload("res://resources/cards/recruit.tres")
+var _build: CardData = preload("res://resources/cards/build.tres")
 var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
 var _last_hover_time: int = 0
@@ -68,6 +72,9 @@ func _ready() -> void:
 	)
 	card_effects.settled.connect(_on_settled)
 	card_effects.attacked.connect(_on_attacked)
+	card_effects.draw_requested.connect(_on_draw_requested)
+	card_effects.recruited.connect(_on_recruited)
+	card_effects.building_upgraded.connect(_on_building_upgraded)
 
 	# Pile counters: auto-update UI on every deck change
 	card_manager.deck_manager.piles_changed.connect(
@@ -85,6 +92,7 @@ func _ready() -> void:
 		_chicken, _wood,
 		_strike, _strike, _shoot, _shoot,
 		_shields_up, _shields_up, _armor_up,
+		_supplies, _plan_ahead, _recruit, _build,
 	]
 	card_manager.starting_deck = deck
 	card_manager.initialize_deck()
@@ -284,6 +292,7 @@ func _degrade_fog() -> void:
 func _on_turn_started(turn_number: int) -> void:
 	player_unit.state.attack_modifier = 0
 	player_unit.state.defense_modifier = 0
+	player_unit.state.health_modifier = 0
 	game_ui.update_turn(turn_number)
 	game_ui.refresh_unit_info()
 
@@ -382,6 +391,44 @@ func _on_attacked(
 			if hex_map.map_data.get_settlement_hp(target_coord) <= 0:
 				_destroy_settlement(target_coord)
 	attacker.state.attack_modifier = 0
+
+
+func _on_draw_requested(count: int) -> void:
+	var dm: DeckManager = card_manager.deck_manager
+	var drawn: Array[CardData] = []
+	for _i in count:
+		if dm.draw_pile.is_empty() and dm.discard_pile.is_empty():
+			break
+		if dm.draw_pile.is_empty():
+			dm.draw_pile.append_array(dm.discard_pile)
+			dm.discard_pile.clear()
+			dm.draw_pile.shuffle()
+		var card: CardData = dm.draw_pile.pop_back()
+		dm.add_to_hand(card)
+		drawn.append(card)
+	if not drawn.is_empty():
+		game_ui.set_current_cards(dm.hand)
+		game_ui.card_hand.add_cards_to_hand(drawn)
+
+
+func _on_recruited(
+	target: Vector2i, permanent_hp: int, spawn: bool,
+) -> void:
+	if spawn:
+		pass # TODO: spawn new explorer unit at target
+	else:
+		var unit: Node3D = _get_unit_at(target)
+		if unit:
+			unit.state.max_health += permanent_hp
+			unit.state.health += permanent_hp
+		elif hex_map.map_data.has_settlement(target):
+			hex_map.map_data.heal_settlement(target, permanent_hp)
+		game_ui.refresh_unit_info()
+
+
+func _on_building_upgraded(target: Vector2i) -> void:
+	if hex_map.map_data.has_settlement(target):
+		hex_map.map_data.upgrade_settlement(target)
 
 
 func _get_unit_at(coord: Vector2i) -> Node3D:

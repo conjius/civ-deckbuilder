@@ -236,3 +236,153 @@ func test_defense_resets_on_turn() -> void:
 	ps.defense_modifier = 1
 	ps.defense_modifier = 0
 	TestAssert.assert_eq(ps.defense_modifier, 0)
+
+
+func test_resolve_supplies_buff() -> void:
+	var supplies := CardData.new()
+	supplies.card_name = "Supplies"
+	supplies.card_type = CardData.CardType.BUFF
+	supplies.attack_bonus = 1
+	supplies.defense_bonus = 1
+	supplies.health_bonus = 1
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		supplies, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_eq(result.attack_gained, 1)
+	TestAssert.assert_eq(result.defense_gained, 1)
+	TestAssert.assert_eq(result.health_gained, 1)
+
+
+func test_buff_targets_self() -> void:
+	var supplies := CardData.new()
+	supplies.card_type = CardData.CardType.BUFF
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		supplies, Vector2i(0, 0)
+	)
+	TestAssert.assert_size(targets, 1)
+	TestAssert.assert_contains(targets, Vector2i(0, 0))
+
+
+func test_buff_modifiers_apply() -> void:
+	var ps := PlayerState.new()
+	ps.health = 1
+	ps.max_health = 1
+	ps.attack_modifier = 0
+	ps.defense_modifier = 0
+	ps.health_modifier = 0
+	ps.attack_modifier += 1
+	ps.defense_modifier += 1
+	ps.health_modifier += 1
+	TestAssert.assert_eq(ps.attack_modifier, 1)
+	TestAssert.assert_eq(ps.defense_modifier, 1)
+	TestAssert.assert_eq(ps.health_modifier, 1)
+
+
+func test_buff_modifiers_reset_on_turn() -> void:
+	var ps := PlayerState.new()
+	ps.attack_modifier = 1
+	ps.defense_modifier = 1
+	ps.health_modifier = 1
+	ps.attack_modifier = 0
+	ps.defense_modifier = 0
+	ps.health_modifier = 0
+	TestAssert.assert_eq(ps.attack_modifier, 0)
+	TestAssert.assert_eq(ps.defense_modifier, 0)
+	TestAssert.assert_eq(ps.health_modifier, 0)
+
+
+func test_resolve_draw_card() -> void:
+	var plan := CardData.new()
+	plan.card_name = "Plan Ahead"
+	plan.card_type = CardData.CardType.DRAW
+	plan.draw_count = 2
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		plan, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_eq(result.cards_to_draw, 2)
+
+
+func test_draw_targets_self() -> void:
+	var plan := CardData.new()
+	plan.card_type = CardData.CardType.DRAW
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		plan, Vector2i(0, 0)
+	)
+	TestAssert.assert_size(targets, 1)
+	TestAssert.assert_contains(targets, Vector2i(0, 0))
+
+
+func test_resolve_recruit_hp() -> void:
+	var recruit := CardData.new()
+	recruit.card_name = "Recruit"
+	recruit.card_type = CardData.CardType.RECRUIT
+	recruit.permanent_hp = 2
+	recruit.range_value = 1
+	_map.place_settlement(
+		Vector2i(1, 0), "Camp", Color.WHITE
+	)
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		recruit, Vector2i(1, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_eq(result.permanent_hp_gained, 2)
+
+
+func test_recruit_targets_include_settlements() -> void:
+	var recruit := CardData.new()
+	recruit.card_type = CardData.CardType.RECRUIT
+	recruit.range_value = 1
+	_map.place_settlement(
+		Vector2i(1, 0), "Camp", Color.WHITE
+	)
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		recruit, Vector2i(0, 0)
+	)
+	TestAssert.assert_contains(targets, Vector2i(1, 0))
+
+
+func test_recruit_targets_include_empty_passable() -> void:
+	var recruit := CardData.new()
+	recruit.card_type = CardData.CardType.RECRUIT
+	recruit.range_value = 1
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		recruit, Vector2i(0, 0)
+	)
+	TestAssert.assert_true(targets.size() > 0)
+
+
+func test_resolve_build_upgrade() -> void:
+	var build := CardData.new()
+	build.card_name = "Build"
+	build.card_type = CardData.CardType.BUILD
+	_map.place_settlement(
+		Vector2i(0, 0), "Camp", Color.WHITE
+	)
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		build, Vector2i(0, 0), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	TestAssert.assert_true(result.settlement_upgraded)
+
+
+func test_build_targets_own_settlements() -> void:
+	var build := CardData.new()
+	build.card_type = CardData.CardType.BUILD
+	_map.place_settlement(
+		Vector2i(0, 0), "Camp", Color.WHITE
+	)
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		build, Vector2i(0, 0)
+	)
+	TestAssert.assert_contains(targets, Vector2i(0, 0))

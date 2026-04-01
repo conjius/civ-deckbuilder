@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Build"
+description = "Upgrade a camp to a village"
+card_type = 10
+range_value = 0
+card_color = Color(0.35, 0.25, 0.15, 1)
+icon_path = "res://assets/icons/resources/build.svg"
+icon_scale = 0.9
