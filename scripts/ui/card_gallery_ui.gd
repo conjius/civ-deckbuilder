@@ -60,12 +60,16 @@ func _ready() -> void:
 
 
 func prebuild_cards(cards: Array[CardData]) -> void:
+	var seen: Dictionary = {}
 	for card in cards:
-		if not _card_cache.has(card):
+		var idx: int = seen.get(card, 0) as int
+		seen[card] = idx + 1
+		var cache_key := str(card.get_instance_id()) + "_" + str(idx)
+		if not _card_cache.has(cache_key):
 			var node := _create_card_node(card)
 			node.visible = false
 			_container.add_child(node)
-			_card_cache[card] = node
+			_card_cache[cache_key] = node
 
 
 func show_gallery(
@@ -196,7 +200,6 @@ func _get_filtered_cards() -> Array[CardData]:
 func _build_all_cards() -> void:
 	if _cards_built:
 		return
-	# Detach cached nodes from container (keep in cache)
 	for child in _container.get_children():
 		_container.remove_child(child)
 	_card_nodes.clear()
@@ -209,13 +212,19 @@ func _build_all_cards() -> void:
 	for card in _discard_cards:
 		all_cards.append([card, "discard"])
 
+	# Track how many of each CardData we've seen to build
+	# unique cache keys for duplicate cards (e.g. 4x Move)
+	var seen: Dictionary = {}
 	for entry in all_cards:
 		var card: CardData = entry[0] as CardData
 		var pile: String = entry[1] as String
-		var outer: Control = _card_cache.get(card) as Control
+		var idx: int = seen.get(card, 0) as int
+		seen[card] = idx + 1
+		var cache_key := str(card.get_instance_id()) + "_" + str(idx)
+		var outer: Control = _card_cache.get(cache_key) as Control
 		if outer == null:
 			outer = _create_card_node(card)
-			_card_cache[card] = outer
+			_card_cache[cache_key] = outer
 		if outer.get_parent() != _container:
 			_container.add_child(outer)
 		_card_nodes.append({
