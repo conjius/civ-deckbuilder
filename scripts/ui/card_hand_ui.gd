@@ -2,6 +2,7 @@ extends Control
 
 signal card_dropped(card: CardData, target: Vector2i)
 signal gallery_requested
+signal card_discarded_visually
 
 const DISCARD_DUR := 0.7
 
@@ -42,7 +43,11 @@ func show_cards(cards: Array[CardData], animate_draw: bool = true) -> void:
 		_layout_cards.call_deferred()
 
 
-func discard_all(on_done: Callable = Callable()) -> void:
+func discard_all(
+	on_done: Callable = Callable(),
+	on_each_start: Callable = Callable(),
+	on_each_end: Callable = Callable(),
+) -> void:
 	_focused_card = null
 	var cards := _get_card_children()
 	if cards.is_empty():
@@ -68,6 +73,15 @@ func discard_all(on_done: Callable = Callable()) -> void:
 			get_tree().root.add_child(card)
 		card.global_position = gpos
 		var delay := float(i) * 0.05
+		var card_idx := i
+		if on_each_start.is_valid():
+			get_tree().create_timer(delay).timeout.connect(
+				func() -> void: on_each_start.call(card_idx)
+			)
+		if on_each_end.is_valid():
+			get_tree().create_timer(delay + dur).timeout.connect(
+				func() -> void: on_each_end.call(card_idx)
+			)
 		var tw := card.create_tween()
 		tw.set_parallel(true)
 		var half_pile := Vector2(
@@ -325,6 +339,7 @@ func _animate_to_discard_pile(card: Control) -> void:
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tw.finished.connect(func() -> void:
 		card.queue_free()
+		card_discarded_visually.emit()
 	)
 
 

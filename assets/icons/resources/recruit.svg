@@ -3,6 +3,6 @@
   <path d="M8 42C8 32 14 28 20 28C26 28 32 32 32 42" fill="#D4A574"/>
   <circle cx="44" cy="18" r="8" fill="#C49464"/>
   <path d="M32 42C32 32 38 28 44 28C50 28 56 32 56 42" fill="#C49464"/>
-  <circle cx="32" cy="26" r="7" fill="#D9B48F"/>
-  <path d="M20 50C20 42 25 38 32 38C39 38 44 42 44 50" fill="#D9B48F"/>
+  <circle cx="32" cy="24" r="8" fill="#D9B48F"/>
+  <path d="M20 48C20 38 26 34 32 34C38 34 44 38 44 48" fill="#D9B48F"/>
 </svg>

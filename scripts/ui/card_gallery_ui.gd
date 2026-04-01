@@ -27,6 +27,7 @@ var _container: Control
 var _animating: bool = false
 var _card_nodes: Array = []
 var _cards_built: bool = false
+var _card_cache: Dictionary = {}
 var _hand_btn: CardPileUI
 var _hand_btn_height: float = 0.0
 var _bottom_reserve: float = 0.0
@@ -58,6 +59,15 @@ func _ready() -> void:
 	add_child(_hand_btn)
 
 
+func prebuild_cards(cards: Array[CardData]) -> void:
+	for card in cards:
+		if not _card_cache.has(card):
+			var node := _create_card_node(card)
+			node.visible = false
+			_container.add_child(node)
+			_card_cache[card] = node
+
+
 func show_gallery(
 	draw: Array[CardData],
 	hand: Array[CardData],
@@ -66,16 +76,10 @@ func show_gallery(
 	initial_hand: bool = true,
 	initial_discard: bool = false,
 ) -> void:
-	var cards_changed := (
-		draw != _draw_cards
-		or hand != _hand_cards
-		or discard != _discard_cards
-	)
-	if cards_changed:
-		_cards_built = false
-	_draw_cards = draw
-	_hand_cards = hand
-	_discard_cards = discard
+	_cards_built = false
+	_draw_cards = draw.duplicate()
+	_hand_cards = hand.duplicate()
+	_discard_cards = discard.duplicate()
 	_hand_btn.update_count(hand.size(), false)
 	_hand_btn.set_gallery_mode(true)
 	_show_draw = initial_draw
@@ -192,8 +196,9 @@ func _get_filtered_cards() -> Array[CardData]:
 func _build_all_cards() -> void:
 	if _cards_built:
 		return
+	# Detach cached nodes from container (keep in cache)
 	for child in _container.get_children():
-		child.queue_free()
+		_container.remove_child(child)
 	_card_nodes.clear()
 
 	var all_cards: Array[Array] = []
@@ -207,37 +212,53 @@ func _build_all_cards() -> void:
 	for entry in all_cards:
 		var card: CardData = entry[0] as CardData
 		var pile: String = entry[1] as String
-		var sections: Array[PanelContainer] = []
-		var outer := Control.new()
-		outer.custom_minimum_size = Vector2(
-			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-		)
-		outer.size = Vector2(
-			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-		)
-		outer.mouse_filter = Control.MOUSE_FILTER_STOP
-		CardFaceBuilder.build_face(outer, card, sections)
-		var card_ref: CardData = card
-		var pile_ref: String = pile
-		outer.gui_input.connect(
-			func(event: InputEvent) -> void:
-				if _animating:
-					return
-				if event is InputEventMouseButton:
-					if (event.button_index == MOUSE_BUTTON_LEFT
-						and event.pressed
-					):
-						card_drag_requested.emit(
-							card_ref, event.global_position,
-							pile_ref,
-						)
-						get_viewport().set_input_as_handled()
-		)
-		_container.add_child(outer)
+		var outer: Control = _card_cache.get(card) as Control
+		if outer == null:
+			outer = _create_card_node(card)
+			_card_cache[card] = outer
+		if outer.get_parent() != _container:
+			_container.add_child(outer)
 		_card_nodes.append({
 			"node": outer, "card": card, "pile": pile,
 		})
 	_cards_built = true
+
+
+func _create_card_node(card: CardData) -> Control:
+	var sections: Array[PanelContainer] = []
+	var outer := Control.new()
+	outer.custom_minimum_size = Vector2(
+		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+	)
+	outer.size = Vector2(
+		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+	)
+	outer.mouse_filter = Control.MOUSE_FILTER_STOP
+	CardFaceBuilder.build_face(outer, card, sections)
+	var card_ref: CardData = card
+	outer.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if _animating:
+				return
+			if event is InputEventMouseButton:
+				if (event.button_index == MOUSE_BUTTON_LEFT
+					and event.pressed
+				):
+					var pile_ref := _get_pile_for_card(card_ref)
+					card_drag_requested.emit(
+						card_ref, event.global_position,
+						pile_ref,
+					)
+					get_viewport().set_input_as_handled()
+	)
+	return outer
+
+
+func _get_pile_for_card(card: CardData) -> String:
+	for entry in _card_nodes:
+		if entry["card"] == card:
+			return entry["pile"] as String
+	return "hand"
 
 
 func _layout_visible_cards() -> void:

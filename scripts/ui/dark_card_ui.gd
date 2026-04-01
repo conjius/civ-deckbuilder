@@ -11,6 +11,7 @@ var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _draw_ctrl: Control
 var _sv: SubViewport
 var _content_clip: Control
+var _is_dark: bool = true
 
 
 func setup_card() -> void:
@@ -96,7 +97,11 @@ func _draw_card() -> void:
 			(0.5 - 0.5 / zoom)
 				+ ((c.y + ch) / ch) / zoom,
 		))
-	var tint := Color(0.35, 0.25, 0.15, 1.0)
+	var tint: Color
+	if _is_dark:
+		tint = Color(0.35, 0.25, 0.15, 1.0)
+	else:
+		tint = Color(0.85, 0.75, 0.6, 1.0)
 	if ptex:
 		var colors := PackedColorArray()
 		colors.append(tint)
