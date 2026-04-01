@@ -175,9 +175,9 @@ jobs:
           MARKER="<!-- preview-url -->"
           BODY="$MARKER
           **Preview:** $URL"
-          EXISTING=$(gh pr view "$PR" --json comments --jq ".comments[] | select(.body | contains(\"$MARKER\")) | .id" | head -1)
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues/$PR/comments" --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -1)
           if [ -n "$EXISTING" ]; then
-            gh api repos/${{ github.repository }}/issues/comments/$EXISTING -X PATCH -f body="$BODY"
+            gh api "repos/${{ github.repository }}/issues/comments/$EXISTING" -X PATCH -f body="$BODY"
           else
             gh pr comment "$PR" --body "$BODY"
           fi
