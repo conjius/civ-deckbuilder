@@ -6,6 +6,16 @@ var _lines_container: VBoxContainer
 var _original_y: float = 0.0
 var _showing: bool = false
 var _current_unit: Node3D
+var _icon_mat: ShaderMaterial
+
+var _boot_tex: Texture2D = preload(
+	"res://assets/icons/boot_move_white_on_transparent.png"
+)
+var _tent_tex: Texture2D = preload(
+	"res://assets/icons/tent_icon.svg"
+)
+var _boot_scale := 1.1
+var _tent_scale := 1.3
 
 
 func _ready() -> void:
@@ -13,16 +23,17 @@ func _ready() -> void:
 
 	var icon_sz: float = UIHelpers.sf(20.0)
 	_unit_icon = TextureRect.new()
-	_unit_icon.texture = load(
-		"res://assets/icons/boot_move_white_on_transparent.png"
-	) as Texture2D
+	_unit_icon.texture = _boot_tex
 	_unit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_unit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_unit_icon.size = Vector2(icon_sz, icon_sz)
 	_unit_icon.position = Vector2(
 		(float(card_w) - icon_sz) * 0.5, 14.0
 	)
-	_unit_icon.modulate = Color(0.95, 0.88, 0.7)
+	_icon_mat = UIHelpers.create_icon_tint_shader(
+		Color(0.95, 0.88, 0.7)
+	)
+	_unit_icon.material = _icon_mat
 	_unit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content_clip.add_child(_unit_icon)
 
@@ -105,16 +116,19 @@ func _populate(unit: Node3D) -> void:
 		child.queue_free()
 	if unit == null:
 		return
+	_unit_icon.texture = _boot_tex
+	_set_icon_scale(_boot_scale)
 	if "avatar_color" in unit:
 		var c: Color = unit.avatar_color
-		_unit_icon.modulate = Color(c.r, c.g, c.b, 0.9)
+		_icon_mat.set_shader_parameter(
+			"tint_color", Color(c.r, c.g, c.b, 0.9)
+		)
 	var hp: int = unit.health if "health" in unit else 0
-	var max_hp: int = unit.max_health if "max_health" in unit else 0
 	var atk: int = unit.attack if "attack" in unit else 0
 	var def: int = unit.defense if "defense" in unit else 0
 	if "state" in unit and unit.state:
 		def += unit.state.defense_modifier
-	_add_line(UIHelpers.icon_value("HP", "%d/%d" % [hp, max_hp]))
+	_add_line(UIHelpers.icon_value("HP", str(hp)))
 	_add_line(UIHelpers.icon_value("Attack", str(atk)))
 	_add_line(UIHelpers.icon_value("Defense", str(def)))
 
@@ -125,10 +139,23 @@ func _populate_settlement(
 ) -> void:
 	for child in _lines_container.get_children():
 		child.queue_free()
-	_unit_icon.modulate = Color(color.r, color.g, color.b, 0.9)
+	_unit_icon.texture = _tent_tex
+	_set_icon_scale(_tent_scale)
+	_icon_mat.set_shader_parameter(
+		"tint_color", Color(color.r, color.g, color.b, 0.9)
+	)
 	_add_line(UIHelpers.icon_value("HP", str(hp)))
 	_add_line(UIHelpers.icon_value("Attack", str(atk)))
 	_add_line(UIHelpers.icon_value("Defense", str(def)))
+
+
+func _set_icon_scale(s: float) -> void:
+	var base_sz: float = UIHelpers.sf(20.0)
+	var sz: float = base_sz * s
+	_unit_icon.size = Vector2(sz, sz)
+	_unit_icon.position = Vector2(
+		(float(card_w) - sz) * 0.5, 14.0 - (sz - base_sz) * 0.5
+	)
 
 
 func _add_line(bbcode: String) -> void:
