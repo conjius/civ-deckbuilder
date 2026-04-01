@@ -180,24 +180,8 @@ jobs:
             -X POST \
             -f state="success" \
             -f environment_url="$URL" \
-            -f description="Deployed to preview"
-      - name: comment-preview-url
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          SLUG="${{ steps.slug.outputs.slug }}"
-          URL="https://conjius.github.io/CivDecks/preview/$SLUG/"
-          PR="${{ github.event.pull_request.number }}"
-          MARKER="<!-- preview-url -->"
-          BODY="$MARKER
-          **Preview:** $URL"
-          EXISTING=$(gh api "repos/${{ github.repository }}/issues/$PR/comments" --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -1)
-          if [ -n "$EXISTING" ]; then
-            gh api "repos/${{ github.repository }}/issues/comments/$EXISTING" -X PATCH -f body="$BODY"
-          else
-            gh pr comment "$PR" --body "$BODY"
-          fi
+            -f log_url="$URL" \
+            -f description="Preview deployed"
 
   tag-release:
     needs: [build-test-lint, export]
