@@ -23,8 +23,8 @@ img#status-splash {
   animation: logoFadeIn 14s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
 @keyframes logoFadeIn {
-  from { opacity: 0; transform: scale(0.7); }
-  to { opacity: 1; transform: scale(0.85); }
+  from { opacity: 0; transform: scale(0.56); }
+  to { opacity: 1; transform: scale(0.68); }
 }
 #status-progress {
   width: min(70vw, 400px) !important; height: 6px !important;
@@ -32,7 +32,7 @@ img#status-splash {
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 150px) !important;
+  transform: translate(-50%, 30px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
@@ -43,7 +43,7 @@ img#status-splash {
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, 150px);
+  transform: translate(-50%, 30px);
   width: min(70vw, 400px); height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
