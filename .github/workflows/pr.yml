@@ -3,8 +3,6 @@ name: PR
 on:
   pull_request:
     branches: [main]
-  push:
-    branches-ignore: [main, gh-pages]
 
 env:
   GODOT_VERSION: "4.6.1"
@@ -37,6 +35,8 @@ jobs:
 
   export:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -133,16 +133,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:
           ref: gh-pages
           fetch-depth: 1
-      - name: version
-        id: version
-        run: |
-          PATCH=$(($(git rev-list --count HEAD) - 378))
-          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
       - name: branch-slug
         id: slug
         run: |
@@ -152,7 +148,7 @@ jobs:
       - name: download-web
         uses: actions/download-artifact@v8
         with:
-          name: CivDecks-${{ steps.version.outputs.tag }}-web
+          name: CivDecks-${{ needs.export.outputs.tag }}-web
           path: preview/${{ steps.slug.outputs.slug }}/
       - name: patch-loading
         run: |
@@ -168,6 +164,23 @@ jobs:
           git add "preview/$SLUG/"
           git commit -m "Deploy preview/$SLUG from ${{ github.ref_name }}" --allow-empty
           git push
+      - name: comment-preview-url
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SLUG="${{ steps.slug.outputs.slug }}"
+          URL="https://conjius.github.io/CivDecks/preview/$SLUG/"
+          PR="${{ github.event.pull_request.number }}"
+          MARKER="<!-- preview-url -->"
+          BODY="$MARKER
+          **Preview:** $URL"
+          EXISTING=$(gh pr view "$PR" --json comments --jq ".comments[] | select(.body | contains(\"$MARKER\")) | .id" | head -1)
+          if [ -n "$EXISTING" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$EXISTING -X PATCH -f body="$BODY"
+          else
+            gh pr comment "$PR" --body "$BODY"
+          fi
 
   tag-release:
     needs: [build-test-lint, export]
