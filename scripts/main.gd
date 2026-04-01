@@ -259,8 +259,9 @@ func _finish_end_turn() -> void:
 		player_unit.state.sight_range,
 	)
 	_highlight_active_unit()
-	# Draw new hand
+	# Draw new hand — flip end turn back to light
 	card_manager.draw_new_hand()
+	game_ui.end_turn_button.flip_to_light()
 	_refresh_cards_ui()
 
 

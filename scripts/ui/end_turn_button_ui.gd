@@ -11,19 +11,20 @@ var _hovering: bool = false
 var _animating: bool = false
 var _disabled: bool = false
 var _glow_mat: ShaderMaterial
+var _flip_dur := 0.15
 
 
 func _ready() -> void:
+	_is_dark = false
 	setup_card()
+	pivot_offset = Vector2(size.x * 0.5, size.y * 0.5)
 	mouse_filter = Control.MOUSE_FILTER_PASS
 
-	# Apply glow shader to the SubViewportContainer
 	_glow_mat = CardPileUI._create_glow_shader()
 	_glow_mat.set_shader_parameter("glow_strength", 0.0)
 	var svc := get_child(0) as SubViewportContainer
 	svc.material = _glow_mat
 
-	# Hole punch
 	var label_cx := pivot_x()
 	var label_cy := pivot_y() - float(card_h) * 0.5
 	_glow_mat.set_shader_parameter(
@@ -39,8 +40,7 @@ func _ready() -> void:
 		"aspect", float(size.x) / float(size.y)
 	)
 
-	# Hourglass icon
-	var icon_sz := float(card_w) * 0.5
+	var icon_sz := float(card_w) * 0.5 * 1.3
 	var icon_w := icon_sz * 1.1
 	var icon_h := icon_sz * 0.9
 	_icon = TextureRect.new()
@@ -58,7 +58,6 @@ func _ready() -> void:
 	_icon.material = UIHelpers.create_icon_shadow_shader()
 	add_child(_icon)
 
-	# Title
 	_title_label = Label.new()
 	_title_label.text = "End Turn"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -101,6 +100,36 @@ func set_disabled(value: bool) -> void:
 	modulate.a = 0.4 if _disabled else 1.0
 
 
+func flip_to_dark() -> void:
+	_do_flip(true)
+
+
+func flip_to_light() -> void:
+	_do_flip(false)
+
+
+func _do_flip(to_dark: bool) -> void:
+	if _is_dark == to_dark:
+		return
+	_animating = true
+	var orig_sx: float = scale.x
+	var tw := create_tween()
+	tw.tween_property(
+		self, "scale:x", 0.0, _flip_dur,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		_is_dark = to_dark
+		_draw_ctrl.queue_redraw()
+	)
+	tw.tween_property(
+		self, "scale:x", orig_sx, _flip_dur,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func() -> void:
+		_animating = false
+		_update_hover()
+	)
+
+
 func _update_hover() -> void:
 	if _animating:
 		return
@@ -129,15 +158,9 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _on_clicked() -> void:
-	_animating = true
-	_icon.modulate = Color(0.7, 0.65, 0.5)
-	var tween := create_tween()
-	tween.tween_property(
-		_icon, "rotation", _icon.rotation + PI, 0.2
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_callback(func() -> void:
-		_animating = false
-		_icon.modulate = Color(0.95, 0.88, 0.7)
-		_update_hover()
+	flip_to_dark()
+	var tw := create_tween()
+	tw.tween_interval(_flip_dur * 2.0)
+	tw.tween_callback(func() -> void:
 		pressed.emit()
 	)
