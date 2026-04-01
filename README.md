@@ -1,7 +1,8 @@
 <br><p align="center">
   <a href="https://conjius.github.io/CivDecks/"><img src="https://conjius.github.io/CivDecks/logo.png?v=3" width="480" alt="CivDecks"></a>
   <p align="center">
-  <a href="https://conjius.github.io/CivDecks/play/"><img src="https://img.shields.io/badge/Play_in_Browser-32cd32?logo=googlechrome&logoColor=white" alt="Play in Browser"></a><a href="https://conjius.github.io/CivDecks/play/"><img src="https://img.shields.io/badge/_-32cd32?logo=firefox&logoColor=white" alt=""></a>
+  <a href="https://conjius.github.io/CivDecks/play/"><img src="https://img.shields.io/badge/Play_in_Browser-32cd32?logo=googlechrome&logoColor=white" alt="Play in Browser"></a><!--
+  --><a href="https://conjius.github.io/CivDecks/play/"><img src="https://img.shields.io/badge/%20-32cd32?logo=firefoxbrowser&logoColor=white" alt=""></a>
   &nbsp;
   <a href="https://github.com/conjius/CivDecks/releases/latest"><img src="https://img.shields.io/badge/_Download_for_macOS-2d6ea3" alt=" Download for macOS"></a>
 </p>
