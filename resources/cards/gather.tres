@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Gather"
-description = "Draw a resource card matching the yield of an adjacent tile"
+description = "Choose a resource card to draw that matches the yield of the chosen tile"
 card_type = 2
 range_value = 1
 cost = 1

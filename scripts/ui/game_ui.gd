@@ -382,14 +382,14 @@ func _on_gallery_closing() -> void:
 
 func _animate_piles_to_gallery() -> void:
 	var vp := get_viewport().get_visible_rect().size
+	var gallery_scale := 0.8
 	var spacing := 60.0
-	var pw := _draw_pile_ui.size.x
-	var ph := _draw_pile_ui.size.y
+	var pw := _draw_pile_ui.size.x * gallery_scale
+	var ph := _draw_pile_ui.size.y * gallery_scale
 	var total_w := pw * 3.0 + spacing * 2.0
 	var start_x := (vp.x - total_w) * 0.5
 	var target_y := card_gallery._gallery_bottom_y + 20.0
-	var gp := float(CardPileUI.glow_pad)
-	# animate_to subtracts GLOW_PAD, so add it back
+	var gp := float(CardPileUI.glow_pad) * gallery_scale
 	_draw_pile_ui.animate_to(
 		Vector2(start_x + gp, target_y + gp), 0.3,
 	)
@@ -399,11 +399,27 @@ func _animate_piles_to_gallery() -> void:
 			target_y + gp,
 		), 0.3,
 	)
+	var scale_v := Vector2(gallery_scale, gallery_scale)
+	_draw_pile_ui.pivot_offset = _draw_pile_ui.size * 0.5
+	_discard_pile_ui.pivot_offset = _discard_pile_ui.size * 0.5
+	_draw_pile_ui.create_tween().tween_property(
+		_draw_pile_ui, "scale", scale_v, 0.3,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_discard_pile_ui.create_tween().tween_property(
+		_discard_pile_ui, "scale", scale_v, 0.3,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 
 func _animate_piles_back() -> void:
 	_draw_pile_ui.animate_back(0.3)
 	_discard_pile_ui.animate_back(0.3)
+	var full_scale := Vector2(1.0, 1.0)
+	_draw_pile_ui.create_tween().tween_property(
+		_draw_pile_ui, "scale", full_scale, 0.3,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_discard_pile_ui.create_tween().tween_property(
+		_discard_pile_ui, "scale", full_scale, 0.3,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 
 	if _active_picker:
