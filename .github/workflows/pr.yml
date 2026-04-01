@@ -3,6 +3,8 @@ name: PR
 on:
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main, gh-pages]
 
 env:
   GODOT_VERSION: "4.6.1"
@@ -126,6 +128,47 @@ jobs:
           name: CivDecks-${{ steps.version.outputs.tag }}-web
           path: build/web/
 
+  deploy-preview:
+    needs: [build-test-lint, export]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+      - name: version
+        id: version
+        run: |
+          PATCH=$(($(git rev-list --count HEAD) - 378))
+          echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
+      - name: branch-slug
+        id: slug
+        run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          SLUG=$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9]/-/g' | tr 'A-Z' 'a-z')
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+      - name: download-web
+        uses: actions/download-artifact@v8
+        with:
+          name: CivDecks-${{ steps.version.outputs.tag }}-web
+          path: preview/${{ steps.slug.outputs.slug }}/
+      - name: patch-loading
+        run: |
+          SLUG="${{ steps.slug.outputs.slug }}"
+          if [ -f play/coi-serviceworker.min.js ]; then
+            cp play/coi-serviceworker.min.js "preview/$SLUG/"
+          fi
+      - name: deploy-preview
+        run: |
+          SLUG="${{ steps.slug.outputs.slug }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "preview/$SLUG/"
+          git commit -m "Deploy preview/$SLUG from ${{ github.ref_name }}" --allow-empty
+          git push
+
   tag-release:
     needs: [build-test-lint, export]
     runs-on: ubuntu-latest
@@ -159,5 +202,5 @@ jobs:
           gh release delete "$TAG" --yes 2>/dev/null || true
           gh release create "$TAG" "build/CivDecks-${TAG}-macOS.zip" \
             --title "$TAG" \
-            --notes "Nightly build from PR #${{ github.event.pull_request.number }}" \
+            --notes "Nightly build from ${{ github.ref_name }}" \
             --prerelease

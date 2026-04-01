@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Plan Ahead"
-description = "Draw 2 extra cards from the draw pile"
+description = "Draw 2 cards to your hand"
 card_type = 8
 range_value = 0
 card_color = Color(0.9, 0.88, 0.85, 1)
