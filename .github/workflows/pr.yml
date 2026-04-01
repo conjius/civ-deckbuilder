@@ -155,9 +155,7 @@ jobs:
       - name: patch-loading
         run: |
           SLUG="${{ steps.slug.outputs.slug }}"
-          if [ -f play/coi-serviceworker.min.js ]; then
-            cp play/coi-serviceworker.min.js "preview/$SLUG/"
-          fi
+          rm -f "preview/$SLUG/coi-serviceworker.min.js"
       - name: deploy-preview
         run: |
           SLUG="${{ steps.slug.outputs.slug }}"
