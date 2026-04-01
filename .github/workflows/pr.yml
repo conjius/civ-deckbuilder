@@ -173,14 +173,9 @@ jobs:
         run: |
           SLUG="${{ steps.slug.outputs.slug }}"
           URL="https://conjius.github.io/CivDecks/preview/$SLUG/"
-          DEPLOY_ID=$(gh api "repos/${{ github.repository }}/deployments" \
-            -X POST \
-            -f ref="${{ github.head_ref }}" \
-            -f environment="preview" \
-            -f description="Preview for ${{ github.head_ref }}" \
-            -F auto_merge=false \
-            -F required_contexts='[]' \
-            --jq '.id')
+          DEPLOY_ID=$(echo '{"ref":"${{ github.head_ref }}","environment":"preview","description":"Preview for ${{ github.head_ref }}","auto_merge":false,"required_contexts":[]}' \
+            | gh api "repos/${{ github.repository }}/deployments" \
+            -X POST --input - --jq '.id')
           gh api "repos/${{ github.repository }}/deployments/$DEPLOY_ID/statuses" \
             -X POST \
             -f state="success" \
