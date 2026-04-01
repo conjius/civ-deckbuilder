@@ -21,7 +21,6 @@ const MIME = {
 
 const DEV_SCRIPTS = `<script>
 (function(){
-  // Live reload via SSE
   function connect() {
     var es = new EventSource("/__reload");
     es.onmessage = function(e) {
@@ -34,32 +33,6 @@ const DEV_SCRIPTS = `<script>
   }
   if (document.readyState === "complete") connect();
   else window.addEventListener("load", connect);
-
-  // Skip loading animation on localhost — hide splash as soon as canvas renders
-  var check = setInterval(function() {
-    var canvas = document.querySelector("canvas");
-    if (!canvas || canvas.width < 100) return;
-    try {
-      var gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-      if (!gl) return;
-      var px = new Uint8Array(4);
-      gl.readPixels(canvas.width/2|0, canvas.height/2|0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
-      if (px[0] === 0 && px[1] === 0 && px[2] === 0) return;
-    } catch(e) { return; }
-    clearInterval(check);
-    ["#status", ".progress-fill"].forEach(function(sel) {
-      var el = document.querySelector(sel);
-      if (el) { el.style.transition = "none"; el.style.display = "none"; }
-    });
-  }, 50);
-
-  // Also hide splash immediately if WASM is cached (fast start)
-  setTimeout(function() {
-    var splash = document.getElementById("status-splash");
-    if (splash) { splash.style.animation = "none"; splash.style.opacity = "1"; }
-    var fill = document.querySelector(".progress-fill-inner");
-    if (fill) { fill.style.animation = "none"; fill.style.transform = "scaleX(1)"; }
-  }, 100);
 })();
 </script>`;
 
