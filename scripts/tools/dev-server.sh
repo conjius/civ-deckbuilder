@@ -50,4 +50,31 @@ echo "==> Game ready at:"
 echo "    Local:   http://localhost:8060"
 echo "    Network: http://$LOCAL_IP:8060"
 echo ""
-node "$PROJECT_DIR/scripts/tools/lan-server.mjs"
+
+# Start LAN server
+node "$PROJECT_DIR/scripts/tools/lan-server.mjs" &
+SERVER_PID=$!
+
+# Start HTTPS tunnel for iOS Safari (needs secure context for service worker)
+if command -v cloudflared &>/dev/null; then
+    TUNNEL_LOG=$(mktemp)
+    cloudflared tunnel --url http://localhost:8060 > "$TUNNEL_LOG" 2>&1 &
+    TUNNEL_PID=$!
+    sleep 5
+    TUNNEL_URL=$(grep -o 'https://[^ ]*\.trycloudflare\.com' "$TUNNEL_LOG" | head -1)
+    if [ -n "$TUNNEL_URL" ]; then
+        echo "    iOS Safari: $TUNNEL_URL"
+        echo ""
+    else
+        echo "    (cloudflared tunnel failed to start)"
+        echo ""
+    fi
+    rm -f "$TUNNEL_LOG"
+    trap "kill $SERVER_PID $TUNNEL_PID 2>/dev/null" EXIT
+else
+    echo "    (install cloudflared for iOS Safari HTTPS support)"
+    echo ""
+    trap "kill $SERVER_PID 2>/dev/null" EXIT
+fi
+
+wait $SERVER_PID
