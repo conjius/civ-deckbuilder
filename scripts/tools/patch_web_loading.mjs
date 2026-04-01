@@ -62,59 +62,7 @@ canvas { background: #000 !important; }
   100% { transform: scaleX(0.98); }
 }
 </style>`;
-const wasmCache = `<script>
-(function(){
-  var DB_NAME = "godot-wasm-cache";
-  var STORE = "modules";
-  function openDB() {
-    return new Promise(function(resolve, reject) {
-      var req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = function() { req.result.createObjectStore(STORE); };
-      req.onsuccess = function() { resolve(req.result); };
-      req.onerror = function() { reject(req.error); };
-    });
-  }
-  function dbGet(db, key) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(STORE, "readonly");
-      var req = tx.objectStore(STORE).get(key);
-      req.onsuccess = function() { resolve(req.result || null); };
-      req.onerror = function() { resolve(null); };
-    });
-  }
-  function dbPut(db, key, value) {
-    return new Promise(function(resolve) {
-      var tx = db.transaction(STORE, "readwrite");
-      tx.objectStore(STORE).put(value, key);
-      tx.oncomplete = function() { resolve(); };
-      tx.onerror = function() { resolve(); };
-    });
-  }
-  var origInstantiateStreaming = WebAssembly.instantiateStreaming;
-  WebAssembly.instantiateStreaming = async function(source, imports) {
-    try {
-      var response = await source;
-      var etag = response.headers.get("etag") || response.headers.get("last-modified") || "";
-      var cacheKey = response.url + "|" + etag;
-      var db = await openDB();
-      var cached = await dbGet(db, cacheKey);
-      if (cached) {
-        var instance = await WebAssembly.instantiate(cached, imports);
-        return { module: cached, instance: instance };
-      }
-      var buffer = await response.arrayBuffer();
-      var module = await WebAssembly.compile(buffer);
-      await dbPut(db, cacheKey, module);
-      var instance = await WebAssembly.instantiate(module, imports);
-      return { module: module, instance: instance };
-    } catch(e) {
-      return origInstantiateStreaming(source, imports);
-    }
-  };
-})();
-</script>`;
-
-html = html.replace("<head>", `<head>${wasmCache}${css}`);
+html = html.replace("<head>", `<head>${css}`);
 
 // Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
