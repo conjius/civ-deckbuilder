@@ -214,10 +214,12 @@ func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 
 
 func _build_character_model() -> Node3D:
+	var root := Node3D.new()
 	var node := AssetPack.get_model("Guy", 0.002)
-	node.position = Vector3(0, 0.0, 0)
 	node.rotation_degrees = Vector3(-90, 0, 0)
-	return node
+	node.position = Vector3(0, 0.4, 0)
+	root.add_child(node)
+	return root
 
 
 func _build_boot_model() -> Node3D:

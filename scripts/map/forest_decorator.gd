@@ -34,17 +34,21 @@ func load_trees() -> void:
 		for s in recentered.get_surface_count():
 			var orig: Material = mi.mesh.surface_get_material(s)
 			if orig is StandardMaterial3D:
-				var light_mat: StandardMaterial3D = (
+				var mat: StandardMaterial3D = (
 					orig.duplicate() as StandardMaterial3D
 				)
-				light_mat.albedo_color = (
-					light_mat.albedo_color.lightened(0.55)
-				)
-				recentered.surface_set_material(s, light_mat)
+				var c := mat.albedo_color
+				if c.g > c.r and c.g > c.b:
+					mat.albedo_color = Color(
+						c.r * 0.7, c.g * 1.2, c.b * 0.6
+					).lightened(0.3)
+				else:
+					mat.albedo_color = c.lightened(0.4)
+				recentered.surface_set_material(s, mat)
 			elif orig:
 				recentered.surface_set_material(s, orig)
 		_tree_meshes.append(recentered)
-		var mesh_height: float = aabb.size.z
+		var mesh_height: float = recentered.get_aabb().size.y
 		var scale_val: float
 		if mesh_height > 0.0:
 			scale_val = TARGET_HEIGHT / mesh_height
@@ -143,8 +147,10 @@ func _recenter_mesh(
 	src: Mesh, center: Vector3,
 ) -> ArrayMesh:
 	var result := ArrayMesh.new()
-	var ground_y: float = center.y - src.get_aabb().size.y * 0.5
-	var offset := Vector3(center.x, ground_y, center.z)
+	# Z is up in pack, swap to Y-up; ground at bottom of AABB
+	var aabb := src.get_aabb()
+	var ground_z: float = aabb.position.z
+	var offset := Vector3(center.x, center.y, ground_z)
 	for s in src.get_surface_count():
 		var arrays: Array = src.surface_get_arrays(s)
 		if arrays.size() == 0:
@@ -153,8 +159,18 @@ func _recenter_mesh(
 		var new_verts := PackedVector3Array()
 		new_verts.resize(verts.size())
 		for i in verts.size():
-			new_verts[i] = verts[i] - offset
+			var v := verts[i] - offset
+			new_verts[i] = Vector3(v.x, v.z, v.y)
 		arrays[Mesh.ARRAY_VERTEX] = new_verts
+		if arrays[Mesh.ARRAY_NORMAL]:
+			var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+			var new_normals := PackedVector3Array()
+			new_normals.resize(normals.size())
+			for i in normals.size():
+				new_normals[i] = Vector3(
+					normals[i].x, normals[i].z, normals[i].y
+				)
+			arrays[Mesh.ARRAY_NORMAL] = new_normals
 		var fmt: int = src.surface_get_format(s)
 		result.add_surface_from_arrays(
 			Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, fmt
