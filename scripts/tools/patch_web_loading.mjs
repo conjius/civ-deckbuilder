@@ -16,8 +16,10 @@ img#status-splash {
   max-width: min(80vw, 950px) !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important;
-  position: static !important;
-  margin: 0 !important; padding: 0 !important;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  bottom: clamp(4px, 6vh, 140px) !important;
+  margin: auto !important; padding: 0 !important;
   opacity: 0;
   animation: logoFadeIn 14s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
@@ -26,11 +28,13 @@ img#status-splash {
   to { opacity: 1; transform: scale(0.68); }
 }
 #status-progress {
-  width: min(50vw, 280px) !important; height: 6px !important;
+  width: 20vw !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
-  position: static !important;
-  margin: 16px auto 0 !important; padding: 0 !important;
+  position: fixed !important;
+  top: calc(50% + clamp(2px, 2vh, 60px)) !important; left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 2px; }
@@ -39,9 +43,10 @@ img#status-splash {
 #status-notice { display: none !important; }
 canvas { background: #000 !important; }
 .progress-fill {
-  position: static;
-  width: min(50vw, 280px); height: 6px;
-  margin: 16px auto 0;
+  position: fixed; left: 50%;
+  top: calc(50% + clamp(2px, 2vh, 60px));
+  transform: translate(-50%, 0);
+  width: 20vw; height: 6px;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
@@ -160,8 +165,14 @@ const initScript = `<script>
 
 html = html.replace("</head>", `${initScript}</head>`);
 
-// Inject progress bar div and keyboard fix
-html = html.replace("<body>", `<body><div class="progress-fill"><div class="progress-fill-inner"></div></div><script>
+// Inject progress bar inside #status (after the native progress element)
+html = html.replace(
+	'<div id="status-notice">',
+	'<div class="progress-fill"><div class="progress-fill-inner"></div></div><div id="status-notice">'
+);
+
+// Keyboard fix
+html = html.replace("<body>", `<body><script>
 window.addEventListener('keydown', function(e) {
 	if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R')) {
 		e.stopImmediatePropagation();
