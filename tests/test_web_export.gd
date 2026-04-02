@@ -49,6 +49,22 @@ func test_main_scene_set() -> void:
 	)
 
 
+func test_asset_pack_loadable() -> void:
+	var scene: PackedScene = load(
+		AssetPack.PACK_PATH
+	) as PackedScene
+	TestAssert.assert_true(
+		scene != null, "asset pack must load as PackedScene"
+	)
+
+
+func test_asset_pack_not_glb() -> void:
+	TestAssert.assert_true(
+		not AssetPack.PACK_PATH.ends_with(".glb"),
+		"asset pack must not be .glb (excluded from web export)"
+	)
+
+
 func test_no_unused_logo_variants_in_root() -> void:
 	var unused: Array[String] = [
 		"res://logo.png",
