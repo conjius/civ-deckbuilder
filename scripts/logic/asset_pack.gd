@@ -16,10 +16,7 @@ static func get_model(model_name: String, s: float = 1.0) -> Node3D:
 	_ensure_loaded()
 	var cached_mesh: Mesh = _mesh_cache.get(model_name) as Mesh
 	if cached_mesh:
-		var mi := MeshInstance3D.new()
-		mi.mesh = cached_mesh
-		mi.scale = Vector3(s, s, s)
-		return mi
+		return _wrap_mesh(cached_mesh, s)
 	var root := _pack_scene.instantiate()
 	var group: Node = root
 	for seg in GROUP_PATH:
@@ -32,20 +29,28 @@ static func get_model(model_name: String, s: float = 1.0) -> Node3D:
 	if mesh:
 		_mesh_cache[model_name] = mesh
 		root.queue_free()
-		var mi := MeshInstance3D.new()
-		mi.mesh = mesh
-		mi.scale = Vector3(s, s, s)
-		return mi
+		return _wrap_mesh(mesh, s)
 	root.queue_free()
 	return Node3D.new()
+
+
+static func _wrap_mesh(mesh: Mesh, s: float) -> Node3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.scale = Vector3(s, s, s)
+	mi.rotation_degrees = Vector3(-90, 0, 0)
+	var wrapper := Node3D.new()
+	wrapper.add_child(mi)
+	return wrapper
 
 
 static func get_model_tinted(
 	model_name: String, color: Color, s: float = 1.0,
 ) -> Node3D:
 	var node := get_model(model_name, s)
-	if node is MeshInstance3D:
-		_tint_mesh(node as MeshInstance3D, color)
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			_tint_mesh(child as MeshInstance3D, color)
 	return node
 
 
