@@ -16,9 +16,8 @@ img#status-splash {
   max-width: min(80vw, 950px) !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important;
-  position: fixed !important;
-  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-  margin: auto !important; padding: 0 !important;
+  position: static !important;
+  margin: 0 !important; padding: 0 !important;
   opacity: 0;
   animation: logoFadeIn 14s cubic-bezier(0.4, 0, 1, 1) both !important;
 }
@@ -30,10 +29,8 @@ img#status-splash {
   width: min(50vw, 280px) !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
-  position: fixed !important;
-  top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 30px) !important;
-  margin: 0 !important; padding: 0 !important;
+  position: static !important;
+  margin: 16px auto 0 !important; padding: 0 !important;
   overflow: hidden;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 2px; }
@@ -42,9 +39,9 @@ img#status-splash {
 #status-notice { display: none !important; }
 canvas { background: #000 !important; }
 .progress-fill {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, 30px);
+  position: static;
   width: min(50vw, 280px); height: 6px;
+  margin: 16px auto 0;
   background: #1a1a1a;
   border-radius: 2px; overflow: hidden;
   z-index: 999; pointer-events: none;
