@@ -361,27 +361,48 @@ func _build_terrain_multimeshes() -> void:
 
 
 func _setup_mountain_assets() -> void:
-	var mesh_res: Mesh = load(
-		"res://assets/models/mountain/mountain_hex.res"
-	) as Mesh
-	if mesh_res == null:
+	var node := AssetPack.get_model("Rocks", 1.0)
+	var mi: MeshInstance3D = null
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			mi = child as MeshInstance3D
+			break
+	if mi == null or mi.mesh == null:
 		return
-	_mountain_mesh = mesh_res
+	var src_mesh: Mesh = mi.mesh
+	var aabb := src_mesh.get_aabb()
+	var center := aabb.get_center()
+	var scale_val := 0.0195
+	var scaled := ArrayMesh.new()
+	for s in src_mesh.get_surface_count():
+		var arrays: Array = src_mesh.surface_get_arrays(s)
+		if arrays.is_empty():
+			continue
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var new_verts := PackedVector3Array()
+		new_verts.resize(verts.size())
+		for i in verts.size():
+			var v := (verts[i] - center) * scale_val
+			new_verts[i] = Vector3(v.x, v.z, v.y)
+		arrays[Mesh.ARRAY_VERTEX] = new_verts
+		if arrays[Mesh.ARRAY_NORMAL]:
+			var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+			var new_normals := PackedVector3Array()
+			new_normals.resize(normals.size())
+			for i in normals.size():
+				new_normals[i] = Vector3(
+					normals[i].x, normals[i].z, normals[i].y
+				)
+			arrays[Mesh.ARRAY_NORMAL] = new_normals
+		var fmt: int = src_mesh.surface_get_format(s)
+		scaled.add_surface_from_arrays(
+			Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, fmt
+		)
+	_mountain_mesh = scaled
 	_mountain_mat = StandardMaterial3D.new()
-	var diffuse: Texture2D = load(
-		"res://assets/models/mountain/SnowyMountainTexture.png"
-	) as Texture2D
-	var normal: Texture2D = load(
-		"res://assets/models/mountain/mountain_normal.png"
-	) as Texture2D
-	if diffuse:
-		_mountain_mat.albedo_texture = diffuse
-	_mountain_mat.albedo_color = Color(0.85, 0.85, 0.9)
+	_mountain_mat.albedo_color = Color(0.65, 0.62, 0.6)
 	_mountain_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	if normal:
-		_mountain_mat.normal_enabled = true
-		_mountain_mat.normal_texture = normal
-	_mountain_mat.roughness = 0.8
+	_mountain_mat.roughness = 0.9
 
 
 func _setup_water_assets() -> void:
