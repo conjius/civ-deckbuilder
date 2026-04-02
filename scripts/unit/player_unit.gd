@@ -41,7 +41,7 @@ func _ready() -> void:
 	var old_mesh: Node = get_node_or_null("MeshInstance3D")
 	if old_mesh:
 		old_mesh.queue_free()
-	_model = _build_boot_model()
+	_model = _build_character_model()
 	add_child(_model)
 	_apply_color_wash()
 
@@ -211,6 +211,15 @@ func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 		return Vector3.ZERO
 	var t := -origin.y / ray_dir.y
 	return origin + ray_dir * t
+
+
+func _build_character_model() -> Node3D:
+	var root := Node3D.new()
+	var node := AssetPack.get_model("Guy", 0.002)
+	node.rotation_degrees = Vector3(-90, 0, 0)
+	node.position = Vector3(0, 0.4, 0)
+	root.add_child(node)
+	return root
 
 
 func _build_boot_model() -> Node3D:
