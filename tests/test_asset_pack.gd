@@ -3,7 +3,7 @@ extends RefCounted
 
 func test_pack_loads() -> void:
 	var scene: PackedScene = load(
-		"res://assets/models/low_poly_adventure_asset_pack.glb"
+		"res://assets/models/adventure_pack.res"
 	) as PackedScene
 	TestAssert.assert_true(scene != null, "pack should load")
 

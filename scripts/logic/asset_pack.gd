@@ -1,7 +1,7 @@
 class_name AssetPack
 extends RefCounted
 
-const PACK_PATH := "res://assets/models/low_poly_adventure_asset_pack.glb"
+const PACK_PATH := "res://assets/models/adventure_pack.res"
 const GROUP_PATH := [
 	"Sketchfab_model",
 	"4e65bb4247c24ae9829c43604374e9b7_fbx",
