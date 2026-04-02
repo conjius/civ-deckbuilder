@@ -1,5 +1,6 @@
 extends Node3D
 
+static var _village_scene: PackedScene
 static var _materials_icon: Texture2D
 static var _food_icon: Texture2D
 static var _parchment_tex: Texture2D
@@ -15,6 +16,8 @@ var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _yield_sprites: Array[Sprite3D] = []
 var _has_settlement: bool = false
+var _settlement_node: Node3D
+var _settlement_color: Color
 
 
 func setup(
@@ -268,9 +271,11 @@ func place_settlement(
 	_map_data: MapData = null,
 ) -> void:
 	_has_settlement = true
-	var tent := _build_procedural_tent(player_color)
+	_settlement_color = player_color
+	var tent := AssetPack.get_model_tinted("Tent", player_color, 0.003)
 	tent.position = Vector3(0, 0.1, 0)
 	add_child(tent)
+	_settlement_node = tent
 	_reposition_yields()
 
 	var label_y := 1.2
@@ -287,6 +292,23 @@ func place_settlement(
 	label.outline_modulate = Color(0, 0, 0, 0.7)
 	label.outline_size = int(UIHelpers.SETTLEMENT_OUTLINE * 1.5)
 	add_child(label)
+
+
+func upgrade_settlement() -> void:
+	if _settlement_node:
+		_settlement_node.queue_free()
+	var village := AssetPack.get_model_tinted(
+		"House", _settlement_color, 0.002
+	)
+	village.position = Vector3(0, 0.1, 0)
+	add_child(village)
+	_settlement_node = village
+	# Update label text
+	for child in get_children():
+		if child is Label3D:
+			child.text = "Village"
+			break
+
 
 
 func _build_procedural_tent(
