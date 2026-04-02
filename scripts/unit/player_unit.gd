@@ -214,8 +214,8 @@ func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 
 
 func _build_character_model() -> Node3D:
-	var node := AssetPack.get_model("Guy", 0.002)
-	node.position = Vector3(0, 0.4, 0)
+	var node := AssetPack.get_model("Guy", 0.003)
+	node.position = Vector3(0, 0.6, 0)
 	return node
 
 
