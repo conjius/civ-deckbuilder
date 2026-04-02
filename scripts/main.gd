@@ -459,6 +459,9 @@ func _on_recruited(
 func _on_building_upgraded(target: Vector2i) -> void:
 	if hex_map.map_data.has_settlement(target):
 		hex_map.map_data.upgrade_settlement(target)
+		var tile: Node3D = hex_map.get_tile(target)
+		if tile and tile.has_method("upgrade_settlement"):
+			tile.upgrade_settlement()
 
 
 func _get_unit_at(coord: Vector2i) -> Node3D:
