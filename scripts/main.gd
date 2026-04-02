@@ -438,7 +438,7 @@ func _on_draw_requested(count: int) -> void:
 		drawn.append(card)
 	if not drawn.is_empty():
 		game_ui.set_current_cards(dm.hand)
-		game_ui.card_hand.add_cards_to_hand(drawn)
+		game_ui.card_hand.add_cards_to_hand(drawn, true)
 
 
 func _on_recruited(
