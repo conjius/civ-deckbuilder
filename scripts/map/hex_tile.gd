@@ -272,7 +272,7 @@ func place_settlement(
 ) -> void:
 	_has_settlement = true
 	_settlement_color = player_color
-	var tent := _build_procedural_tent(player_color)
+	var tent := AssetPack.get_model_tinted("Tent", player_color, 0.003)
 	tent.position = Vector3(0, 0.1, 0)
 	add_child(tent)
 	_settlement_node = tent
@@ -297,7 +297,9 @@ func place_settlement(
 func upgrade_settlement() -> void:
 	if _settlement_node:
 		_settlement_node.queue_free()
-	var village := _load_village_model(_settlement_color)
+	var village := AssetPack.get_model_tinted(
+		"House", _settlement_color, 0.002
+	)
 	village.position = Vector3(0, 0.1, 0)
 	add_child(village)
 	_settlement_node = village
@@ -307,30 +309,6 @@ func upgrade_settlement() -> void:
 			child.text = "Village"
 			break
 
-
-func _load_village_model(color: Color) -> Node3D:
-	if _village_scene == null:
-		_village_scene = load(
-			"res://assets/models/buildings/village/village.fbx"
-		) as PackedScene
-	var instance := _village_scene.instantiate() as Node3D
-	instance.scale = Vector3(0.15, 0.15, 0.15)
-	_tint_meshes(instance, color)
-	return instance
-
-
-func _tint_meshes(node: Node3D, color: Color) -> void:
-	for child in node.get_children():
-		if child is MeshInstance3D:
-			var mi := child as MeshInstance3D
-			for i in mi.get_surface_override_material_count():
-				var base_mat: Material = mi.mesh.surface_get_material(i)
-				if base_mat is StandardMaterial3D:
-					var mat := (base_mat as StandardMaterial3D).duplicate() as StandardMaterial3D
-					mat.albedo_color = mat.albedo_color * color
-					mi.set_surface_override_material(i, mat)
-		if child is Node3D:
-			_tint_meshes(child as Node3D, color)
 
 
 func _build_procedural_tent(
