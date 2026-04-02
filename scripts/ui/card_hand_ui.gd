@@ -139,22 +139,95 @@ func discard_all(
 	)
 
 
-func add_cards_to_hand(new_cards: Array[CardData]) -> void:
+func add_cards_to_hand(
+	new_cards: Array[CardData], from_draw: bool = false,
+) -> void:
 	for card in new_cards:
-		_add_card_display(card, false)
+		_add_card_display(card, from_draw)
+	if from_draw:
+		_do_partial_draw_anim(new_cards.size())
+	else:
 		var cards := _get_card_children()
-		var ctrl: Control = cards[cards.size() - 1]
-		ctrl.scale = Vector2(0.0, 0.0)
-		ctrl.modulate.a = 0.0
-		var tw := ctrl.create_tween()
+		for i in range(cards.size() - new_cards.size(), cards.size()):
+			var ctrl: Control = cards[i]
+			ctrl.scale = Vector2(0.0, 0.0)
+			ctrl.modulate.a = 0.0
+			var tw := ctrl.create_tween()
+			tw.set_parallel(true)
+			tw.tween_property(
+				ctrl, "scale", UIHelpers.HAND_DEFAULT_SCALE, 0.3,
+			).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			tw.tween_property(
+				ctrl, "modulate:a", 1.0, 0.2,
+			)
+		_layout_cards()
+
+
+func _do_partial_draw_anim(count: int) -> void:
+	_layout_cards(false)
+	var cards := _get_card_children()
+	var start_idx := cards.size() - count
+	var local_draw := draw_pile_pos - global_position
+	for i in range(start_idx, cards.size()):
+		var card: Control = cards[i]
+		var target_pos := card.position
+		var target_scale := card.scale
+		var target_rot := card.rotation
+		card.position = local_draw - card.size * 0.25
+		card.scale = Vector2(0.5, 0.5)
+		card.rotation = 0.0
+		card.set_face_up(false)
+		card.modulate.a = 0.0
+		card.z_index = 100 + i
+		var idx := i - start_idx
+		var delay := float(idx) * 0.18
+		var dur := 0.7
+		var flip_time := delay + dur * 0.35
+		var flip_dur := 0.15
+		var tw := card.create_tween()
 		tw.set_parallel(true)
 		tw.tween_property(
-			ctrl, "scale", UIHelpers.HAND_DEFAULT_SCALE, 0.3,
-		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			card, "modulate:a", 1.0, 0.05,
+		).set_delay(delay)
 		tw.tween_property(
-			ctrl, "modulate:a", 1.0, 0.2,
+			card, "position", target_pos, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		tw.tween_property(
+			card, "scale:y", target_scale.y, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		tw.tween_property(
+			card, "rotation", target_rot, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		var is_last: bool = i == cards.size() - 1
+		tw.tween_callback(func() -> void:
+			card.z_index = 0
+		).set_delay(delay + dur)
+		var mid_sx: float = lerpf(0.5, target_scale.x, 0.35)
+		var flip_tw := card.create_tween()
+		flip_tw.tween_property(
+			card, "scale:x", mid_sx, flip_time - delay,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		).set_delay(delay)
+		flip_tw.tween_property(
+			card, "scale:x", 0.0, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_IN
 		)
-	_layout_cards()
+		flip_tw.tween_callback(func() -> void:
+			card.set_face_up(true)
+		)
+		flip_tw.tween_property(
+			card, "scale:x", target_scale.x, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_OUT
+		)
 
 
 func _do_draw_anim() -> void:
