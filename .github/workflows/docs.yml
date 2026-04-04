@@ -1,0 +1,36 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: generate
+        run: python3 scripts/tools/generate_docs.py
+      - name: deploy
+        run: |
+          TMPDIR=$(mktemp -d)
+          git clone --branch gh-pages --depth 1 \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            "$TMPDIR"
+          rm -rf "$TMPDIR/docs"
+          cp -r build/docs "$TMPDIR/docs"
+          cd "$TMPDIR"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "Update API docs" || true
+          git push
+          rm -rf "$TMPDIR"
