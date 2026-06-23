@@ -1,7 +1,9 @@
+## Resolves combat damage between units.
 class_name CombatResolver
 extends RefCounted
 
 
+## Calculate actual damage after defense reduction (min 0)
 static func compute_damage(attack_value: int, defense_value: int) -> int:
 	var diff: int = attack_value - defense_value
 	if diff < 0:

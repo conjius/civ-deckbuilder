@@ -1,3 +1,5 @@
+## Extracts individual 3D models from the low poly adventure asset pack.
+## Caches meshes for reuse across the game.
 class_name AssetPack
 extends RefCounted
 
@@ -12,6 +14,7 @@ static var _pack_scene: PackedScene
 static var _mesh_cache: Dictionary = {}
 
 
+## Get a model by name from the pack, scaled by s
 static func get_model(model_name: String, s: float = 1.0) -> Node3D:
 	_ensure_loaded()
 	var cached_mesh: Mesh = _mesh_cache.get(model_name) as Mesh
@@ -44,6 +47,7 @@ static func _wrap_mesh(mesh: Mesh, s: float) -> Node3D:
 	return wrapper
 
 
+## Get a model tinted with a color (for player-colored buildings/units)
 static func get_model_tinted(
 	model_name: String, color: Color, s: float = 1.0,
 ) -> Node3D:
